@@ -31,8 +31,10 @@
             background-color: #000000;
             padding: 30px;
             border-radius: 10px;
-            max-width: 95vw;
-            width: 420px; /* Largura para caber os campos */
+            /* Ajustado para preencher a tela do celular */
+            max-width: 95vw; 
+            width: 95%; /* Ocupa 95% da largura da tela */
+            max-width: 500px; /* Limite em desktops */
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -65,7 +67,7 @@
         .input-group {
             margin-bottom: 15px;
             width: 100%;
-            max-width: 360px;
+            /* Removido max-width fixo para preencher o container fluidamente */
             text-align: left;
         }
         .input-group label {
@@ -105,7 +107,7 @@
             transition: all 0.1s;
             margin-top: 10px;
             width: 100%;
-            max-width: 360px;
+            /* Removido max-width fixo para preencher o container fluidamente */
         }
         #calculateButton:hover {
             background-color: #ff66e0;
