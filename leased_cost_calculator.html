@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custo por KM (Veículo Locado)</title>
+    <!-- Google Fonts for Arcade Style -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        /* Estilo Base para o Visual Arcade */
+        body {
+            background-color: #010114; /* Preto Profundo / Arcade */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            flex-direction: column;
+            font-family: 'Press Start 2P', monospace;
+            color: #00ff66; /* Verde Neon */
+            user-select: none;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+
+        /* Contêiner Principal com Estilo Neon */
+        .arcade-container {
+            border: 5px solid #00ccff; /* Borda Azul Neon */
+            box-shadow: 0 0 25px #00ccff, inset 0 0 12px #00ccff;
+            background-color: #000000;
+            padding: 30px;
+            border-radius: 10px;
+            /* Ajustado para preencher a tela do celular */
+            max-width: 95vw; 
+            width: 95%; /* Ocupa 95% da largura da tela */
+            max-width: 500px; /* Limite em desktops */
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Título Principal */
+        .arcade-container h2 {
+            color: #00ff66;
+            text-shadow: 0 0 10px #00ff66;
+            margin-bottom: 25px;
+            font-size: clamp(0.9rem, 4vw, 1.1rem);
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        /* Título de Seção */
+        .section-title {
+            color: #ff33cc;
+            text-shadow: 0 0 8px #ff33cc;
+            margin: 20px 0 15px 0;
+            font-size: clamp(0.7rem, 3.5vw, 0.9rem);
+            text-align: center;
+            width: 100%;
+            border-bottom: 1px solid rgba(255, 51, 204, 0.5);
+            padding-bottom: 5px;
+        }
+
+        /* Grupos de Input */
+        .input-group {
+            margin-bottom: 15px;
+            width: 100%;
+            text-align: left;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #00ccff;
+            font-size: clamp(0.6rem, 3vw, 0.7rem);
+            text-shadow: 0 0 5px #00ccff;
+        }
+
+        /* Estilo dos Campos de Input (Valores) */
+        .arcade-container input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            background-color: #000000;
+            border: 2px solid #ff33cc;
+            color: #00ff66;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.8rem, 4vw, 0.9rem);
+            box-shadow: 0 0 8px #ff33cc;
+            border-radius: 4px;
+            text-align: right;
+            box-sizing: border-box;
+        }
+        
+        /* Estilo do Botão de Cálculo */
+        #calculateButton {
+            background-color: #ff33cc;
+            color: #000000;
+            border: none;
+            padding: 12px 25px;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.7rem, 3.5vw, 0.8rem);
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #ff33cc;
+            transition: all 0.1s;
+            margin-top: 10px;
+            width: 100%;
+        }
+        #calculateButton:hover {
+            background-color: #ff66e0;
+            box-shadow: 0 0 15px #ff66e0;
+        }
+
+        /* Área de Exibição do Resultado */
+        #resultDisplay {
+            margin-top: 30px;
+            border-top: 2px solid rgba(255, 0, 255, 0.5);
+            padding-top: 20px;
+            text-align: center;
+            line-height: 1.5;
+            width: 100%;
+        }
+        .result-line {
+            font-size: clamp(0.7rem, 3.5vw, 0.9rem);
+            color: #ff00ff;
+            text-shadow: 0 0 6px #ff00ff;
+            margin-bottom: 10px;
+            word-break: break-word;
+        }
+        .final-result {
+            font-size: clamp(1rem, 5vw, 1.2rem);
+            color: #00ff66;
+            text-shadow: 0 0 10px #00ff66;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="arcade-container">
+    <h2>CUSTO FIXO POR KM (VEÍCULO LOCADO)</h2>
+    
+    <div class="section-title">KM MENSAL PARA DISTRIBUIÇÃO</div>
+
+    <div class="input-group">
+        <label for="monthlyKm">KM TOTAL PREVISTO NO MÊS (Para distribuir custos fixos):</label>
+        <input type="number" id="monthlyKm" placeholder="Ex: 8000" min="1" step="1">
+    </div>
+    
+    <div class="section-title">CUSTOS FIXOS MENSAIS (Locação e Operação)</div>
+
+    <div class="input-group">
+        <label for="installmentValue">PARCELA DA LOCAÇÃO (Valor fixo R$):</label>
+        <input type="number" id="installmentValue" placeholder="Ex: 3500" min="0" step="0.01">
+    </div>
+
+    <div class="input-group">
+        <label for="fuelMonthlyCost">CUSTO COM COMBUSTÍVEL MENSAL (Valor fixo R$):</label>
+        <input type="number" id="fuelMonthlyCost" placeholder="Ex: 5000" min="0" step="0.01">
+    </div>
+
+    <div class="input-group">
+        <label for="proLaboreMonthly">PRÓ-LABORE MENSAL (Valor fixo R$):</label>
+        <input type="number" id="proLaboreMonthly" placeholder="Ex: 3000" min="0" step="0.01">
+    </div>
+
+    <div class="input-group">
+        <label for="foodExpense">GASTO ALIMENTAÇÃO MENSAL (Valor fixo R$):</label>
+        <input type="number" id="foodExpense" placeholder="Ex: 700" min="0" step="0.01">
+    </div>
+    
+    <div class="input-group">
+        <label for="automotiveAestheticsMonthly">ESTÉTICA AUTOMOTIVA MENSAL (Valor fixo R$):</label>
+        <input type="number" id="automotiveAestheticsMonthly" placeholder="Ex: 250" min="0" step="0.01">
+    </div>
+    
+    <button id="calculateButton">CALCULAR CUSTO FIXO / KM</button>
+    
+    <div id="resultDisplay">
+        <div class="result-line">CUSTO FIXO MENSAL: --</div>
+        <div class="final-result">CUSTO FIXO POR KM: --</div>
+    </div>
+</div>
+
+<script>
+    // Obtém os elementos do DOM (Apenas os campos que permanecem)
+    const monthlyKmInput = document.getElementById('monthlyKm');
+    const foodExpenseInput = document.getElementById('foodExpense');
+    const installmentValueInput = document.getElementById('installmentValue');
+    const fuelMonthlyCostInput = document.getElementById('fuelMonthlyCost');
+    const proLaboreMonthlyInput = document.getElementById('proLaboreMonthly');
+    const automotiveAestheticsMonthlyInput = document.getElementById('automotiveAestheticsMonthly'); 
+
+    const calculateButton = document.getElementById('calculateButton');
+    const resultDisplay = document.getElementById('resultDisplay');
+
+    // Define a cor padrão para os resultados
+    const defaultFixedColor = '#ff00ff'; // Roxo Neon
+    const defaultTotalColor = '#00ff66'; // Verde Neon
+    const errorColor = '#ff0000'; // Vermelho
+
+    // Função auxiliar para criar as linhas de resultado
+    function updateResultDisplay(fixedMonthly, fixedPerKm, error = null) {
+        if (error) {
+            resultDisplay.innerHTML = `<div class="final-result" style="color:${errorColor}; text-shadow:0 0 10px ${errorColor};">${error}</div>`;
+            return;
+        }
+
+        // Função para formatar o valor como moeda brasileira (R$) com 3 casas decimais
+        const formatCurrency = (value) => `R$ ${value.toFixed(3).replace('.', ',')}`;
+
+        resultDisplay.innerHTML = `
+            <div class="result-line" style="color:${defaultFixedColor}; text-shadow:0 0 6px ${defaultFixedColor};">CUSTO FIXO MENSAL: ${formatCurrency(fixedMonthly)}</div>
+            <div class="final-result" style="color:${defaultTotalColor}; text-shadow:0 0 10px ${defaultTotalColor};">CUSTO FIXO POR KM: ${formatCurrency(fixedPerKm)}</div>
+        `;
+    }
+
+    function getFloatValue(element) {
+        // Retorna 0 se o campo estiver vazio ou não for um número válido
+        const value = parseFloat(element.value);
+        return isNaN(value) ? 0 : value;
+    }
+
+    function calculateFixedCostPerKm() {
+        // --- 1. Variável de Distribuição ---
+        const monthlyKm = getFloatValue(monthlyKmInput);
+
+        // --- 2. Custos Fixos Mensais (Inputs) ---
+        // Apenas os campos que permanecem
+        const foodExpense = getFloatValue(foodExpenseInput);
+        const installmentValue = getFloatValue(installmentValueInput);
+        const fuelMonthlyCost = getFloatValue(fuelMonthlyCostInput);
+        const proLaboreMonthly = getFloatValue(proLaboreMonthlyInput);
+        const automotiveAestheticsMonthly = getFloatValue(automotiveAestheticsMonthlyInput); 
+
+        // --- 3. Validação Crucial ---
+        if (monthlyKm <= 0) {
+            updateResultDisplay(0, 0, "ERRO: KM TOTAL PREVISTO NO MÊS deve ser maior que zero.");
+            return;
+        }
+
+        // --- 4. Cálculo dos Custos Fixos Mensais ---
+        
+        // Parcela da Locação (Valor fixo mensal)
+        const monthlyInstallmentCost = installmentValue;
+        
+        // Gasto Alimentação Mensal (Valor inserido)
+        const monthlyFoodCost = foodExpense;
+        
+        // Custo com Combustível Mensal (Valor inserido)
+        const monthlyFuelCost = fuelMonthlyCost;
+        
+        // Pró-labore Mensal (Valor inserido)
+        const monthlyProLabore = proLaboreMonthly;
+
+        // Estética Automotiva Mensal (Valor fixo)
+        const monthlyAestheticsCost = automotiveAestheticsMonthly;
+        
+        // Custos removidos (Pneu, Seguro, Depreciação, Óleo, Documento) são zero.
+
+        // --- 5. Soma Total dos Custos Fixos Mensais ---
+        const totalFixedMonthlyCost = monthlyInstallmentCost 
+                                    + monthlyFoodCost 
+                                    + monthlyFuelCost
+                                    + monthlyProLabore
+                                    + monthlyAestheticsCost;
+
+        // --- 6. Cálculo do Custo por KM ---
+        const fixedCostPerKm = totalFixedMonthlyCost / monthlyKm;
+
+        // --- 7. Exibe o Resultado ---
+        updateResultDisplay(totalFixedMonthlyCost, fixedCostPerKm);
+    }
+
+    // Event Listeners: Chama o cálculo ao clicar no botão
+    calculateButton.addEventListener('click', calculateFixedCostPerKm);
+
+    // Event Listeners: Chama o cálculo ao pressionar 'Enter' nos campos
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('keydown', (e) => { 
+            if (e.key === 'Enter') calculateFixedCostPerKm(); 
+        });
+    });
+
+    // Inicialização do estilo de resultado
+    window.onload = function() {
+        // Inicializa o display com o estilo padrão
+        updateResultDisplay(0, 0); 
+    };
+
+</script>
+
+</body>
+</html>
