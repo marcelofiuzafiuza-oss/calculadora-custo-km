@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rastreador de Lucros PRO (Local)</title>
+    <title>Rastreador de Lucros PRO</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
     <style>
@@ -258,40 +258,14 @@
             margin-bottom: 10px;
         }
         
-        /* Tabela de Plataformas */
-        .platform-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: clamp(0.5rem, 2.5vw, 0.7rem);
-            text-align: center;
-            margin-top: 10px;
-        }
-        .platform-table th, .platform-table td {
-            border: 1px solid rgba(0, 204, 255, 0.5);
-            padding: 6px 3px;
-        }
-        .platform-table th {
-            background-color: rgba(0, 204, 255, 0.1);
-            color: #00ff66;
-            text-shadow: 0 0 5px #00ff66;
-        }
-        .platform-table td {
-            color: #00ccff;
-        }
-        .platform-table .profit-positive {
-            color: #00ff66 !important;
-            text-shadow: 0 0 5px #00ff66;
-        }
-        .platform-table .profit-negative {
-            color: #ff33cc !important;
-            text-shadow: 0 0 5px #ff33cc;
-        }
+        /* Tabela de Plataformas - REMOVIDA */
+        /* .platform-table, .platform-table th, .platform-table td, etc. REMOVIDOS */
     </style>
 </head>
 <body>
 
 <div class="arcade-container">
-    <h2 class="main-header">RASTREAMENTO DE LUCROS PRO (LOCAL)</h2>
+    <h2 class="main-header">RASTREAMENTO DE LUCROS PRO</h2>
     
     <!-- CAMPO DE INFORMAÇÃO DO DIA & USUÁRIO LADO A LADO -->
     <div class="input-group date-user-container">
@@ -300,8 +274,8 @@
             <input type="date" id="dailyInfo" title="Seleccione a Data do Lançamento">
         </div>
         <div class="user-id-col">
-            <label for="loggedInUserDisplay">ID DO USUÁRIO (LOCAL):</label>
-            <div id="loggedInUserDisplay" class="user-id-display" title="ID Completo do Usuário: Local Storage">Carregando...</div>
+            <label for="loggedInUserDisplay">ID DO USUÁRIO:</label>
+            <div id="loggedInUserDisplay" class="user-id-display" title="ID Completo do Usuário: Salvo localmente">Carregando...</div>
         </div>
     </div>
     
@@ -350,26 +324,6 @@
             <div class="chart-title">Análise de Custos Variáveis Mensais</div>
         </div>
     </div>
-    
-    <!-- NOVO: RELATÓRIO DE EFICIÊNCIA POR PLATAFORMA -->
-    <div class="summary-card">
-        <div class="section-title" style="color: #00ccff; text-shadow: 0 0 8px #00ccff;">ANÁLISE DE EFICIÊNCIA POR PLATAFORMA (MÊS)</div>
-        <div id="platformReport">
-            <table class="platform-table">
-                <thead>
-                    <tr>
-                        <th>PLATAFORMA</th>
-                        <th>BRUTO MÊS</th>
-                        <th>LUCRATIVIDADE MÉDIA</th>
-                    </tr>
-                </thead>
-                <tbody id="platformReportBody">
-                    <!-- Dados serão inseridos aqui -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
     
     <!-- WRAPPER PARA AS DUAS COLUNAS DE ENTRADA -->
     <div class="columns-wrapper">
@@ -531,7 +485,7 @@
         monthlyProgressLabel: document.getElementById('monthlyProgressLabel'),
         weeklyProgressValue: document.getElementById('weeklyProgressValue'),
         monthlyProgressValue: document.getElementById('monthlyProgressValue'),
-        platformReportBody: document.getElementById('platformReportBody') 
+        platformReportBody: document.getElementById('platformReportBody')
     };
 
     // --- FUNÇÕES AUXILIARES ---
@@ -593,9 +547,9 @@
         monthlyGoal = data.monthlyGoal || 0;
         fixedCostPerKmValue = data.fixedCostPerKmValue || 0;
 
-        elements.weeklyGoalInput.value = weeklyGoal.toFixed(2);
-        elements.monthlyGoalInput.value = monthlyGoal.toFixed(2);
-        elements.fixedCostPerKm.value = fixedCostPerKmValue.toFixed(3);
+        elements.weeklyGoalInput.value = weeklyGoal > 0 ? weeklyGoal.toFixed(2) : '';
+        elements.monthlyGoalInput.value = monthlyGoal > 0 ? monthlyGoal.toFixed(2) : '';
+        elements.fixedCostPerKm.value = fixedCostPerKmValue > 0 ? fixedCostPerKmValue.toFixed(3) : '';
         
         // Atualiza a UI após carregar
         allRecords = loadRecords();
@@ -746,6 +700,7 @@
         updateProgressDisplay(totalGains, monthlyGoal, elements.monthlyProgressLabel, elements.monthlyProgressValue);
     }
     
+    
     function calculatePlatformEfficiency(records) {
         const platformTotals = {
             UBER: { gains: 0, netProfit: 0, km: 0 },
@@ -754,31 +709,44 @@
             PRIVATE: { gains: 0, netProfit: 0, km: 0 },
             PRODUCTS: { gains: 0, netProfit: 0, km: 0 },
         };
-        const platformKeys = Object.keys(platformTotals);
+        const platformKeys = ['UBER', 'NINETY_NINE', 'INDRIVER', 'PRIVATE', 'PRODUCTS'];
         
         const currentMonth = new Date().toISOString().slice(0, 7);
-        
-        // 1. Coletar e distribuir NET PROFIT e KM
-        records.forEach(record => {
+        let recordsInMonth = 0;
+
+        const monthRecords = records.filter(record => {
             if (record.dateInfo && record.dateInfo.startsWith(currentMonth)) {
-                const dailyTotalGains = record.totalGains;
-                const dailyNetProfit = record.netProfit;
-                const dailyKm = record.dailyKm;
-
-                platformKeys.forEach(key => {
-                    const gainPlatform = record[`gain${key}`] || 0;
-                    if (gainPlatform > 0 && dailyTotalGains > 0) {
-                        const proportion = gainPlatform / dailyTotalGains;
-
-                        platformTotals[key].gains += gainPlatform;
-                        platformTotals[key].netProfit += dailyNetProfit * proportion; // Distribui Lucro Líquido
-                        platformTotals[key].km += dailyKm * proportion; // Distribui KM Proporcional
-                    }
-                });
+                recordsInMonth++;
+                return true;
             }
+            return false;
         });
 
-        // 2. Calcular Lucratividade e Preencher Tabela
+        if (recordsInMonth === 0) {
+             elements.platformReportBody.innerHTML = `<tr><td colspan="3" style="color: #777;">Lance dados neste mês para análise.</td></tr>`;
+             return;
+        }
+
+        // 2. Coletar e distribuir NET PROFIT e KM
+        monthRecords.forEach(record => {
+            const dailyTotalGains = record.totalGains;
+            const dailyNetProfit = record.netProfit;
+            const dailyKm = record.dailyKm;
+
+            platformKeys.forEach(key => {
+                const gainPlatform = record[`gain${key}`] || 0;
+                
+                if (gainPlatform > 0 && dailyTotalGains > 0) {
+                    const proportion = gainPlatform / dailyTotalGains;
+
+                    platformTotals[key].gains += gainPlatform;
+                    platformTotals[key].netProfit += dailyNetProfit * proportion; 
+                    platformTotals[key].km += dailyKm * proportion; 
+                }
+            });
+        });
+
+        // 3. Calcular Lucratividade e Preencher Tabela
         elements.platformReportBody.innerHTML = '';
         const tableData = [];
 
@@ -792,7 +760,7 @@
             
             if (gains > 0) {
                 tableData.push({
-                    key,
+                    key: key.replace('NINETY_NINE', '99').replace('PRODUCTS', 'VENDAS'), // Formata o nome
                     bruto: gains,
                     profitPerKm: avgProfitPerKm
                 });
@@ -816,7 +784,7 @@
         });
     }
 
-
+    
     function calculateSummaries(records) {
         const currentYearMonth = new Date().toISOString().slice(0, 7); 
         const today = new Date();
@@ -1111,7 +1079,7 @@
         
         const displayId = userIdLocal.substring(0, 12) + '...'; 
         elements.loggedInUserDisplay.textContent = displayId; 
-        elements.loggedInUserDisplay.title = `ID Local: ${userIdLocal} (Dados salvos apenas neste dispositivo)`;
+        elements.loggedInUserDisplay.title = `ID Completo do Usuário: ${userIdLocal}`;
 
         // Carrega metas e dados
         loadGoals(); 
