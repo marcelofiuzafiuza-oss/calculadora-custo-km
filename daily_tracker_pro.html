@@ -449,14 +449,13 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setLogLevel, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // Variáveis Globais de Configuração (Fornecidas pelo ambiente Canvas)
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; 
-
+    
     // Variáveis Firebase
     let db;
     let auth;
@@ -1321,11 +1320,22 @@
     async function initializeFirebase() {
         elements.loggedInUserDisplay.textContent = "Conectando...";
         
+        // 1. Validação crítica da configuração
+        if (!firebaseConfig || !firebaseConfig.apiKey) {
+            elements.loggedInUserDisplay.textContent = "ERRO: CONFIG INVÁLIDA";
+            console.error("ERRO FATAL: firebaseConfig não foi fornecido ou é inválido.");
+            return;
+        }
+
         try {
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
             
+            // 2. Autenticação anônima garantida
+            await signInAnonymously(auth);
+            
+            // 3. O onAuthStateChanged é chamado APÓS o login
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     userId = user.uid;
@@ -1338,11 +1348,8 @@
                     loadGoals(); 
                     subscribeToHistory(); 
                 } else {
-                    // Novo bloco para garantir o login anônimo
-                    signInAnonymously(auth).catch(error => {
-                        console.error("Falha ao iniciar sessão anonimamente:", error);
-                        elements.loggedInUserDisplay.textContent = "ERRO AUTH";
-                    });
+                    // Isso só deve acontecer se o usuário for deslogado, mas é um bom fallback
+                    elements.loggedInUserDisplay.textContent = "ID PENDENTE";
                 }
             });
 
