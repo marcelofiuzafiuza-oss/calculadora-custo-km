@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rastreador de Lucros PRO</title>
+    <title>Rastreador de Lucros PRO (Local)</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
     <style>
@@ -181,15 +181,6 @@
             cursor: help;
         }
         
-        /* Estilo KM Inicial/Final lado a lado */
-        .km-inputs {
-            display: flex;
-            gap: 10px;
-        }
-        .km-inputs .input-group {
-            flex: 1;
-        }
-
         /* Botões */
         #calculateButton, #saveButton, #saveGoalsButton, #clearButton {
             background-color: #00ff66;
@@ -247,15 +238,6 @@
             flex-direction: column;
             flex-grow: 1;
         }
-        .history-controls button {
-            background: none;
-            border: none;
-            color: #ff33cc;
-            cursor: pointer;
-            font-size: 1.2rem;
-            padding: 5px;
-            text-shadow: 0 0 5px #ff33cc;
-        }
         
         /* Estilos do Gráfico CORRIGIDOS */
         .chart-container {
@@ -309,17 +291,17 @@
 <body>
 
 <div class="arcade-container">
-    <h2 class="main-header">RASTREAMENTO DE LUCROS PRO</h2>
+    <h2 class="main-header">RASTREAMENTO DE LUCROS PRO (LOCAL)</h2>
     
     <!-- CAMPO DE INFORMAÇÃO DO DIA & USUÁRIO LADO A LADO -->
     <div class="input-group date-user-container">
         <div class="date-col">
             <label for="dailyInfo">DATA DO LANÇAMENTO:</label>
-            <input type="date" id="dailyInfo" title="Selecione a Data do Lançamento">
+            <input type="date" id="dailyInfo" title="Seleccione a Data do Lançamento">
         </div>
         <div class="user-id-col">
-            <label for="loggedInUserDisplay">ID DO USUÁRIO:</label>
-            <div id="loggedInUserDisplay" class="user-id-display" title="ID Completo do Usuário: Carregando...">Carregando...</div>
+            <label for="loggedInUserDisplay">ID DO USUÁRIO (LOCAL):</label>
+            <div id="loggedInUserDisplay" class="user-id-display" title="ID Completo do Usuário: Local Storage">Carregando...</div>
         </div>
     </div>
     
@@ -437,8 +419,6 @@
 
         <!-- Cartão de Despesas (COLUNA DIREITA 2 - Forçado a pular linha em desktop se houver espaço) -->
         <div class="input-section-card" style="width: 100%;">
-             <!-- Este card ficará abaixo dos outros dois, mas ainda no wrapper -->
-             <!-- Em telas maiores, ficará abaixo dos cards de cima -->
             <div class="section-title">DESPESAS VARIÁVEIS DO DIA</div>
 
             <div class="input-group"><label for="expenseFuel">COMBUSTÍVEL ABASTECIDO R$:</label><input type="number" id="expenseFuel" placeholder="Ex: 150.00" min="0" step="0.01"></div>
@@ -454,7 +434,7 @@
     <input type="hidden" id="recordIdToUpdate" value=""> 
 
     <button id="calculateButton">CALCULAR LUCRO DO DIA</button>
-    <button id="saveButton" disabled>SALVAR LANÇAMENTO</button>
+    <button id="saveButton">SALVAR LANÇAMENTO</button>
     <button id="clearButton">NOVO LANÇAMENTO (LIMPAR)</button>
     
     <div id="resultDisplay" class="summary-card"> 
@@ -468,39 +448,28 @@
     <div id="historyContainer" class="input-section-card">
         <div class="section-title">HISTÓRICO DE LANÇAMENTOS</div>
         
-        <div id="loadingHistory" style="text-align:center; color:#ffcc00; font-size: 0.6rem;">Conectando ao histórico...</div>
+        <div id="loadingHistory" style="text-align:center; color:#ffcc00; font-size: 0.6rem;">Carregando dados locais...</div>
         <ul id="historyList" class="history-list">
             <!-- Registros serão inseridos aqui -->
         </ul>
     </div>
 </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setLogLevel, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // Variáveis Globais de Configuração (Fornecidas pelo ambiente Canvas)
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; 
-
-    // Variáveis Firebase
-    let db;
-    let auth;
-    let userId = null;
-    let isAuthReady = false;
-    let currentCalculatedData = null; 
-    let allRecords = []; 
-    let gainChartInstance = null;
-    let expenseChartInstance = null;
-    let recordIdToUpdate = document.getElementById('recordIdToUpdate'); 
-
+<script>
+    // Configurações Local Storage
+    const LOCAL_STORAGE_KEY_RECORDS = 'profit_tracker_records';
+    const LOCAL_STORAGE_KEY_GOALS = 'profit_tracker_goals';
+    
     // Variáveis Globais para Metas
     let weeklyGoal = 0;
     let monthlyGoal = 0;
     let fixedCostPerKmValue = 0; 
-    
+    let allRecords = []; 
+    let gainChartInstance = null;
+    let expenseChartInstance = null;
+    let currentCalculatedData = null; 
+    let recordIdToUpdate = document.getElementById('recordIdToUpdate'); 
+
     // Cores Neon (Usadas no Chart.js)
     const NEON_COLORS = {
         UBER: '#00ccff',
@@ -515,6 +484,12 @@
         OTHERS: '#ff9900',
         BACKGROUND: '#010114',
     };
+
+    // Estilos de cor para a UI
+    const defaultTextColor = '#00ccff';
+    const profitColor = '#00ff66';
+    const lossColor = '#ff33cc';
+    const goalMetColor = '#00ffff';
 
     // Elementos do DOM
     const elements = {
@@ -559,13 +534,6 @@
         platformReportBody: document.getElementById('platformReportBody') 
     };
 
-    // Constantes de estilo
-    const errorColor = '#ff0000';
-    const defaultTextColor = '#00ccff';
-    const profitColor = '#00ff66';
-    const lossColor = '#ff33cc';
-    const goalMetColor = '#00ffff';
-
     // --- FUNÇÕES AUXILIARES ---
 
     function getFloatValue(element) {
@@ -599,6 +567,96 @@
         return `${yyyy}-${mm}-${dd}`;
     }
     
+    function generateUniqueId() {
+        // Gera um ID único simples para localStorage
+        return 'id-' + Date.now() + Math.random().toString(16).substring(2, 6);
+    }
+    
+    // --- FUNÇÕES DE PERSISTÊNCIA LOCAL (NOVO) ---
+    
+    function loadRecords() {
+        const recordsJson = localStorage.getItem(LOCAL_STORAGE_KEY_RECORDS);
+        allRecords = recordsJson ? JSON.parse(recordsJson) : [];
+        allRecords.sort((a, b) => (a.dateInfo < b.dateInfo ? 1 : -1)); // Mais recentes primeiro
+        return allRecords;
+    }
+
+    function saveRecords() {
+        localStorage.setItem(LOCAL_STORAGE_KEY_RECORDS, JSON.stringify(allRecords));
+    }
+    
+    function loadGoals() {
+        const goalsJson = localStorage.getItem(LOCAL_STORAGE_KEY_GOALS);
+        const data = goalsJson ? JSON.parse(goalsJson) : {};
+
+        weeklyGoal = data.weeklyGoal || 0;
+        monthlyGoal = data.monthlyGoal || 0;
+        fixedCostPerKmValue = data.fixedCostPerKmValue || 0;
+
+        elements.weeklyGoalInput.value = weeklyGoal.toFixed(2);
+        elements.monthlyGoalInput.value = monthlyGoal.toFixed(2);
+        elements.fixedCostPerKm.value = fixedCostPerKmValue.toFixed(3);
+        
+        // Atualiza a UI após carregar
+        allRecords = loadRecords();
+        renderHistory(allRecords);
+        calculateSummaries(allRecords);
+        calculateDailyProfit();
+    }
+    
+    function saveGoals() {
+        const newWeeklyGoal = getFloatValue(elements.weeklyGoalInput);
+        const newMonthlyGoal = getFloatValue(elements.monthlyGoalInput);
+        const newFixedCostPerKm = getFloatValue(elements.fixedCostPerKm);
+
+        weeklyGoal = newWeeklyGoal;
+        monthlyGoal = newMonthlyGoal;
+        fixedCostPerKmValue = newFixedCostPerKm;
+        
+        const data = {
+            weeklyGoal: newWeeklyGoal,
+            monthlyGoal: newMonthlyGoal,
+            fixedCostPerKmValue: newFixedCostPerKm
+        };
+
+        localStorage.setItem(LOCAL_STORAGE_KEY_GOALS, JSON.stringify(data));
+        
+        alert(`Configurações salvas localmente:\nCusto Fixo/KM: ${formatCurrency(newFixedCostPerKm, 3)}\nSemanal (Bruto): ${formatCurrency(newWeeklyGoal)}\nMensal (Bruto): ${formatCurrency(newMonthlyGoal)}`);
+
+        calculateSummaries(allRecords); 
+        calculateDailyProfit();
+    }
+
+    // --- FUNÇÃO DE SALVAMENTO / ATUALIZAÇÃO ---
+    async function saveRecord() {
+        if (!currentCalculatedData) {
+            alert('Calcule o lucro do dia antes de salvar.');
+            return;
+        }
+        
+        const isUpdate = recordIdToUpdate.value !== '';
+        
+        if (isUpdate) {
+            // Atualiza o registro existente
+            const index = allRecords.findIndex(r => r.id === recordIdToUpdate.value);
+            if (index !== -1) {
+                allRecords[index] = { ...currentCalculatedData, id: recordIdToUpdate.value };
+                alert('Lançamento atualizado localmente!');
+            }
+        } else {
+            // Novo registro
+            const newRecord = { ...currentCalculatedData, id: generateUniqueId() };
+            allRecords.push(newRecord);
+            alert('Lançamento salvo localmente!');
+        }
+        
+        saveRecords(); // Salva no localStorage
+        allRecords = loadRecords(); // Recarrega e ordena
+        renderHistory(allRecords);
+        calculateSummaries(allRecords);
+        clearInputFields(); 
+    }
+    
     // --- FUNÇÃO DE LIMPEZA ---
     function clearInputFields() {
         elements.gainUber.value = '';
@@ -620,117 +678,7 @@
         setTodayDate();
         calculateDailyProfit();
     }
-
-    // --- FUNÇÕES FIREBASE/PERSISTÊNCIA ---
-
-    function getCollectionPath() {
-        return `artifacts/${appId}/users/${userId}/daily_records`;
-    }
-
-    function getCollectionRef() {
-        if (!db || !userId) return null;
-        return collection(db, getCollectionPath());
-    }
     
-    function getSettingsRef() {
-        if (!db || !userId) return null;
-        const path = `artifacts/${appId}/users/${userId}/user_settings`;
-        return doc(db, path, 'goals');
-    }
-
-    async function saveRecord() {
-        if (!isAuthReady || !currentCalculatedData) {
-            alert('Erro: Aguarde a conexão com o banco de dados e calcule o lucro antes de salvar.');
-            return;
-        }
-
-        elements.saveButton.disabled = true;
-        elements.saveButton.textContent = "SALVANDO...";
-
-        const isUpdate = recordIdToUpdate.value !== '';
-        
-        try {
-            const recordsRef = getCollectionRef();
-            if (recordsRef) {
-                if (isUpdate) {
-                    const docRef = doc(recordsRef, recordIdToUpdate.value);
-                    await setDoc(docRef, currentCalculatedData); // Usa setDoc para UPDATE
-                    alert('Lançamento atualizado com sucesso!');
-                } else {
-                    await addDoc(recordsRef, currentCalculatedData); // Usa addDoc para NOVO REGISTRO
-                    alert('Lançamento salvo com sucesso!');
-                }
-                
-                clearInputFields(); // Limpa e reseta a UI
-            }
-        } catch (error) {
-            console.error("Erro ao salvar/atualizar lançamento: ", error);
-            alert(`Erro ao ${isUpdate ? 'atualizar' : 'salvar'} lançamento. Verifique o console.`); 
-        } finally {
-            elements.saveButton.textContent = isUpdate ? "ATUALIZAR LANÇAMENTO" : "SALVAR LANÇAMENTO";
-            elements.saveButton.disabled = false;
-        }
-    }
-    
-    async function loadGoals() {
-        if (!db || !userId) return;
-        try {
-            const docSnap = await getDoc(getSettingsRef());
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                weeklyGoal = data.weeklyGoal || 0;
-                monthlyGoal = data.monthlyGoal || 0;
-                fixedCostPerKmValue = data.fixedCostPerKmValue || 0;
-
-                elements.weeklyGoalInput.value = weeklyGoal.toFixed(2);
-                elements.monthlyGoalInput.value = monthlyGoal.toFixed(2);
-                elements.fixedCostPerKm.value = fixedCostPerKmValue.toFixed(3);
-            }
-        } catch (e) {
-            console.error("Erro ao carregar metas:", e);
-        }
-        calculateSummaries(allRecords); 
-        calculateDailyProfit();
-    }
-    
-    async function saveGoals() {
-        if (!db || !userId) {
-            alert('Aguarde a conexão com o banco de dados antes de salvar.');
-            return;
-        }
-
-        elements.saveGoalsButton.disabled = true;
-        elements.saveGoalsButton.textContent = "SALVANDO...";
-
-        try {
-            const newWeeklyGoal = getFloatValue(elements.weeklyGoalInput);
-            const newMonthlyGoal = getFloatValue(elements.monthlyGoalInput);
-            const newFixedCostPerKm = getFloatValue(elements.fixedCostPerKm);
-
-            weeklyGoal = newWeeklyGoal;
-            monthlyGoal = newMonthlyGoal;
-            fixedCostPerKmValue = newFixedCostPerKm;
-            
-            await setDoc(getSettingsRef(), {
-                weeklyGoal: newWeeklyGoal,
-                monthlyGoal: newMonthlyGoal,
-                fixedCostPerKmValue: newFixedCostPerKm,
-                timestamp: serverTimestamp()
-            });
-            
-            alert(`Configurações salvas:\nCusto Fixo/KM: ${formatCurrency(newFixedCostPerKm, 3)}\nSemanal (Bruto): ${formatCurrency(newWeeklyGoal)}\nMensal (Bruto): ${formatCurrency(newMonthlyGoal)}`);
-
-        } catch (error) {
-            console.error("Erro ao salvar metas: ", error);
-            alert('Erro ao salvar metas. Verifique o console.'); 
-        } finally {
-            elements.saveGoalsButton.textContent = "SALVAR METAS";
-            elements.saveGoalsButton.disabled = false;
-            calculateSummaries(allRecords); 
-            calculateDailyProfit();
-        }
-    }
-
     // --- FUNÇÕES DE TOTALIZAÇÃO E UI ---
     
     function updateProgressDisplay(currentTotal, goal, displayLabelElement, displayValueElement) {
@@ -744,10 +692,10 @@
             progress = (currentTotal / goal) * 100;
             
             if (progress >= 100) {
-                progressColor = goalMetColor; 
+                progressColor = profitColor; 
                 displayLabelElement.textContent = `META ATINGIDA:`;
             } else if (progress >= 50) {
-                progressColor = profitColor; 
+                progressColor = goalMetColor; 
                 displayLabelElement.textContent = `PROG. ${progress.toFixed(0)}%:`;
             } else {
                 progressColor = lossColor; 
@@ -777,10 +725,9 @@
 
         elements.weeklyTotalNetProfit.textContent = formatCurrency(totalProfit);
         elements.weeklyTotalNetProfit.style.color = profitColorFinal;
-        elements.weeklyTotalNetProfit.style.textShadow = `0 0 10px ${profitColorFinal}`;
         
         elements.weeklyTotalGains.textContent = formatCurrency(totalGains);
-        elements.weeklyTotalGains.style.color = totalGains >= 0 ? '#ff33cc' : lossColor; 
+        elements.weeklyTotalGains.style.color = totalGains >= 0 ? goalMetColor : lossColor; 
         
         elements.weeklyGoalDisplay.textContent = formatCurrency(weeklyGoal);
         updateProgressDisplay(totalGains, weeklyGoal, elements.weeklyProgressLabel, elements.weeklyProgressValue);
@@ -791,115 +738,82 @@
 
         elements.monthlyTotalNetProfit.textContent = formatCurrency(totalProfit);
         elements.monthlyTotalNetProfit.style.color = profitColorFinal;
-        elements.monthlyTotalNetProfit.style.textShadow = `0 0 10px ${profitColorFinal}`;
         
         elements.monthlyTotalGains.textContent = formatCurrency(totalGains);
-        elements.monthlyTotalGains.style.color = totalGains >= 0 ? '#ff33cc' : lossColor; 
+        elements.monthlyTotalGains.style.color = totalGains >= 0 ? goalMetColor : lossColor; 
         
         elements.monthlyGoalDisplay.textContent = formatCurrency(monthlyGoal);
         updateProgressDisplay(totalGains, monthlyGoal, elements.monthlyProgressLabel, elements.monthlyProgressValue);
     }
     
     function calculatePlatformEfficiency(records) {
-        const currentYearMonth = new Date().toISOString().slice(0, 7); 
-        
-        // 1. Inicializa os acumuladores por plataforma
-        const platformStats = {
-            UBER: { gains: 0, km: 0, profit: 0 },
-            NINETY_NINE: { gains: 0, km: 0, profit: 0 },
-            INDRIVER: { gains: 0, km: 0, profit: 0 },
-            PRIVATE: { gains: 0, km: 0, profit: 0 }
-            // Produtos não são baseados em KM e não são incluídos nesta análise
+        const platformTotals = {
+            UBER: { gains: 0, netProfit: 0, km: 0 },
+            NINETY_NINE: { gains: 0, netProfit: 0, km: 0 },
+            INDRIVER: { gains: 0, netProfit: 0, km: 0 },
+            PRIVATE: { gains: 0, netProfit: 0, km: 0 },
+            PRODUCTS: { gains: 0, netProfit: 0, km: 0 },
         };
+        const platformKeys = Object.keys(platformTotals);
+        
+        const currentMonth = new Date().toISOString().slice(0, 7);
+        
+        // 1. Coletar e distribuir NET PROFIT e KM
+        records.forEach(record => {
+            if (record.dateInfo && record.dateInfo.startsWith(currentMonth)) {
+                const dailyTotalGains = record.totalGains;
+                const dailyNetProfit = record.netProfit;
+                const dailyKm = record.dailyKm;
 
-        let totalGainsWithoutFixedCost = 0;
-        let totalKmRidden = 0;
+                platformKeys.forEach(key => {
+                    const gainPlatform = record[`gain${key}`] || 0;
+                    if (gainPlatform > 0 && dailyTotalGains > 0) {
+                        const proportion = gainPlatform / dailyTotalGains;
 
-        // 2. Acumula dados do mês atual
-        records.forEach(doc => {
-            const docYearMonth = doc.dateInfo ? doc.dateInfo.slice(0, 7) : null;
-            if (docYearMonth !== currentYearMonth) return;
+                        platformTotals[key].gains += gainPlatform;
+                        platformTotals[key].netProfit += dailyNetProfit * proportion; // Distribui Lucro Líquido
+                        platformTotals[key].km += dailyKm * proportion; // Distribui KM Proporcional
+                    }
+                });
+            }
+        });
 
-            // Ganho Líquido APENAS das plataformas (excluindo produtos)
-            const platformGains = (doc.gainUber || 0) + (doc.gain99 || 0) + (doc.gainIndriver || 0) + (doc.gainPrivate || 0);
+        // 2. Calcular Lucratividade e Preencher Tabela
+        elements.platformReportBody.innerHTML = '';
+        const tableData = [];
+
+        platformKeys.forEach(key => {
+            const gains = platformTotals[key].gains;
+            const netProfit = platformTotals[key].netProfit;
+            const km = platformTotals[key].km;
             
-            // Custos Fixos e Variáveis APENAS para as plataformas
-            const totalVariableExpenses = (doc.expenseFuel || 0) + (doc.expenseFood || 0) + (doc.expenseParking || 0) + (doc.expenseEmergency || 0) + (doc.expenseOthers || 0);
-
-            // Ganhos brutos das plataformas - Despesas Variáveis
-            const profitBeforeFixedCost = platformGains - totalVariableExpenses;
+            // Lucratividade Média = Lucro Líquido Proporcional / KM Proporcional
+            const avgProfitPerKm = km > 0 ? netProfit / km : 0;
             
-            totalGainsWithoutFixedCost += platformGains;
-            totalKmRidden += doc.dailyKm || 0;
-            
-            // Distribui o profit *antes* do custo fixo pelos ganhos brutos de cada plataforma
-            // Se o total de ganhos da plataforma for 0, pula
-            if (platformGains > 0) {
-                const profitShareUber = (doc.gainUber || 0) / platformGains;
-                platformStats.UBER.gains += doc.gainUber || 0;
-                platformStats.UBER.profit += profitBeforeFixedCost * profitShareUber;
-
-                const profitShare99 = (doc.gain99 || 0) / platformGains;
-                platformStats.NINETY_NINE.gains += doc.gain99 || 0;
-                platformStats.NINETY_NINE.profit += profitBeforeFixedCost * profitShare99;
-
-                const profitShareIndriver = (doc.gainIndriver || 0) / platformGains;
-                platformStats.INDRIVER.gains += doc.gainIndriver || 0;
-                platformStats.INDRIVER.profit += profitBeforeFixedCost * profitShareIndriver;
-
-                const profitSharePrivate = (doc.gainPrivate || 0) / platformGains;
-                platformStats.PRIVATE.gains += doc.gainPrivate || 0;
-                platformStats.PRIVATE.profit += profitBeforeFixedCost * profitSharePrivate;
+            if (gains > 0) {
+                tableData.push({
+                    key,
+                    bruto: gains,
+                    profitPerKm: avgProfitPerKm
+                });
             }
         });
         
-        // 3. Distribui o Custo Fixo Total do Mês
-        const totalMonthlyFixedCost = totalKmRidden * fixedCostPerKmValue;
-        
-        // Se houver KM e Ganhos, calcula a distribuição do custo fixo
-        if (totalKmRidden > 0 && totalGainsWithoutFixedCost > 0) {
-            // A proporção de custo fixo que cada plataforma deve cobrir, baseada no KM rodado total
-            const fixedCostPerGainsShare = totalMonthlyFixedCost / totalGainsWithoutFixedCost;
-            
-            // Finaliza o cálculo do lucro líquido e KM para cada plataforma
-            for (const key in platformStats) {
-                const stats = platformStats[key];
-                
-                // Reduz o lucro pelo custo fixo
-                stats.finalProfit = stats.profit - (stats.gains * fixedCostPerGainsShare);
-                
-                // Estima o KM da plataforma (proporcional aos ganhos brutos)
-                stats.km = totalKmRidden * (stats.gains / totalGainsWithoutFixedCost);
-            }
-        } else {
-             // Caso não haja dados, zera os profits
-            for (const key in platformStats) {
-                 platformStats[key].finalProfit = 0;
-                 platformStats[key].km = 0;
-            }
+        if (tableData.length === 0) {
+            elements.platformReportBody.innerHTML = `<tr><td colspan="3" style="color: #777;">Lance dados para análise.</td></tr>`;
+            return;
         }
-        
-        // 4. Renderiza a tabela
-        const platformLabels = {
-            UBER: 'UBER', NINETY_NINE: '99', INDRIVER: 'INDRIVER', PRIVATE: 'PARTICULAR'
-        };
 
-        elements.platformReportBody.innerHTML = '';
-        
-        for (const key in platformStats) {
-            const stats = platformStats[key];
-            const avgProfitPerKm = stats.km > 0 ? stats.finalProfit / stats.km : 0;
-            const profitClass = avgProfitPerKm >= 0 ? 'profit-positive' : 'profit-negative';
+        tableData.sort((a, b) => b.bruto - a.bruto); // Ordena pelo BRUTO MÊS
+
+        tableData.forEach(item => {
+            const row = elements.platformReportBody.insertRow();
+            const profitClass = item.profitPerKm >= 0 ? 'profit-positive' : 'profit-negative';
             
-            const row = `
-                <tr>
-                    <td>${platformLabels[key]}</td>
-                    <td>${formatCurrency(stats.gains)}</td>
-                    <td class="${profitClass}">${formatCurrency(avgProfitPerKm, 3)} / KM</td>
-                </tr>
-            `;
-            elements.platformReportBody.innerHTML += row;
-        }
+            row.insertCell().textContent = item.key;
+            row.insertCell().textContent = formatCurrency(item.bruto);
+            row.insertCell().innerHTML = `<span class="${profitClass}">${formatCurrency(item.profitPerKm, 3)}</span>`;
+        });
     }
 
 
@@ -965,313 +879,172 @@
         calculatePlatformEfficiency(records); // Chamada para a análise de plataformas
     }
 
+    // --- FUNÇÕES CHART.JS ---
     
-    // --- FUNÇÃO CHART.JS (Distribuição de Ganhos) ---
-    function updateGainChart(gainBreakdown) {
-        const ctx = document.getElementById('gainChart').getContext('2d');
-
-        const labels = ['Uber', '99', 'InDriver', 'Particular', 'Vendas/Prod.'];
-        const data = [
-            gainBreakdown.UBER,
-            gainBreakdown.NINETY_NINE,
-            gainBreakdown.INDRIVER,
-            gainBreakdown.PRIVATE,
-            gainBreakdown.PRODUCTS
-        ];
-        
-        const colors = [
-            NEON_COLORS.UBER,
-            NEON_COLORS.NINETY_NINE,
-            NEON_COLORS.INDRIVER,
-            NEON_COLORS.PRIVATE,
-            NEON_COLORS.PRODUCTS
-        ];
-
-        if (gainChartInstance) {
-            gainChartInstance.destroy();
+    function createChart(chartId, type, data, options) {
+        const ctx = document.getElementById(chartId).getContext('2d');
+        if (Chart.getChart(ctx)) {
+            Chart.getChart(ctx).destroy();
         }
-
-        gainChartInstance = new Chart(ctx, {
-            type: 'bar', 
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Recebimentos Brutos',
-                    data: data,
-                    backgroundColor: colors,
-                    borderColor: NEON_COLORS.BACKGROUND,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false 
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    label += formatCurrency(context.parsed.y);
-                                }
-                                return label;
-                            }
-                        },
-                        titleFont: {
-                            family: 'Press Start 2P'
-                        },
-                        bodyFont: {
-                            family: 'Press Start 2P',
-                            size: 8
-                        },
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        borderColor: '#00ff66',
-                        borderWidth: 1
-                    }
-                },
-                scales: {
-                    y: {
-                        ticks: {
-                            color: defaultTextColor,
-                            font: { family: 'Press Start 2P', size: 8 },
-                            callback: function(value, index, values) {
-                                return 'R$' + value.toFixed(0);
-                            }
-                        },
-                        grid: {
-                            color: 'rgba(0, 204, 255, 0.2)'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: defaultTextColor,
-                            font: { family: 'Press Start 2P', size: 8 }
-                        },
-                         grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
-        });
+        return new Chart(ctx, { type, data, options });
     }
 
-    // --- FUNÇÃO CHART.JS (Distribuição de Despesas) ---
-    function updateExpenseChart(expenseBreakdown) {
-        const ctx = document.getElementById('expenseChart').getContext('2d');
-
-        const labels = ['Combustível', 'Alimentação', 'Estacionamento', 'Emergência', 'Outros'];
+    function updateGainChart(gainBreakdown) {
+        const labels = ['UBER', '99', 'INDRIVER', 'PARTICULAR', 'VENDAS'];
         const data = [
-            expenseBreakdown.FUEL,
-            expenseBreakdown.FOOD,
-            expenseBreakdown.PARKING,
-            expenseBreakdown.EMERGENCY,
-            expenseBreakdown.OTHERS
+            gainBreakdown.UBER, gainBreakdown.NINETY_NINE, gainBreakdown.INDRIVER,
+            gainBreakdown.PRIVATE, gainBreakdown.PRODUCTS
         ];
+        
+        const chartData = {
+            labels: labels,
+            datasets: [{
+                label: 'Ganhos Brutos (R$)',
+                data: data,
+                backgroundColor: [
+                    NEON_COLORS.UBER, NEON_COLORS.NINETY_NINE, NEON_COLORS.INDRIVER,
+                    NEON_COLORS.PRIVATE, NEON_COLORS.PRODUCTS
+                ],
+                borderColor: '#fff',
+                borderWidth: 1,
+            }]
+        };
 
-        if (expenseChartInstance) {
-            expenseChartInstance.destroy();
-        }
-
-        expenseChartInstance = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Despesas Variáveis',
-                    data: data,
-                    backgroundColor: [
-                        NEON_COLORS.FUEL,
-                        NEON_COLORS.FOOD,
-                        NEON_COLORS.PARKING,
-                        NEON_COLORS.EMERGENCY,
-                        NEON_COLORS.OTHERS
-                    ],
-                    borderColor: NEON_COLORS.BACKGROUND,
-                    borderWidth: 1
-                }]
+        const options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { color: NEON_COLORS.UBER } },
+                x: { ticks: { color: NEON_COLORS.UBER } }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false 
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    label += formatCurrency(context.parsed.y);
-                                }
-                                return label;
-                            }
-                        },
-                        titleFont: {
-                            family: 'Press Start 2P'
-                        },
-                        bodyFont: {
-                            family: 'Press Start 2P',
-                            size: 8
-                        },
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        borderColor: '#ff33cc',
-                        borderWidth: 1
-                    }
-                },
-                scales: {
-                    y: {
-                        ticks: {
-                            color: defaultTextColor,
-                            font: { family: 'Press Start 2P', size: 8 },
-                            callback: function(value, index, values) {
-                                return 'R$' + value.toFixed(0);
-                            }
-                        },
-                        grid: {
-                            color: 'rgba(255, 51, 204, 0.2)' // Grid lines em magenta suave
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: defaultTextColor,
-                            font: { family: 'Press Start 2P', size: 8 }
-                        },
-                         grid: {
-                            display: false
-                        }
-                    }
-                }
-            }
-        });
+            plugins: { legend: { display: false } }
+        };
+
+        gainChartInstance = createChart('gainChart', 'bar', chartData, options);
+    }
+    
+    function updateExpenseChart(expenseBreakdown) {
+        // Rótulos abreviados
+        const labels = ['COMB.', 'ALIM.', 'ESTAC.', 'EMERG.', 'OUTROS'];
+        const data = [
+            expenseBreakdown.FUEL, expenseBreakdown.FOOD, expenseBreakdown.PARKING,
+            expenseBreakdown.EMERGENCY, expenseBreakdown.OTHERS
+        ];
+        
+        const chartData = {
+            labels: labels,
+            datasets: [{
+                label: 'Despesas Variáveis (R$)',
+                data: data,
+                backgroundColor: [
+                    NEON_COLORS.FUEL, NEON_COLORS.FOOD, NEON_COLORS.PARKING,
+                    NEON_COLORS.EMERGENCY, NEON_COLORS.OTHERS
+                ],
+                borderColor: '#fff',
+                borderWidth: 1,
+            }]
+        };
+
+        const options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { color: NEON_COLORS.FUEL } },
+                // Garantir que os rótulos X fiquem alinhados (já é o comportamento padrão com nomes curtos)
+                x: { ticks: { color: NEON_COLORS.FUEL } } 
+            },
+            plugins: { legend: { display: false } }
+        };
+
+        expenseChartInstance = createChart('expenseChart', 'bar', chartData, options);
     }
 
     function updateResultDisplay(profit, totalCostToday, totalCostPerKm, profitPerKm, error = null) {
         const profitColorFinal = profit >= 0 ? profitColor : lossColor;
+        const profitPerKmColor = profitPerKm >= 0 ? profitColor : lossColor;
         
-        if (error || (profit === 0 && totalCostToday === 0 && profitPerKm === 0 && totalCostPerKm === 0)) {
-            let message = "LUCRO POR KM: R$ 0,000";
-            if (error) {
-                message = error;
-                profitColorFinal = errorColor;
-            }
-            
-            elements.resultDisplay.innerHTML = `
-                <div class="result-line">LUCRO LÍQUIDO DO DIA: R$ 0,00</div>
-                <div class="result-line">CUSTO TOTAL DO DIA: R$ 0,00</div>
-                <div class="result-line">CUSTO TOTAL POR KM: R$ 0,000</div>
-                <div class="profit-result" style="color:${profitColorFinal}; text-shadow:0 0 10px ${profitColorFinal};">${message}</div>
-            `;
-            elements.saveButton.disabled = true;
-            currentCalculatedData = null;
-            return;
-        }
-
-        elements.resultDisplay.innerHTML = `
-            <div class="result-line" style="color:${defaultTextColor};">LUCRO LÍQUIDO DO DIA: ${formatCurrency(profit)}</div>
-            <div class="result-line" style="color:${defaultTextColor};">CUSTO TOTAL DO DIA: ${formatCurrency(totalCostToday)}</div> 
-            <div class="result-line" style="color:${defaultTextColor};">CUSTO TOTAL POR KM: ${formatCurrency(totalCostPerKm, 3)}</div>
-            <div class="profit-result" style="color:${profitColorFinal}; text-shadow:0 0 10px ${profitColorFinal};">LUCRO POR KM: ${formatCurrency(profitPerKm, 3)}</div>
+        const resultsHtml = `
+            <div class="result-line">LUCRO LÍQUIDO DO DIA: <span style="color: ${profitColorFinal};">${formatCurrency(profit)}</span></div>
+            <div class="result-line">CUSTO TOTAL DO DIA: <span style="color: ${lossColor};">${formatCurrency(totalCostToday)}</span></div>
+            <div class="result-line">CUSTO TOTAL POR KM: <span style="color: ${lossColor};">${formatCurrency(totalCostPerKm, 3)}</span></div>
+            <div class="profit-result" style="color: ${profitPerKmColor}; text-shadow: 0 0 8px ${profitPerKmColor};">LUCRO POR KM: ${formatCurrency(profitPerKm, 3)}</div>
         `;
         
-        elements.saveButton.disabled = false;
+        elements.resultDisplay.innerHTML = error ? `<div style="color: ${lossColor}; text-align: center;">${error}</div>` : resultsHtml;
     }
 
     function calculateDailyProfit() {
         const dailyKm = getFloatValue(elements.dailyKmInput);
         const fixedCostPerKm = getFloatValue(elements.fixedCostPerKm);
         
-        const totalGains = getFloatValue(elements.gainUber) 
-                           + getFloatValue(elements.gain99)
-                           + getFloatValue(elements.gainIndriver)
-                           + getFloatValue(elements.gainPrivate)
-                           + getFloatValue(elements.gainProducts);
-
-        const totalVariableExpenses = getFloatValue(elements.expenseParking) 
-                                     + getFloatValue(elements.expenseEmergency)
-                                     + getFloatValue(elements.expenseFood)
-                                     + getFloatValue(elements.expenseFuel)
-                                     + getFloatValue(elements.expenseOthers);
+        const totalGains = getFloatValue(elements.gainUber) + getFloatValue(elements.gain99) + getFloatValue(elements.gainIndriver) + getFloatValue(elements.gainPrivate) + getFloatValue(elements.gainProducts);
+        const totalVariableExpenses = getFloatValue(elements.expenseParking) + getFloatValue(elements.expenseEmergency) + getFloatValue(elements.expenseFood) + getFloatValue(elements.expenseFuel) + getFloatValue(elements.expenseOthers);
         
         const totalFixedCostToday = dailyKm * fixedCostPerKm;
         const totalDailyCost = totalVariableExpenses + totalFixedCostToday;
         const netProfit = totalGains - totalDailyCost;
         
-        if (dailyKm <= 0 && totalGains > 0) {
-            updateResultDisplay(0, 0, 0, 0, "ERRO: KM Rodado no Dia deve ser informado.");
-            currentCalculatedData = null;
+        if (dailyKm === 0 && totalGains > 0) {
+            updateResultDisplay(netProfit, totalDailyCost, 0, 0, "AVISO: KM Rodado é necessário para calcular custo/KM.");
+            currentCalculatedData = null; // Impede salvamento de dados incompletos
             return;
         }
-        
+
         const costPerKm = dailyKm > 0 ? totalDailyCost / dailyKm : 0;
         const profitPerKm = dailyKm > 0 ? netProfit / dailyKm : 0;
         
         updateSummary(totalGains, totalDailyCost, netProfit);
         updateResultDisplay(netProfit, totalDailyCost, costPerKm, profitPerKm);
-
+        
         currentCalculatedData = {
-            dateInfo: elements.dailyInfo.value || new Date().toISOString().slice(0, 10), 
+            id: recordIdToUpdate.value || generateUniqueId(),
+            dateInfo: elements.dailyInfo.value || new Date().toISOString().slice(0, 10),
             dailyKm,
-            fixedCostPerKm,
+            totalGains,
+            totalVariableExpenses,
+            totalDailyCost,
+            netProfit,
+            profitPerKm,
+            // Ganhos
             gainUber: getFloatValue(elements.gainUber),
             gain99: getFloatValue(elements.gain99),
             gainIndriver: getFloatValue(elements.gainIndriver),
             gainPrivate: getFloatValue(elements.gainPrivate),
             gainProducts: getFloatValue(elements.gainProducts),
+            // Despesas
             expenseFuel: getFloatValue(elements.expenseFuel),
             expenseFood: getFloatValue(elements.expenseFood),
             expenseParking: getFloatValue(elements.expenseParking),
             expenseEmergency: getFloatValue(elements.expenseEmergency),
             expenseOthers: getFloatValue(elements.expenseOthers),
-            totalGains,
-            totalVariableExpenses,
-            netProfit,
-            totalDailyCost,
-            profitPerKm,
-            timestamp: serverTimestamp() 
         };
         
-        // Atualiza o nome do botão se estivermos editando um registro
-        const isUpdate = recordIdToUpdate.value !== '';
-        elements.saveButton.textContent = isUpdate ? "ATUALIZAR LANÇAMENTO" : "SALVAR LANÇAMENTO";
+        elements.saveButton.disabled = false;
+        elements.saveButton.textContent = recordIdToUpdate.value !== '' ? "ATUALIZAR LANÇAMENTO" : "SALVAR LANÇAMENTO";
     }
 
-    // --- NOVA FUNÇÃO: CARREGA DADOS DO HISTÓRICO PARA OS INPUTS ---
+
     function loadRecordToInputs(data) {
-        // 1. Inputs de KM/Custo Fixo
-        elements.dailyKmInput.value = data.dailyKm || '';
-        elements.fixedCostPerKm.value = data.fixedCostPerKm || '';
-
-        // 2. Ganhos
-        elements.gainUber.value = data.gainUber || '';
-        elements.gain99.value = data.gain99 || '';
-        elements.gainIndriver.value = data.gainIndriver || '';
-        elements.gainPrivate.value = data.gainPrivate || '';
-        elements.gainProducts.value = data.gainProducts || '';
-
-        // 3. Despesas
-        elements.expenseParking.value = data.expenseParking || '';
-        elements.expenseEmergency.value = data.expenseEmergency || '';
-        elements.expenseFood.value = data.expenseFood || '';
-        elements.expenseFuel.value = data.expenseFuel || '';
-        elements.expenseOthers.value = data.expenseOthers || '';
-        
-        // 4. Data e ID
         elements.dailyInfo.value = data.dateInfo;
-        recordIdToUpdate.value = data.id; // CRUCIAL: Salva o ID para atualização
+        elements.dailyKmInput.value = data.dailyKm;
         
-        // 5. Calcula o lucro e muda o nome do botão
-        calculateDailyProfit(); // Atualiza a UI e o nome do botão
+        elements.gainUber.value = data.gainUber;
+        elements.gain99.value = data.gain99;
+        elements.gainIndriver.value = data.gainIndriver;
+        elements.gainPrivate.value = data.gainPrivate;
+        elements.gainProducts.value = data.gainProducts;
+        
+        elements.expenseFuel.value = data.expenseFuel;
+        elements.expenseFood.value = data.expenseFood;
+        elements.expenseParking.value = data.expenseParking;
+        elements.expenseEmergency.value = data.expenseEmergency;
+        elements.expenseOthers.value = data.expenseOthers;
+
+        // Salva o ID do registro para a função 'Atualizar'
+        recordIdToUpdate.value = data.id; 
+        elements.saveButton.textContent = "ATUALIZAR LANÇAMENTO";
+
+        calculateDailyProfit(); // Recalcula para atualizar o resumo
     }
 
     function renderHistory(records) {
@@ -1283,8 +1056,7 @@
             return;
         }
         
-        records.forEach(doc => {
-            const data = doc;
+        records.forEach(data => {
             const dateDisplay = formatDateDisplay(data.dateInfo);
             const profit = data.netProfit;
             const profitKm = data.profitPerKm;
@@ -1299,7 +1071,6 @@
             // Adiciona o manipulador de clique para carregar o lançamento
             listItem.onclick = () => loadRecordToInputs(data); 
 
-            // Container dos Dados
             const dataContainer = document.createElement('div');
             dataContainer.className = 'history-data';
 
@@ -1324,34 +1095,6 @@
         });
     }
 
-    let unsubscribeHistory = null;
-    
-    function subscribeToHistory() {
-        if (!db || !isAuthReady) return;
-        
-        if (unsubscribeHistory) unsubscribeHistory();
-
-        elements.loadingHistory.style.display = 'block';
-        elements.loadingHistory.textContent = "Carregando histórico...";
-
-        const recordsRef = getCollectionRef();
-        let q = query(recordsRef, orderBy("dateInfo", "desc")); 
-
-        unsubscribeHistory = onSnapshot(q, (snapshot) => {
-            allRecords = []; 
-            snapshot.forEach(doc => {
-                allRecords.push({...doc.data(), id: doc.id}); 
-            });
-            
-            renderHistory(allRecords);
-            calculateSummaries(allRecords); // CORREÇÃO: Chama calculateSummaries aqui
-            
-        }, (error) => {
-            console.error("Erro ao receber dados do histórico:", error);
-            elements.loadingHistory.textContent = "Erro ao carregar histórico.";
-        });
-    }
-
     function setTodayDate() {
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -1360,51 +1103,22 @@
         elements.dailyInfo.value = `${yyyy}-${mm}-${dd}`;
     }
 
+    // --- INICIALIZAÇÃO LOCAL STORAGE ---
 
-    // --- INICIALIZAÇÃO ---
-
-    async function initializeFirebase() {
-        elements.loggedInUserDisplay.textContent = "Conectando...";
+    function initializeLocalStorage() {
+        const userIdLocal = localStorage.getItem('local_user_id') || crypto.randomUUID();
+        localStorage.setItem('local_user_id', userIdLocal);
         
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            
-            // O onAuthStateChanged é a forma mais segura de confirmar o login e obter o UID
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    userId = user.uid;
-                    isAuthReady = true;
+        const displayId = userIdLocal.substring(0, 12) + '...'; 
+        elements.loggedInUserDisplay.textContent = displayId; 
+        elements.loggedInUserDisplay.title = `ID Local: ${userIdLocal} (Dados salvos apenas neste dispositivo)`;
 
-                    const displayId = userId.substring(0, 12) + '...'; 
-                    elements.loggedInUserDisplay.textContent = displayId; 
-                    elements.loggedInUserDisplay.title = `ID Completo do Usuário: ${userId}`; 
-
-                    // Inicia a carga de dados que depende do userId
-                    loadGoals(); 
-                    subscribeToHistory(); 
-                } else {
-                    // Se não houver usuário logado, tenta fazer o login (anônimo ou com token)
-                    if (initialAuthToken) {
-                        signInWithCustomToken(auth, initialAuthToken).catch(e => {
-                            signInAnonymously(auth); 
-                        });
-                    } else {
-                        signInAnonymously(auth);
-                    }
-                    elements.loggedInUserDisplay.textContent = "AUTENTICANDO...";
-                }
-            });
-
-        } catch (error) {
-            console.error("Erro fatal ao inicializar Firebase/Auth:", error);
-            elements.loggedInUserDisplay.textContent = "ERRO FATAL";
-        }
+        // Carrega metas e dados
+        loadGoals(); 
     }
     
     // --- EVENT LISTENERS ---
-
+    
     if (elements.calculateButton) {
         elements.calculateButton.addEventListener('click', calculateDailyProfit);
     }
@@ -1417,7 +1131,7 @@
     if (elements.saveGoalsButton) {
         elements.saveGoalsButton.addEventListener('click', saveGoals);
     }
-    
+
     const inputElements = document.querySelectorAll('input[type="number"], input[type="date"]');
     inputElements.forEach(input => {
         input.addEventListener('input', calculateDailyProfit);
@@ -1430,8 +1144,7 @@
         if (elements.dailyInfo) {
             setTodayDate();
         }
-        calculateDailyProfit(); 
-        initializeFirebase();
+        initializeLocalStorage();
     });
 </script>
 </body>
