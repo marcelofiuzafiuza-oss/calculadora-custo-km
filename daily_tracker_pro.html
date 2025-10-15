@@ -4,34 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rastreador de Lucros PRO</title>
-    <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
     <style>
-        /* Estilos Neon Retro - Alta Contraste */
-        :root {
-            --bg-dark: #121212;
-            --card-bg: #1e1e1e;
-            --text-light: #00ffff; /* Ciano Neon */
-            --accent-primary: #ff00ff; /* Magenta Neon */
-            --accent-secondary: #ffcc00; /* Amarelo Neon */
-            --success-green: #00ff00; /* Verde Neon */
-            --loss-red: #ff3333; /* Vermelho Neon */
-            --shadow-glow: 0 0 5px var(--accent-primary);
-            --shadow-success: 0 0 8px var(--success-green);
-        }
-
+        /* Estilo Base para o Visual Arcade */
         body {
-            background-color: var(--bg-dark);
+            background-color: #010114;
             display: flex;
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
             margin: 0;
             flex-direction: column;
-            font-family: 'Share Tech Mono', monospace;
-            color: var(--text-light);
+            font-family: 'Press Start 2P', monospace;
+            color: #00ff66;
             user-select: none;
-            padding: 15px;
+            padding: 10px;
             box-sizing: border-box;
             overflow-y: auto;
         }
@@ -39,10 +27,10 @@
         /* Contêiner Principal */
         .arcade-container {
             width: 100%;
-            max-width: 700px; 
+            max-width: 550px; 
             margin: 0 auto;
             box-sizing: border-box;
-            padding: 0 5px;
+            padding: 0 10px;
         }
 
         /* NOVO WRAPPER FLEXÍVEL PARA AS COLUNAS */
@@ -54,73 +42,77 @@
 
         /* Título Principal */
         .main-header {
-            font-family: 'Audiowide', cursive;
-            color: var(--accent-primary);
+            color: #00ff66;
+            text-shadow: 0 0 10px #00ff66;
             margin: 15px 0 20px 0;
-            font-size: clamp(1.2rem, 6vw, 1.8rem);
+            font-size: clamp(0.7rem, 4vw, 1rem);
             text-align: center;
             line-height: 1.2;
             padding-bottom: 10px;
-            text-shadow: var(--shadow-glow);
-            border-bottom: 2px solid var(--accent-secondary);
+            border-bottom: 2px solid #00ccff;
         }
 
         /* Cartões de Seção para Entradas e Resultados */
         .input-section-card, .summary-card {
-            background-color: var(--card-bg);
-            border: 2px solid var(--accent-primary);
+            background-color: #000000;
+            border: 3px solid #ff33cc;
+            box-shadow: 0 0 15px #ff33cc;
             padding: 15px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
-            font-size: clamp(0.7rem, 2.5vw, 0.9rem);
+            font-size: clamp(0.5rem, 2.5vw, 0.7rem);
             line-height: 1.6;
-            width: 100%;
+            width: 100%; /* Default mobile size */
             box-sizing: border-box;
         }
         
-        /* Regras para Duas Colunas */
-        @media (min-width: 550px) {
+        /* Regras para Duas Colunas (Aplica-se aos inputs) */
+        @media (min-width: 500px) {
             .columns-wrapper .input-section-card {
-                width: calc(50% - 10px);
+                width: calc(50% - 10px); /* 50% menos a metade do espaço entre as colunas */
             }
         }
         
         .monthly-summary-card {
-            border-left: 5px solid var(--success-green);
+            border: 3px solid #ffcc00; 
+            box-shadow: 0 0 15px #ffcc00;
         }
 
         .summary-item {
             display: flex;
             justify-content: space-between;
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.2);
+            border-bottom: 1px solid rgba(0, 204, 255, 0.3);
             padding: 5px 0;
         }
         .summary-label {
-            color: var(--text-light);
+            color: #00ccff;
             max-width: 60%;
             word-break: break-word;
         }
         .summary-value {
-            color: var(--accent-secondary);
+            color: #00ff66;
             text-align: right;
-            font-weight: 700;
         }
 
         .summary-divider {
-            height: 1px;
-            background-color: var(--accent-secondary);
+            height: 2px;
+            background-color: #ff33cc;
             margin: 8px 0;
+            box-shadow: 0 0 5px #ff33cc;
         }
 
+        .input-section-card {
+            border: 3px solid #00ccff;
+            box-shadow: 0 0 12px #00ccff;
+        }
         .section-title {
-            color: var(--success-green);
+            color: #ff33cc;
+            text-shadow: 0 0 8px #ff33cc;
             margin-bottom: 15px;
-            font-size: clamp(0.9rem, 3.5vw, 1.1rem);
+            font-size: clamp(0.6rem, 3.5vw, 0.8rem);
             text-align: center;
-            border-bottom: 1px solid var(--accent-secondary);
+            border-bottom: 1px solid rgba(255, 51, 204, 0.5);
             padding-bottom: 5px;
-            text-shadow: 0 0 3px rgba(0, 255, 0, 0.5);
         }
         
         .date-user-container {
@@ -132,11 +124,13 @@
             flex: 1;
         }
         .date-col label, .user-id-col label {
-            color: var(--accent-secondary);
+            text-align: center; 
+            color: #00ff66; 
+            text-shadow: 0 0 5px #00ff66; 
             margin-bottom: 5px; 
             display: block;
-            font-size: clamp(0.8rem, 3.0vw, 0.9rem); /* AUMENTADO */
-            text-align: center;
+            font-size: clamp(0.5rem, 2.5vw, 0.7rem);
+            line-height: 1.2;
         }
 
         .input-group {
@@ -146,97 +140,106 @@
         .input-group label {
             display: block;
             margin-bottom: 5px;
-            color: var(--text-light);
-            font-size: clamp(0.8rem, 3.2vw, 1.0rem); /* AUMENTADO */
+            color: #00ccff;
+            font-size: clamp(0.5rem, 2.8vw, 0.65rem);
+            text-shadow: 0 0 5px #00ccff;
         }
         .input-section-card input[type="number"], 
         .input-section-card input[type="text"],
         .input-section-card input[type="date"] { 
             width: 100%;
             padding: 10px;
-            background-color: var(--bg-dark);
-            border: 1px solid var(--accent-secondary);
-            color: var(--success-green);
-            font-family: 'Share Tech Mono', monospace;
-            font-size: clamp(1.1rem, 4.5vw, 1.3rem); /* AUMENTADO */
+            background-color: #010114;
+            border: 2px solid #ff33cc;
+            color: #00ff66;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.65rem, 3.5vw, 0.8rem);
+            box-shadow: 0 0 8px #ff33cc;
             border-radius: 4px;
             text-align: center;
-            /* NOVO ESTILO PARA BRILHO DE TEXTO */
-            text-shadow: 0 0 5px var(--success-green); 
-            box-shadow: inset 0 0 3px rgba(0, 255, 0, 0.5);
             box-sizing: border-box;
+            -webkit-appearance: none;
+            -moz-appearance: none;
         }
         
         .user-id-display {
             width: 100%;
             padding: 10px;
-            background-color: var(--bg-dark);
-            border: 1px solid var(--accent-secondary);
-            color: var(--accent-primary);
-            font-family: 'Share Tech Mono', monospace;
-            font-size: clamp(0.7rem, 3.5vw, 0.9rem); /* AUMENTADO */
+            background-color: #010114;
+            border: 2px solid #00ccff;
+            color: #ffcc00;
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.5rem, 3vw, 0.7rem);
+            box-shadow: 0 0 8px #00ccff;
             border-radius: 4px;
             text-align: center;
             box-sizing: border-box;
-            height: 40px;
-            line-height: 20px;
+            height: 42px;
+            line-height: 22px;
             word-break: break-all;
             overflow: hidden;
+            cursor: help;
         }
         
+        /* Estilo KM Inicial/Final lado a lado */
+        .km-inputs {
+            display: flex;
+            gap: 10px;
+        }
+        .km-inputs .input-group {
+            flex: 1;
+        }
+
         /* Botões */
         #calculateButton, #saveButton, #saveGoalsButton, #clearButton {
-            background-color: var(--accent-secondary);
-            color: var(--bg-dark);
+            background-color: #00ff66;
+            color: #000000;
             border: none;
             padding: 12px 25px;
-            font-family: 'Audiowide', cursive;
-            font-size: clamp(0.8rem, 3.5vw, 1rem);
+            font-family: 'Press Start 2P', monospace;
+            font-size: clamp(0.7rem, 3.5vw, 0.8rem);
             cursor: pointer;
-            border-radius: 4px;
-            transition: background-color 0.1s;
+            border-radius: 5px;
+            box-shadow: 0 0 10px #00ff66;
+            transition: all 0.1s;
             margin: 5px 0;
             width: 100%;
-            font-weight: 700;
         }
-        #calculateButton:hover, #saveButton:hover, #saveGoalsButton:hover, #clearButton:hover {
-            box-shadow: 0 0 10px var(--accent-secondary);
-            opacity: 1;
+        #saveButton {
+            background-color: #ffcc00;
+            box-shadow: 0 0 10px #ffcc00;
+            margin-bottom: 25px;
         }
-        #calculateButton { background-color: #ffaa00; }
-        #saveButton { background-color: var(--success-green); }
-        #saveGoalsButton { background-color: var(--accent-primary); }
-        #clearButton { background-color: #555; color: var(--text-light); }
-        #saveButton:disabled { opacity: 0.5; cursor: not-allowed; }
+        #saveGoalsButton {
+            background-color: #00ccff;
+            box-shadow: 0 0 10px #00ccff;
+            margin-bottom: 25px;
+        }
+        #clearButton {
+            background-color: #9933ff; /* Cor roxa para Limpar */
+            box-shadow: 0 0 10px #9933ff;
+            margin-top: 15px;
+        }
 
-        
-        /* Resultado Final */
-        #resultDisplay {
-            border-left: 5px solid var(--success-green);
-            box-shadow: 0 0 10px var(--success-green);
-        }
-        .profit-result {
-            font-size: clamp(1.1rem, 4.5vw, 1.3rem); /* AUMENTADO */
-            font-weight: 700;
-            margin-top: 10px;
-            text-shadow: 0 0 5px rgba(0, 255, 0, 0.8);
-        }
-        
         /* Histórico */
         .history-item {
-            background-color: #262626;
-            border: 1px solid #333;
-            border-left: 5px solid var(--accent-primary);
+            background-color: rgba(0, 204, 255, 0.05);
+            border-left: 5px solid #00ff66; /* Linha lateral verde para indicar clicável */
             padding: 10px;
             margin-bottom: 8px;
             border-radius: 4px;
-            font-size: clamp(0.7rem, 2.5vw, 0.9rem); /* AUMENTADO */
-            color: var(--text-light);
-            cursor: pointer;
-            box-shadow: 0 0 5px rgba(255, 0, 255, 0.2);
+            font-size: clamp(0.45rem, 2vw, 0.6rem);
+            color: #00ccff;
+            box-shadow: 0 0 5px rgba(0, 204, 255, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer; /* Indicar que é clicável */
+            transition: transform 0.1s, box-shadow 0.1s;
         }
         .history-item:hover {
-            background-color: #383838;
+            transform: scale(1.01);
+            box-shadow: 0 0 10px #00ff66;
         }
 
         .history-data {
@@ -244,38 +247,63 @@
             flex-direction: column;
             flex-grow: 1;
         }
-        .history-date {
-            font-weight: 700;
-            color: var(--accent-secondary);
+        .history-controls button {
+            background: none;
+            border: none;
+            color: #ff33cc;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 5px;
+            text-shadow: 0 0 5px #ff33cc;
         }
         
-        .history-negative {
-            color: var(--loss-red);
-            font-weight: 700;
-            text-shadow: 0 0 3px rgba(255, 51, 51, 0.5);
-        }
-        .history-profit {
-            color: var(--success-green);
-            font-weight: 700;
-            text-shadow: 0 0 3px rgba(0, 255, 0, 0.5);
-        }
-
-        /* Estilos do Gráfico */
+        /* Estilos do Gráfico CORRIGIDOS */
         .chart-container {
-            background-color: var(--card-bg);
-            border: 1px solid var(--accent-primary);
+            background-color: #000;
+            border: 2px solid #00ff66;
             padding: 10px;
-            border-radius: 6px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px #00ff66;
             margin-bottom: 20px;
+            /* Definição de altura MÁXIMA para evitar expansão infinita no Chart.js */
             height: 280px; 
             min-height: 200px;
         }
-        .platform-table th { color: var(--accent-secondary); }
-        .platform-table .profit-positive { color: var(--success-green) !important; }
-        .platform-table .profit-negative { color: var(--loss-red) !important; }
-        .platform-table th, .platform-table td { border: 1px solid #444; color: var(--text-light); }
-
+        .chart-title {
+            color: #ffcc00;
+            text-align: center;
+            font-size: clamp(0.6rem, 3vw, 0.7rem);
+            margin-bottom: 10px;
+        }
         
+        /* Tabela de Plataformas */
+        .platform-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: clamp(0.5rem, 2.5vw, 0.7rem);
+            text-align: center;
+            margin-top: 10px;
+        }
+        .platform-table th, .platform-table td {
+            border: 1px solid rgba(0, 204, 255, 0.5);
+            padding: 6px 3px;
+        }
+        .platform-table th {
+            background-color: rgba(0, 204, 255, 0.1);
+            color: #00ff66;
+            text-shadow: 0 0 5px #00ff66;
+        }
+        .platform-table td {
+            color: #00ccff;
+        }
+        .platform-table .profit-positive {
+            color: #00ff66 !important;
+            text-shadow: 0 0 5px #00ff66;
+        }
+        .platform-table .profit-negative {
+            color: #ff33cc !important;
+            text-shadow: 0 0 5px #ff33cc;
+        }
     </style>
 </head>
 <body>
@@ -291,13 +319,13 @@
         </div>
         <div class="user-id-col">
             <label for="loggedInUserDisplay">ID DO USUÁRIO:</label>
-            <div id="loggedInUserDisplay" class="user-id-display" title="ID Completo do Usuário: Carregando...">Conectando...</div>
+            <div id="loggedInUserDisplay" class="user-id-display" title="ID Completo do Usuário: Carregando...">Carregando...</div>
         </div>
     </div>
     
     <!-- Cartão de Resumo de Atividade Diária -->
     <div class="summary-card">
-        <div class="section-title" style="margin-top: 0; margin-bottom: 10px; color: var(--accent-primary);">RESUMO DE ATIVIDADE DO DIA</div>
+        <div class="section-title" style="margin-top: 0; margin-bottom: 10px;">RESUMO DE ATIVIDADE DO DIA</div>
         
         <div class="summary-item"><span class="summary-label">RECEBIMENTOS BRUTOS:</span><span class="summary-value" id="summaryGains">R$ 0,00</span></div>
         <div class="summary-item"><span class="summary-label">CUSTOS DO DIA (Estimado):</span><span class="summary-value" id="summaryCosts">R$ 0,00</span></div>
@@ -306,26 +334,26 @@
     
     <!-- Cartão de Totalizadores Mensal e Semanal -->
     <div class="summary-card monthly-summary-card" id="monthlySummaryCard">
-        <div class="section-title" style="margin-top: 0; margin-bottom: 10px; color: var(--accent-secondary);">TOTALIZADORES</div>
+        <div class="section-title" style="margin-top: 0; margin-bottom: 10px; color: #ffcc00; text-shadow: 0 0 8px #ffcc00;">TOTALIZADORES</div>
         
         <!-- Totalizador Semanal -->
         <div class="summary-item"><span class="summary-label">SEMANA ATUAL (Líq.):</span><span class="summary-value" id="weeklyTotalNetProfit">R$ 0,00</span></div>
         <div class="summary-item"><span class="summary-label">META SEMANAL (BRUTO):</span><span class="summary-value" id="weeklyGoalDisplay">R$ 0,00</span></div>
-        <div class="summary-item"><span class="summary-label" id="weeklyProgressLabel">PROG. SEMANAL:</span><span class="summary-value" id="weeklyProgressValue" style="color: var(--accent-primary);">0%</span></div>
-        <div class="summary-item" style="border-bottom: none;"><span class="summary-label" style="color: var(--text-light);">SEMANA (BRUTO):</span><span class="summary-value" id="weeklyTotalGains" style="color: var(--loss-red);">R$ 0,00</span></div>
+        <div class="summary-item"><span class="summary-label" id="weeklyProgressLabel">PROG. SEMANAL:</span><span class="summary-value" id="weeklyProgressValue" style="color: #00ccff;">0%</span></div>
+        <div class="summary-item" style="border-bottom: none;"><span class="summary-label" style="color: #ff33cc;">SEMANA (BRUTO):</span><span class="summary-value" id="weeklyTotalGains" style="color: #ff33cc;">R$ 0,00</span></div>
         
         <div class="summary-divider"></div>
 
         <!-- Totalizador Mensal -->
         <div class="summary-item"><span class="summary-label" id="monthlySummaryMonthLabel">MÊS ATUAL (Líq.):</span><span class="summary-value" id="monthlyTotalNetProfit">R$ 0,00</span></div>
         <div class="summary-item"><span class="summary-label">META MENSAL (BRUTO):</span><span class="summary-value" id="monthlyGoalDisplay">R$ 0,00</span></div>
-        <div class="summary-item"><span class="summary-label" id="monthlyProgressLabel">PROG. MENSAL:</span><span class="summary-value" id="monthlyProgressValue" style="color: var(--accent-primary);">0%</span></div>
-        <div class="summary-item" style="border-bottom: none;"><span class="summary-label" style="color: var(--text-light);">MÊS (BRUTO):</span><span class="summary-value" id="monthlyTotalGains" style="color: var(--loss-red);">R$ 0,00</span></div>
+        <div class="summary-item"><span class="summary-label" id="monthlyProgressLabel">PROG. MENSAL:</span><span class="summary-value" id="monthlyProgressValue" style="color: #00ccff;">0%</span></div>
+        <div class="summary-item" style="border-bottom: none;"><span class="summary-label" style="color: #ff33cc;">MÊS (BRUTO):</span><span class="summary-value" id="monthlyTotalGains" style="color: #ff33cc;">R$ 0,00</span></div>
     </div>
 
     <!-- Cartão de Análise de Ganhos (Gráfico) -->
     <div class="summary-card">
-        <div class="section-title" style="color: var(--success-green);">DISTRIBUIÇÃO DE GANHOS (MÊS)</div>
+        <div class="section-title" style="color: #00ff66; text-shadow: 0 0 8px #00ff66;">DISTRIBUIÇÃO DE GANHOS (MÊS)</div>
         <div class="chart-container">
             <canvas id="gainChart"></canvas>
             <div class="chart-title">Análise de Recebimentos Brutos Mensais</div>
@@ -334,7 +362,7 @@
     
     <!-- Cartão de Análise de Despesas (Gráfico) -->
     <div class="summary-card">
-        <div class="section-title" style="color: var(--loss-red);">DISTRIBUIÇÃO DE DESPESAS (MÊS)</div>
+        <div class="section-title" style="color: #ff33cc; text-shadow: 0 0 8px #ff33cc;">DISTRIBUIÇÃO DE DESPESAS (MÊS)</div>
         <div class="chart-container">
             <canvas id="expenseChart"></canvas>
             <div class="chart-title">Análise de Custos Variáveis Mensais</div>
@@ -343,7 +371,7 @@
     
     <!-- NOVO: RELATÓRIO DE EFICIÊNCIA POR PLATAFORMA -->
     <div class="summary-card">
-        <div class="section-title" style="color: var(--accent-primary);">ANÁLISE DE EFICIÊNCIA POR PLATAFORMA (MÊS)</div>
+        <div class="section-title" style="color: #00ccff; text-shadow: 0 0 8px #00ccff;">ANÁLISE DE EFICIÊNCIA POR PLATAFORMA (MÊS)</div>
         <div id="platformReport">
             <table class="platform-table">
                 <thead>
@@ -380,7 +408,7 @@
             
             <div class="summary-divider" style="margin-top: 20px;"></div>
             
-            <div class="section-title" style="color: var(--accent-secondary);">DEFINIÇÃO DE METAS (BRUTO)</div>
+            <div class="section-title" style="color: #00ff66; text-shadow: 0 0 8px #00ff66;">DEFINIÇÃO DE METAS (BRUTO)</div>
             
             <div class="input-group">
                 <label for="weeklyGoalInput">META SEMANAL R$:</label>
@@ -440,7 +468,7 @@
     <div id="historyContainer" class="input-section-card">
         <div class="section-title">HISTÓRICO DE LANÇAMENTOS</div>
         
-        <div id="loadingHistory" style="text-align:center; color:var(--accent-secondary); font-size: 0.7rem;">Conectando ao histórico...</div>
+        <div id="loadingHistory" style="text-align:center; color:#ffcc00; font-size: 0.6rem;">Conectando ao histórico...</div>
         <ul id="historyList" class="history-list">
             <!-- Registros serão inseridos aqui -->
         </ul>
@@ -449,13 +477,14 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, setLogLevel, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     // Variáveis Globais de Configuração (Fornecidas pelo ambiente Canvas)
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-    
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null; 
+
     // Variáveis Firebase
     let db;
     let auth;
@@ -472,28 +501,22 @@
     let monthlyGoal = 0;
     let fixedCostPerKmValue = 0; 
     
-    // Cores (Ajustadas para o tema Neon/Dark)
-    const CHART_COLORS = {
-        UBER: '#00ffff', // Ciano
-        NINETY_NINE: '#ffaa00', // Laranja
-        INDRIVER: '#00ff00', // Verde
-        PRIVATE: '#ff00ff', // Magenta
-        PRODUCTS: '#ffff00', // Amarelo
-        FUEL: '#ff5252', // Vermelho (Perda)
-        FOOD: '#ffc107',
-        PARKING: '#00ff00',
+    // Cores Neon (Usadas no Chart.js)
+    const NEON_COLORS = {
+        UBER: '#00ccff',
+        NINETY_NINE: '#ffcc00',
+        INDRIVER: '#00ff66',
+        PRIVATE: '#ff33cc',
+        PRODUCTS: '#00ffff',
+        FUEL: '#ff4444',
+        FOOD: '#ff7700',
+        PARKING: '#9933ff',
         EMERGENCY: '#ff0000',
-        OTHERS: '#ff9800',
+        OTHERS: '#ff9900',
+        BACKGROUND: '#010114',
     };
 
-    // Estilos de cor para a UI
-    const errorColor = '#ff5252';
-    const defaultTextColor = '#00ffff';
-    const profitColor = '#00ff00';
-    const lossColor = '#ff5252';
-    const goalMetColor = '#00bcd4';
-
-    // Elementos do DOM (mantidos iguais)
+    // Elementos do DOM
     const elements = {
         dailyKmInput: document.getElementById('dailyKmInput'),
         fixedCostPerKm: document.getElementById('fixedCostPerKm'),
@@ -535,6 +558,13 @@
         monthlyProgressValue: document.getElementById('monthlyProgressValue'),
         platformReportBody: document.getElementById('platformReportBody') 
     };
+
+    // Constantes de estilo
+    const errorColor = '#ff0000';
+    const defaultTextColor = '#00ccff';
+    const profitColor = '#00ff66';
+    const lossColor = '#ff33cc';
+    const goalMetColor = '#00ffff';
 
     // --- FUNÇÕES AUXILIARES ---
 
@@ -583,6 +613,7 @@
         elements.expenseOthers.value = '';
         elements.dailyKmInput.value = '';
         
+        // Limpa o ID de atualização e reseta o botão
         recordIdToUpdate.value = ''; 
         elements.saveButton.textContent = "SALVAR LANÇAMENTO";
 
@@ -623,14 +654,14 @@
             if (recordsRef) {
                 if (isUpdate) {
                     const docRef = doc(recordsRef, recordIdToUpdate.value);
-                    await setDoc(docRef, currentCalculatedData); 
+                    await setDoc(docRef, currentCalculatedData); // Usa setDoc para UPDATE
                     alert('Lançamento atualizado com sucesso!');
                 } else {
-                    await addDoc(recordsRef, currentCalculatedData); 
+                    await addDoc(recordsRef, currentCalculatedData); // Usa addDoc para NOVO REGISTRO
                     alert('Lançamento salvo com sucesso!');
                 }
                 
-                clearInputFields(); 
+                clearInputFields(); // Limpa e reseta a UI
             }
         } catch (error) {
             console.error("Erro ao salvar/atualizar lançamento: ", error);
@@ -713,10 +744,10 @@
             progress = (currentTotal / goal) * 100;
             
             if (progress >= 100) {
-                progressColor = profitColor; 
+                progressColor = goalMetColor; 
                 displayLabelElement.textContent = `META ATINGIDA:`;
             } else if (progress >= 50) {
-                progressColor = '#00ffff'; 
+                progressColor = profitColor; 
                 displayLabelElement.textContent = `PROG. ${progress.toFixed(0)}%:`;
             } else {
                 progressColor = lossColor; 
@@ -730,6 +761,7 @@
         }
 
         displayValueElement.style.color = progressColor;
+        displayValueElement.style.textShadow = `0 0 5px ${progressColor}`;
     }
 
     function updateSummary(gains, costs, netProfit) {
@@ -745,9 +777,10 @@
 
         elements.weeklyTotalNetProfit.textContent = formatCurrency(totalProfit);
         elements.weeklyTotalNetProfit.style.color = profitColorFinal;
+        elements.weeklyTotalNetProfit.style.textShadow = `0 0 10px ${profitColorFinal}`;
         
         elements.weeklyTotalGains.textContent = formatCurrency(totalGains);
-        elements.weeklyTotalGains.style.color = totalGains >= 0 ? lossColor : lossColor; 
+        elements.weeklyTotalGains.style.color = totalGains >= 0 ? '#ff33cc' : lossColor; 
         
         elements.weeklyGoalDisplay.textContent = formatCurrency(weeklyGoal);
         updateProgressDisplay(totalGains, weeklyGoal, elements.weeklyProgressLabel, elements.weeklyProgressValue);
@@ -758,9 +791,10 @@
 
         elements.monthlyTotalNetProfit.textContent = formatCurrency(totalProfit);
         elements.monthlyTotalNetProfit.style.color = profitColorFinal;
+        elements.monthlyTotalNetProfit.style.textShadow = `0 0 10px ${profitColorFinal}`;
         
         elements.monthlyTotalGains.textContent = formatCurrency(totalGains);
-        elements.monthlyTotalGains.style.color = totalGains >= 0 ? lossColor : lossColor; 
+        elements.monthlyTotalGains.style.color = totalGains >= 0 ? '#ff33cc' : lossColor; 
         
         elements.monthlyGoalDisplay.textContent = formatCurrency(monthlyGoal);
         updateProgressDisplay(totalGains, monthlyGoal, elements.monthlyProgressLabel, elements.monthlyProgressValue);
@@ -775,6 +809,7 @@
             NINETY_NINE: { gains: 0, km: 0, profit: 0 },
             INDRIVER: { gains: 0, km: 0, profit: 0 },
             PRIVATE: { gains: 0, km: 0, profit: 0 }
+            // Produtos não são baseados em KM e não são incluídos nesta análise
         };
 
         let totalGainsWithoutFixedCost = 0;
@@ -785,43 +820,59 @@
             const docYearMonth = doc.dateInfo ? doc.dateInfo.slice(0, 7) : null;
             if (docYearMonth !== currentYearMonth) return;
 
+            // Ganho Líquido APENAS das plataformas (excluindo produtos)
             const platformGains = (doc.gainUber || 0) + (doc.gain99 || 0) + (doc.gainIndriver || 0) + (doc.gainPrivate || 0);
+            
+            // Custos Fixos e Variáveis APENAS para as plataformas
             const totalVariableExpenses = (doc.expenseFuel || 0) + (doc.expenseFood || 0) + (doc.expenseParking || 0) + (doc.expenseEmergency || 0) + (doc.expenseOthers || 0);
+
+            // Ganhos brutos das plataformas - Despesas Variáveis
             const profitBeforeFixedCost = platformGains - totalVariableExpenses;
             
             totalGainsWithoutFixedCost += platformGains;
             totalKmRidden += doc.dailyKm || 0;
             
+            // Distribui o profit *antes* do custo fixo pelos ganhos brutos de cada plataforma
+            // Se o total de ganhos da plataforma for 0, pula
             if (platformGains > 0) {
-                const totalProfitShare = profitBeforeFixedCost / platformGains;
-                
+                const profitShareUber = (doc.gainUber || 0) / platformGains;
                 platformStats.UBER.gains += doc.gainUber || 0;
-                platformStats.UBER.profit += (doc.gainUber || 0) * totalProfitShare;
+                platformStats.UBER.profit += profitBeforeFixedCost * profitShareUber;
 
+                const profitShare99 = (doc.gain99 || 0) / platformGains;
                 platformStats.NINETY_NINE.gains += doc.gain99 || 0;
-                platformStats.NINETY_NINE.profit += (doc.gain99 || 0) * totalProfitShare;
+                platformStats.NINETY_NINE.profit += profitBeforeFixedCost * profitShare99;
 
+                const profitShareIndriver = (doc.gainIndriver || 0) / platformGains;
                 platformStats.INDRIVER.gains += doc.gainIndriver || 0;
-                platformStats.INDRIVER.profit += (doc.gainIndriver || 0) * totalProfitShare;
+                platformStats.INDRIVER.profit += profitBeforeFixedCost * profitShareIndriver;
 
+                const profitSharePrivate = (doc.gainPrivate || 0) / platformGains;
                 platformStats.PRIVATE.gains += doc.gainPrivate || 0;
-                platformStats.PRIVATE.profit += (doc.gainPrivate || 0) * totalProfitShare;
+                platformStats.PRIVATE.profit += profitBeforeFixedCost * profitSharePrivate;
             }
         });
         
         // 3. Distribui o Custo Fixo Total do Mês
         const totalMonthlyFixedCost = totalKmRidden * fixedCostPerKmValue;
         
+        // Se houver KM e Ganhos, calcula a distribuição do custo fixo
         if (totalKmRidden > 0 && totalGainsWithoutFixedCost > 0) {
+            // A proporção de custo fixo que cada plataforma deve cobrir, baseada no KM rodado total
             const fixedCostPerGainsShare = totalMonthlyFixedCost / totalGainsWithoutFixedCost;
             
+            // Finaliza o cálculo do lucro líquido e KM para cada plataforma
             for (const key in platformStats) {
                 const stats = platformStats[key];
                 
+                // Reduz o lucro pelo custo fixo
                 stats.finalProfit = stats.profit - (stats.gains * fixedCostPerGainsShare);
+                
+                // Estima o KM da plataforma (proporcional aos ganhos brutos)
                 stats.km = totalKmRidden * (stats.gains / totalGainsWithoutFixedCost);
             }
         } else {
+             // Caso não haja dados, zera os profits
             for (const key in platformStats) {
                  platformStats[key].finalProfit = 0;
                  platformStats[key].km = 0;
@@ -911,7 +962,7 @@
         updateWeeklyDisplay(weeklyTotalProfit, weeklyTotalGains);
         updateGainChart(monthlyGainBreakdown);
         updateExpenseChart(monthlyExpenseBreakdown);
-        calculatePlatformEfficiency(records); 
+        calculatePlatformEfficiency(records); // Chamada para a análise de plataformas
     }
 
     
@@ -929,11 +980,11 @@
         ];
         
         const colors = [
-            CHART_COLORS.UBER,
-            CHART_COLORS.NINETY_NINE,
-            CHART_COLORS.INDRIVER,
-            CHART_COLORS.PRIVATE,
-            CHART_COLORS.PRODUCTS
+            NEON_COLORS.UBER,
+            NEON_COLORS.NINETY_NINE,
+            NEON_COLORS.INDRIVER,
+            NEON_COLORS.PRIVATE,
+            NEON_COLORS.PRODUCTS
         ];
 
         if (gainChartInstance) {
@@ -948,7 +999,7 @@
                     label: 'Recebimentos Brutos',
                     data: data,
                     backgroundColor: colors,
-                    borderColor: colors, 
+                    borderColor: NEON_COLORS.BACKGROUND,
                     borderWidth: 1
                 }]
             },
@@ -973,15 +1024,14 @@
                             }
                         },
                         titleFont: {
-                            family: 'Share Tech Mono',
-                            weight: '700'
+                            family: 'Press Start 2P'
                         },
                         bodyFont: {
-                            family: 'Share Tech Mono',
-                            size: 10
+                            family: 'Press Start 2P',
+                            size: 8
                         },
                         backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        borderColor: profitColor, 
+                        borderColor: '#00ff66',
                         borderWidth: 1
                     }
                 },
@@ -989,19 +1039,19 @@
                     y: {
                         ticks: {
                             color: defaultTextColor,
-                            font: { family: 'Share Tech Mono', size: 10 },
+                            font: { family: 'Press Start 2P', size: 8 },
                             callback: function(value, index, values) {
                                 return 'R$' + value.toFixed(0);
                             }
                         },
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)' 
+                            color: 'rgba(0, 204, 255, 0.2)'
                         }
                     },
                     x: {
                         ticks: {
                             color: defaultTextColor,
-                            font: { family: 'Share Tech Mono', size: 10 }
+                            font: { family: 'Press Start 2P', size: 8 }
                         },
                          grid: {
                             display: false
@@ -1037,19 +1087,13 @@
                     label: 'Despesas Variáveis',
                     data: data,
                     backgroundColor: [
-                        CHART_COLORS.FUEL,
-                        CHART_COLORS.FOOD,
-                        CHART_COLORS.PARKING,
-                        CHART_COLORS.EMERGENCY,
-                        CHART_COLORS.OTHERS
+                        NEON_COLORS.FUEL,
+                        NEON_COLORS.FOOD,
+                        NEON_COLORS.PARKING,
+                        NEON_COLORS.EMERGENCY,
+                        NEON_COLORS.OTHERS
                     ],
-                    borderColor: [
-                        CHART_COLORS.FUEL,
-                        CHART_COLORS.FOOD,
-                        CHART_COLORS.PARKING,
-                        CHART_COLORS.EMERGENCY,
-                        CHART_COLORS.OTHERS
-                    ], 
+                    borderColor: NEON_COLORS.BACKGROUND,
                     borderWidth: 1
                 }]
             },
@@ -1074,15 +1118,14 @@
                             }
                         },
                         titleFont: {
-                            family: 'Share Tech Mono',
-                            weight: '700'
+                            family: 'Press Start 2P'
                         },
                         bodyFont: {
-                            family: 'Share Tech Mono',
-                            size: 10
+                            family: 'Press Start 2P',
+                            size: 8
                         },
                         backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        borderColor: lossColor, 
+                        borderColor: '#ff33cc',
                         borderWidth: 1
                     }
                 },
@@ -1090,19 +1133,19 @@
                     y: {
                         ticks: {
                             color: defaultTextColor,
-                            font: { family: 'Share Tech Mono', size: 10 },
+                            font: { family: 'Press Start 2P', size: 8 },
                             callback: function(value, index, values) {
                                 return 'R$' + value.toFixed(0);
                             }
                         },
                         grid: {
-                            color: 'rgba(255, 255, 255, 0.1)' 
+                            color: 'rgba(255, 51, 204, 0.2)' // Grid lines em magenta suave
                         }
                     },
                     x: {
                         ticks: {
                             color: defaultTextColor,
-                            font: { family: 'Share Tech Mono', size: 10 }
+                            font: { family: 'Press Start 2P', size: 8 }
                         },
                          grid: {
                             display: false
@@ -1127,7 +1170,7 @@
                 <div class="result-line">LUCRO LÍQUIDO DO DIA: R$ 0,00</div>
                 <div class="result-line">CUSTO TOTAL DO DIA: R$ 0,00</div>
                 <div class="result-line">CUSTO TOTAL POR KM: R$ 0,000</div>
-                <div class="profit-result" style="color:${profitColorFinal};">${message}</div>
+                <div class="profit-result" style="color:${profitColorFinal}; text-shadow:0 0 10px ${profitColorFinal};">${message}</div>
             `;
             elements.saveButton.disabled = true;
             currentCalculatedData = null;
@@ -1138,7 +1181,7 @@
             <div class="result-line" style="color:${defaultTextColor};">LUCRO LÍQUIDO DO DIA: ${formatCurrency(profit)}</div>
             <div class="result-line" style="color:${defaultTextColor};">CUSTO TOTAL DO DIA: ${formatCurrency(totalCostToday)}</div> 
             <div class="result-line" style="color:${defaultTextColor};">CUSTO TOTAL POR KM: ${formatCurrency(totalCostPerKm, 3)}</div>
-            <div class="profit-result" style="color:${profitColorFinal};">${profitPerKm >= 0 ? 'LUCRO' : 'PREJUÍZO'} POR KM: ${formatCurrency(profitPerKm, 3)}</div>
+            <div class="profit-result" style="color:${profitColorFinal}; text-shadow:0 0 10px ${profitColorFinal};">LUCRO POR KM: ${formatCurrency(profitPerKm, 3)}</div>
         `;
         
         elements.saveButton.disabled = false;
@@ -1198,6 +1241,7 @@
             timestamp: serverTimestamp() 
         };
         
+        // Atualiza o nome do botão se estivermos editando um registro
         const isUpdate = recordIdToUpdate.value !== '';
         elements.saveButton.textContent = isUpdate ? "ATUALIZAR LANÇAMENTO" : "SALVAR LANÇAMENTO";
     }
@@ -1224,10 +1268,10 @@
         
         // 4. Data e ID
         elements.dailyInfo.value = data.dateInfo;
-        recordIdToUpdate.value = data.id; 
+        recordIdToUpdate.value = data.id; // CRUCIAL: Salva o ID para atualização
         
         // 5. Calcula o lucro e muda o nome do botão
-        calculateDailyProfit(); 
+        calculateDailyProfit(); // Atualiza a UI e o nome do botão
     }
 
     function renderHistory(records) {
@@ -1252,8 +1296,10 @@
             const listItem = document.createElement('li');
             listItem.className = 'history-item';
             
+            // Adiciona o manipulador de clique para carregar o lançamento
             listItem.onclick = () => loadRecordToInputs(data); 
 
+            // Container dos Dados
             const dataContainer = document.createElement('div');
             dataContainer.className = 'history-data';
 
@@ -1298,7 +1344,7 @@
             });
             
             renderHistory(allRecords);
-            calculateSummaries(allRecords); 
+            calculateSummaries(allRecords); // CORREÇÃO: Chama calculateSummaries aqui
             
         }, (error) => {
             console.error("Erro ao receber dados do histórico:", error);
@@ -1321,15 +1367,11 @@
         elements.loggedInUserDisplay.textContent = "Conectando...";
         
         try {
-            // 1. Inicializa o App
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
             
-            // 2. Autenticação anônima garantida (padrão mais simples)
-            await signInAnonymously(auth);
-            
-            // 3. O onAuthStateChanged é chamado APÓS o login ser bem-sucedido
+            // O onAuthStateChanged é a forma mais segura de confirmar o login e obter o UID
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     userId = user.uid;
@@ -1339,16 +1381,24 @@
                     elements.loggedInUserDisplay.textContent = displayId; 
                     elements.loggedInUserDisplay.title = `ID Completo do Usuário: ${userId}`; 
 
+                    // Inicia a carga de dados que depende do userId
                     loadGoals(); 
                     subscribeToHistory(); 
                 } else {
-                    elements.loggedInUserDisplay.textContent = "ID PENDENTE";
+                    // Se não houver usuário logado, tenta fazer o login (anônimo ou com token)
+                    if (initialAuthToken) {
+                        signInWithCustomToken(auth, initialAuthToken).catch(e => {
+                            signInAnonymously(auth); 
+                        });
+                    } else {
+                        signInAnonymously(auth);
+                    }
+                    elements.loggedInUserDisplay.textContent = "AUTENTICANDO...";
                 }
             });
 
         } catch (error) {
-            // Se a inicialização falhar aqui, o problema é na configuração
-            console.error("Erro fatal ao inicializar Firebase:", error);
+            console.error("Erro fatal ao inicializar Firebase/Auth:", error);
             elements.loggedInUserDisplay.textContent = "ERRO FATAL";
         }
     }
