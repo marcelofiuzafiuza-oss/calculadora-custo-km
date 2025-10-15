@@ -1320,14 +1320,8 @@
     async function initializeFirebase() {
         elements.loggedInUserDisplay.textContent = "Conectando...";
         
-        // 1. Validação crítica da configuração
-        if (!firebaseConfig || !firebaseConfig.apiKey) {
-            elements.loggedInUserDisplay.textContent = "ERRO: CONFIG INVÁLIDA";
-            console.error("ERRO FATAL: firebaseConfig não foi fornecido ou é inválido.");
-            return;
-        }
-
         try {
+            // 1. Inicializa o App
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
             auth = getAuth(app);
@@ -1335,7 +1329,7 @@
             // 2. Autenticação anônima garantida
             await signInAnonymously(auth);
             
-            // 3. O onAuthStateChanged é chamado APÓS o login
+            // 3. O onAuthStateChanged é chamado APÓS o login ser bem-sucedido
             onAuthStateChanged(auth, (user) => {
                 if (user) {
                     userId = user.uid;
@@ -1348,13 +1342,14 @@
                     loadGoals(); 
                     subscribeToHistory(); 
                 } else {
-                    // Isso só deve acontecer se o usuário for deslogado, mas é um bom fallback
+                    // Isso não deve mais acontecer após o signInAnonymously
                     elements.loggedInUserDisplay.textContent = "ID PENDENTE";
                 }
             });
 
         } catch (error) {
-            console.error("Erro fatal ao inicializar Firebase/Auth:", error);
+            // Se a inicialização falhar aqui, o problema é na configuração
+            console.error("Erro fatal ao inicializar Firebase:", error);
             elements.loggedInUserDisplay.textContent = "ERRO FATAL";
         }
     }
