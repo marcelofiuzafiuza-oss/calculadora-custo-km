@@ -1338,14 +1338,11 @@
                     loadGoals(); 
                     subscribeToHistory(); 
                 } else {
-                    if (initialAuthToken) {
-                        signInWithCustomToken(auth, initialAuthToken).catch(e => {
-                            signInAnonymously(auth); 
-                        });
-                    } else {
-                        signInAnonymously(auth);
-                    }
-                    elements.loggedInUserDisplay.textContent = "AUTENTICANDO...";
+                    // Novo bloco para garantir o login anônimo
+                    signInAnonymously(auth).catch(error => {
+                        console.error("Falha ao iniciar sessão anonimamente:", error);
+                        elements.loggedInUserDisplay.textContent = "ERRO AUTH";
+                    });
                 }
             });
 
