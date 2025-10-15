@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
     <style>
-        /* Estilo Base para o Visual Arcade */
+        /* Estilos Globais e Arcade */
         body {
             background-color: #010114;
             display: flex;
@@ -33,7 +33,7 @@
             padding: 0 10px;
         }
 
-        /* NOVO WRAPPER FLEXÍVEL PARA AS COLUNAS */
+        /* NOVO WRAPPER FLEXÍVEL PARA AS DUAS COLUNAS */
         .columns-wrapper {
             display: flex;
             flex-wrap: wrap;
@@ -70,6 +70,9 @@
         @media (min-width: 500px) {
             .columns-wrapper .input-section-card {
                 width: calc(50% - 10px); /* 50% menos a metade do espaço entre as colunas */
+            }
+            .columns-wrapper .input-section-card:nth-child(3) {
+                 width: 100%; /* Força o terceiro cartão (Despesas) a ocupar a linha inteira */
             }
         }
         
@@ -258,8 +261,34 @@
             margin-bottom: 10px;
         }
         
-        /* Tabela de Plataformas - REMOVIDA */
-        /* .platform-table, .platform-table th, .platform-table td, etc. REMOVIDOS */
+        /* Tabela de Plataformas */
+        .platform-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: clamp(0.5rem, 2.5vw, 0.7rem);
+            text-align: center;
+            margin-top: 10px;
+        }
+        .platform-table th, .platform-table td {
+            border: 1px solid rgba(0, 204, 255, 0.5);
+            padding: 6px 3px;
+        }
+        .platform-table th {
+            background-color: rgba(0, 204, 255, 0.1);
+            color: #00ff66;
+            text-shadow: 0 0 5px #00ff66;
+        }
+        .platform-table td {
+            color: #00ccff;
+        }
+        .platform-table .profit-positive {
+            color: #00ff66 !important;
+            text-shadow: 0 0 5px #00ff66;
+        }
+        .platform-table .profit-negative {
+            color: #ff33cc !important;
+            text-shadow: 0 0 5px #ff33cc;
+        }
     </style>
 </head>
 <body>
@@ -275,7 +304,7 @@
         </div>
         <div class="user-id-col">
             <label for="loggedInUserDisplay">ID DO USUÁRIO:</label>
-            <div id="loggedInUserDisplay" class="user-id-display" title="ID Completo do Usuário: Salvo localmente">Carregando...</div>
+            <div id="loggedInUserDisplay" class="user-id-display" title="ID Completo do Usuário">Carregando...</div>
         </div>
     </div>
     
@@ -324,6 +353,7 @@
             <div class="chart-title">Análise de Custos Variáveis Mensais</div>
         </div>
     </div>
+    
     
     <!-- WRAPPER PARA AS DUAS COLUNAS DE ENTRADA -->
     <div class="columns-wrapper">
@@ -440,7 +470,6 @@
     };
 
     // Estilos de cor para a UI
-    const defaultTextColor = '#00ccff';
     const profitColor = '#00ff66';
     const lossColor = '#ff33cc';
     const goalMetColor = '#00ffff';
@@ -526,7 +555,7 @@
         return 'id-' + Date.now() + Math.random().toString(16).substring(2, 6);
     }
     
-    // --- FUNÇÕES DE PERSISTÊNCIA LOCAL (NOVO) ---
+    // --- FUNÇÕES DE PERSISTÊNCIA LOCAL ---
     
     function loadRecords() {
         const recordsJson = localStorage.getItem(LOCAL_STORAGE_KEY_RECORDS);
@@ -636,11 +665,8 @@
     // --- FUNÇÕES DE TOTALIZAÇÃO E UI ---
     
     function updateProgressDisplay(currentTotal, goal, displayLabelElement, displayValueElement) {
-        displayLabelElement.style.color = defaultTextColor;
-        displayValueElement.style.color = defaultTextColor;
-        
         let progress = 0;
-        let progressColor = defaultTextColor;
+        let progressColor = '#777'; 
         
         if (goal > 0) {
             progress = (currentTotal / goal) * 100;
@@ -701,153 +727,7 @@
     }
     
     
-    function calculatePlatformEfficiency(records) {
-        const platformTotals = {
-            UBER: { gains: 0, netProfit: 0, km: 0 },
-            NINETY_NINE: { gains: 0, netProfit: 0, km: 0 },
-            INDRIVER: { gains: 0, netProfit: 0, km: 0 },
-            PRIVATE: { gains: 0, netProfit: 0, km: 0 },
-            PRODUCTS: { gains: 0, netProfit: 0, km: 0 },
-        };
-        const platformKeys = ['UBER', 'NINETY_NINE', 'INDRIVER', 'PRIVATE', 'PRODUCTS'];
-        
-        const currentMonth = new Date().toISOString().slice(0, 7);
-        let recordsInMonth = 0;
-
-        const monthRecords = records.filter(record => {
-            if (record.dateInfo && record.dateInfo.startsWith(currentMonth)) {
-                recordsInMonth++;
-                return true;
-            }
-            return false;
-        });
-
-        if (recordsInMonth === 0) {
-             elements.platformReportBody.innerHTML = `<tr><td colspan="3" style="color: #777;">Lance dados neste mês para análise.</td></tr>`;
-             return;
-        }
-
-        // 2. Coletar e distribuir NET PROFIT e KM
-        monthRecords.forEach(record => {
-            const dailyTotalGains = record.totalGains;
-            const dailyNetProfit = record.netProfit;
-            const dailyKm = record.dailyKm;
-
-            platformKeys.forEach(key => {
-                const gainPlatform = record[`gain${key}`] || 0;
-                
-                if (gainPlatform > 0 && dailyTotalGains > 0) {
-                    const proportion = gainPlatform / dailyTotalGains;
-
-                    platformTotals[key].gains += gainPlatform;
-                    platformTotals[key].netProfit += dailyNetProfit * proportion; 
-                    platformTotals[key].km += dailyKm * proportion; 
-                }
-            });
-        });
-
-        // 3. Calcular Lucratividade e Preencher Tabela
-        elements.platformReportBody.innerHTML = '';
-        const tableData = [];
-
-        platformKeys.forEach(key => {
-            const gains = platformTotals[key].gains;
-            const netProfit = platformTotals[key].netProfit;
-            const km = platformTotals[key].km;
-            
-            // Lucratividade Média = Lucro Líquido Proporcional / KM Proporcional
-            const avgProfitPerKm = km > 0 ? netProfit / km : 0;
-            
-            if (gains > 0) {
-                tableData.push({
-                    key: key.replace('NINETY_NINE', '99').replace('PRODUCTS', 'VENDAS'), // Formata o nome
-                    bruto: gains,
-                    profitPerKm: avgProfitPerKm
-                });
-            }
-        });
-        
-        if (tableData.length === 0) {
-            elements.platformReportBody.innerHTML = `<tr><td colspan="3" style="color: #777;">Lance dados para análise.</td></tr>`;
-            return;
-        }
-
-        tableData.sort((a, b) => b.bruto - a.bruto); // Ordena pelo BRUTO MÊS
-
-        tableData.forEach(item => {
-            const row = elements.platformReportBody.insertRow();
-            const profitClass = item.profitPerKm >= 0 ? 'profit-positive' : 'profit-negative';
-            
-            row.insertCell().textContent = item.key;
-            row.insertCell().textContent = formatCurrency(item.bruto);
-            row.insertCell().innerHTML = `<span class="${profitClass}">${formatCurrency(item.profitPerKm, 3)}</span>`;
-        });
-    }
-
-    
-    function calculateSummaries(records) {
-        const currentYearMonth = new Date().toISOString().slice(0, 7); 
-        const today = new Date();
-        const startOfWeekString = getStartOfWeek(today); 
-        
-        let monthlyTotalProfit = 0;
-        let monthlyTotalGains = 0;
-        let monthlyGainBreakdown = { UBER: 0, NINETY_NINE: 0, INDRIVER: 0, PRIVATE: 0, PRODUCTS: 0 };
-        let monthlyExpenseBreakdown = { FUEL: 0, FOOD: 0, PARKING: 0, EMERGENCY: 0, OTHERS: 0 };
-        
-        let weeklyTotalProfit = 0;
-        let weeklyTotalGains = 0;
-        
-        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-        const [currentYear, currentMonthIndex] = currentYearMonth.split('-');
-        const monthLabel = monthNames[parseInt(currentMonthIndex) - 1] + ' / ' + currentYear;
-        
-        elements.monthlySummaryMonthLabel.textContent = `${monthLabel} (Líq.):`;
-
-        if (records.length === 0) {
-            updateMonthlyDisplay(0, 0);
-            updateWeeklyDisplay(0, 0);
-            updateGainChart(monthlyGainBreakdown);
-            updateExpenseChart(monthlyExpenseBreakdown);
-            elements.platformReportBody.innerHTML = `<tr><td colspan="3" style="color: #777;">Lance dados para análise.</td></tr>`;
-            return;
-        }
-
-        records.forEach(doc => {
-            const docDate = doc.dateInfo; 
-            const docYearMonth = docDate ? docDate.slice(0, 7) : null;
-            
-            if (docYearMonth === currentYearMonth) {
-                monthlyTotalProfit += doc.netProfit;
-                monthlyTotalGains += doc.totalGains;
-                
-                monthlyGainBreakdown.UBER += doc.gainUber || 0;
-                monthlyGainBreakdown.NINETY_NINE += doc.gain99 || 0;
-                monthlyGainBreakdown.INDRIVER += doc.gainIndriver || 0;
-                monthlyGainBreakdown.PRIVATE += doc.gainPrivate || 0;
-                monthlyGainBreakdown.PRODUCTS += doc.gainProducts || 0;
-                
-                monthlyExpenseBreakdown.FUEL += doc.expenseFuel || 0;
-                monthlyExpenseBreakdown.FOOD += doc.expenseFood || 0;
-                monthlyExpenseBreakdown.PARKING += doc.expenseParking || 0;
-                monthlyExpenseBreakdown.EMERGENCY += doc.expenseEmergency || 0;
-                monthlyExpenseBreakdown.OTHERS += doc.expenseOthers || 0;
-            }
-
-            if (docDate && docDate >= startOfWeekString) {
-                weeklyTotalProfit += doc.netProfit;
-                weeklyTotalGains += doc.totalGains;
-            }
-        });
-        
-        updateMonthlyDisplay(monthlyTotalProfit, monthlyTotalGains);
-        updateWeeklyDisplay(weeklyTotalProfit, weeklyTotalGains);
-        updateGainChart(monthlyGainBreakdown);
-        updateExpenseChart(monthlyExpenseBreakdown);
-        calculatePlatformEfficiency(records); // Chamada para a análise de plataformas
-    }
-
-    // --- FUNÇÕES CHART.JS ---
+    // --- FUNÇÃO CHART.JS ---
     
     function createChart(chartId, type, data, options) {
         const ctx = document.getElementById(chartId).getContext('2d');
@@ -925,6 +805,67 @@
         };
 
         expenseChartInstance = createChart('expenseChart', 'bar', chartData, options);
+    }
+
+
+    function calculateSummaries(records) {
+        const currentYearMonth = new Date().toISOString().slice(0, 7); 
+        const today = new Date();
+        const startOfWeekString = getStartOfWeek(today); 
+        
+        let monthlyTotalProfit = 0;
+        let monthlyTotalGains = 0;
+        let monthlyGainBreakdown = { UBER: 0, NINETY_NINE: 0, INDRIVER: 0, PRIVATE: 0, PRODUCTS: 0 };
+        let monthlyExpenseBreakdown = { FUEL: 0, FOOD: 0, PARKING: 0, EMERGENCY: 0, OTHERS: 0 };
+        
+        let weeklyTotalProfit = 0;
+        let weeklyTotalGains = 0;
+        
+        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const [currentYear, currentMonthIndex] = currentYearMonth.split('-');
+        const monthLabel = monthNames[parseInt(currentMonthIndex) - 1] + ' / ' + currentYear;
+        
+        elements.monthlySummaryMonthLabel.textContent = `${monthLabel} (Líq.):`;
+
+        if (records.length === 0) {
+            updateMonthlyDisplay(0, 0);
+            updateWeeklyDisplay(0, 0);
+            updateGainChart(monthlyGainBreakdown);
+            updateExpenseChart(monthlyExpenseBreakdown);
+            return;
+        }
+
+        records.forEach(doc => {
+            const docDate = doc.dateInfo; 
+            const docYearMonth = docDate ? docDate.slice(0, 7) : null;
+            
+            if (docYearMonth === currentYearMonth) {
+                monthlyTotalProfit += doc.netProfit;
+                monthlyTotalGains += doc.totalGains;
+                
+                monthlyGainBreakdown.UBER += doc.gainUber || 0;
+                monthlyGainBreakdown.NINETY_NINE += doc.gain99 || 0;
+                monthlyGainBreakdown.INDRIVER += doc.gainIndriver || 0;
+                monthlyGainBreakdown.PRIVATE += doc.gainPrivate || 0;
+                monthlyGainBreakdown.PRODUCTS += doc.gainProducts || 0;
+                
+                monthlyExpenseBreakdown.FUEL += doc.expenseFuel || 0;
+                monthlyExpenseBreakdown.FOOD += doc.expenseFood || 0;
+                monthlyExpenseBreakdown.PARKING += doc.expenseParking || 0;
+                monthlyExpenseBreakdown.EMERGENCY += doc.expenseEmergency || 0;
+                monthlyExpenseBreakdown.OTHERS += doc.expenseOthers || 0;
+            }
+
+            if (docDate && docDate >= startOfWeekString) {
+                weeklyTotalProfit += doc.netProfit;
+                weeklyTotalGains += doc.totalGains;
+            }
+        });
+        
+        updateMonthlyDisplay(monthlyTotalProfit, monthlyTotalGains);
+        updateWeeklyDisplay(weeklyTotalProfit, weeklyTotalGains);
+        updateGainChart(monthlyGainBreakdown);
+        updateExpenseChart(monthlyExpenseBreakdown);
     }
 
     function updateResultDisplay(profit, totalCostToday, totalCostPerKm, profitPerKm, error = null) {
@@ -1070,8 +1011,8 @@
         const dd = String(today.getDate()).padStart(2, '0');
         elements.dailyInfo.value = `${yyyy}-${mm}-${dd}`;
     }
-
-    // --- INICIALIZAÇÃO LOCAL STORAGE ---
+    
+    // --- FUNÇÕES DE CONTROLE DE ACESSO ---
 
     function initializeLocalStorage() {
         const userIdLocal = localStorage.getItem('local_user_id') || crypto.randomUUID();
@@ -1079,7 +1020,7 @@
         
         const displayId = userIdLocal.substring(0, 12) + '...'; 
         elements.loggedInUserDisplay.textContent = displayId; 
-        elements.loggedInUserDisplay.title = `ID Completo do Usuário: ${userIdLocal}`;
+        elements.loggedInUserDisplay.title = `ID Local: ${userIdLocal} (Dados salvos apenas neste dispositivo)`;
 
         // Carrega metas e dados
         loadGoals(); 
