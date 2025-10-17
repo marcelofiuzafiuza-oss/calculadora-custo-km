@@ -26,8 +26,8 @@
 
         /* Contêiner Principal */
         .arcade-container {
-            width: 100%;
-            max-width: 550px; 
+            width: 100%; /* Agora ocupa 100% da largura do body */
+            /* max-width: 550px; <-- REMOVIDO */
             margin: 0 auto;
             box-sizing: border-box;
             padding: 0 10px;
@@ -96,6 +96,24 @@
             color: #00ff66;
             text-align: right;
         }
+        
+        /* PROGRESS BAR STYLES */
+        .progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            margin: 5px 0 15px 0;
+            overflow: hidden;
+            border: 1px solid rgba(0, 204, 255, 0.5);
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0;
+            transition: width 0.5s ease-out;
+        }
+
 
         .summary-divider {
             height: 2px;
@@ -185,7 +203,7 @@
         }
         
         /* Botões */
-        #calculateButton, #saveButton, #saveGoalsButton, #clearButton {
+        #calculateButton, #saveButton, #saveGoalsButton, #clearButton, .data-management-btn {
             background-color: #00ff66;
             color: #000000;
             border: none;
@@ -214,6 +232,17 @@
             box-shadow: 0 0 10px #9933ff;
             margin-top: 15px;
         }
+        .data-management-btn {
+            background-color: #ff9900;
+            box-shadow: 0 0 10px #ff9900;
+            width: 48%; /* Para caber dois lado a lado */
+            font-size: clamp(0.5rem, 3vw, 0.7rem);
+        }
+        .data-management-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
 
         /* Histórico */
         .history-item {
@@ -234,6 +263,25 @@
         .history-item:hover {
             transform: scale(1.01);
             box-shadow: 0 0 10px #00ff66;
+        }
+        
+        .history-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #ff33cc;
+            font-size: clamp(0.7rem, 3vw, 0.8rem);
+            cursor: pointer;
+            padding: 5px;
+            text-shadow: 0 0 5px #ff33cc;
+            transition: color 0.1s;
+        }
+        .delete-btn:hover {
+            color: #ff0000;
         }
 
         .history-data {
@@ -289,6 +337,44 @@
             color: #ff33cc !important;
             text-shadow: 0 0 5px #ff33cc;
         }
+
+        /* ESTILOS ESPECÍFICOS PARA OS NOVOS INPUTS DE GANHOS */
+        .app-group {
+            border-bottom: 1px dashed rgba(255, 204, 0, 0.5);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        .app-title {
+            display: block;
+            color: #00ff66;
+            text-shadow: 0 0 5px #00ff66;
+            margin-bottom: 5px;
+            font-size: clamp(0.6rem, 3vw, 0.75rem);
+            text-align: left;
+        }
+        .input-row {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 8px;
+        }
+        .input-col {
+            flex: 1; 
+        }
+        .input-col label {
+            font-size: clamp(0.4rem, 2vw, 0.55rem) !important; 
+            text-align: center;
+            display: block;
+            margin-bottom: 2px !important;
+        }
+        .input-row input {
+            padding: 8px !important;
+            font-size: clamp(0.65rem, 3.5vw, 0.8rem) !important; /* AUMENTADO */
+            text-shadow: 0 0 3px rgba(0, 255, 102, 0.5); /* BRILHO NEON */
+        }
+        .input-row .full-width {
+            flex: 2; /* Para o campo R$ ser maior */
+        }
+        
     </style>
 </head>
 <body>
@@ -325,6 +411,7 @@
         <div class="summary-item"><span class="summary-label">SEMANA ATUAL (Líq.):</span><span class="summary-value" id="weeklyTotalNetProfit">R$ 0,00</span></div>
         <div class="summary-item"><span class="summary-label">META SEMANAL (BRUTO):</span><span class="summary-value" id="weeklyGoalDisplay">R$ 0,00</span></div>
         <div class="summary-item"><span class="summary-label" id="weeklyProgressLabel">PROG. SEMANAL:</span><span class="summary-value" id="weeklyProgressValue" style="color: #00ccff;">0%</span></div>
+        <div class="progress-bar-container"><div id="weeklyProgressBar" class="progress-bar"></div></div> 
         <div class="summary-item" style="border-bottom: none;"><span class="summary-label" style="color: #ff33cc;">SEMANA (BRUTO):</span><span class="summary-value" id="weeklyTotalGains" style="color: #ff33cc;">R$ 0,00</span></div>
         
         <div class="summary-divider"></div>
@@ -333,6 +420,7 @@
         <div class="summary-item"><span class="summary-label" id="monthlySummaryMonthLabel">MÊS ATUAL (Líq.):</span><span class="summary-value" id="monthlyTotalNetProfit">R$ 0,00</span></div>
         <div class="summary-item"><span class="summary-label">META MENSAL (BRUTO):</span><span class="summary-value" id="monthlyGoalDisplay">R$ 0,00</span></div>
         <div class="summary-item"><span class="summary-label" id="monthlyProgressLabel">PROG. MENSAL:</span><span class="summary-value" id="monthlyProgressValue" style="color: #00ccff;">0%</span></div>
+        <div class="progress-bar-container"><div id="monthlyProgressBar" class="progress-bar"></div></div> 
         <div class="summary-item" style="border-bottom: none;"><span class="summary-label" style="color: #ff33cc;">MÊS (BRUTO):</span><span class="summary-value" id="monthlyTotalGains" style="color: #ff33cc;">R$ 0,00</span></div>
     </div>
 
@@ -351,6 +439,20 @@
         <div class="chart-container">
             <canvas id="expenseChart"></canvas>
             <div class="chart-title">Análise de Custos Variáveis Mensais</div>
+        </div>
+    </div>
+
+    <!-- NOVO CARTÃO: MÉTRICAS DE EFICIÊNCIA -->
+    <div class="summary-card" id="efficiency-metrics-card">
+        <div class="section-title" style="color: #00ccff; text-shadow: 0 0 8px #00ccff;">MÉTRICAS DE EFICIÊNCIA</div>
+        <div class="chart-container" style="height: 250px;">
+            <canvas id="gainPerHourChart"></canvas>
+            <div class="chart-title">Ganho Médio por Hora (R$/h)</div>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="chart-container" style="height: 250px;">
+            <canvas id="tripsPerHourChart"></canvas>
+            <div class="chart-title">Viagens por Hora (Produtividade)</div>
         </div>
     </div>
     
@@ -394,11 +496,53 @@
         <div class="input-section-card">
             <div class="section-title">GANHOS BRUTOS</div>
             
-            <div class="input-group"><label for="gainUber">UBER R$:</label><input type="number" id="gainUber" placeholder="Ex: 200.00" min="0" step="0.01"></div>
-            <div class="input-group"><label for="gain99">99 R$:</label><input type="number" id="gain99" placeholder="Ex: 150.00" min="0" step="0.01"></div>
-            <div class="input-group"><label for="gainIndriver">INDRIVER R$:</label><input type="number" id="gainIndriver" placeholder="Ex: 100.00" min="0" step="0.01"></div>
-            <div class="input-group"><label for="gainPrivate">PARTICULAR R$:</label><input type="number" id="gainPrivate" placeholder="Ex: 80.00" min="0" step="0.01"></div>
-            <div class="input-group"><label for="gainProducts">VENDAS/PRODUTOS R$:</label><input type="number" id="gainProducts" placeholder="Ex: 50.00" min="0" step="0.01"></div>
+            <!-- UBER -->
+            <div class="app-group">
+                <label class="app-title">UBER</label>
+                <div class="input-row">
+                    <div class="input-col full-width"><label for="gainUber">R$:</label><input type="number" id="gainUber" placeholder="200.00" min="0" step="0.01"></div>
+                    <div class="input-col"><label for="hoursUber">Horas:</label><input type="number" id="hoursUber" placeholder="5.5" min="0" step="0.1"></div>
+                    <div class="input-col"><label for="tripsUber">Viagens:</label><input type="number" id="tripsUber" placeholder="15" min="0" step="1"></div>
+                </div>
+            </div>
+
+            <!-- 99 -->
+            <div class="app-group">
+                <label class="app-title">99</label>
+                <div class="input-row">
+                    <div class="input-col full-width"><label for="gain99">R$:</label><input type="number" id="gain99" placeholder="150.00" min="0" step="0.01"></div>
+                    <div class="input-col"><label for="hours99">Horas:</label><input type="number" id="hours99" placeholder="4.0" min="0" step="0.1"></div>
+                    <div class="input-col"><label for="trips99">Viagens:</label><input type="number" id="trips99" placeholder="10" min="0" step="1"></div>
+                </div>
+            </div>
+
+            <!-- INDRIVER -->
+            <div class="app-group">
+                <label class="app-title">INDRIVER</label>
+                <div class="input-row">
+                    <div class="input-col full-width"><label for="gainIndriver">R$:</label><input type="number" id="gainIndriver" placeholder="100.00" min="0" step="0.01"></div>
+                    <div class="input-col"><label for="hoursIndriver">Horas:</label><input type="number" id="hoursIndriver" placeholder="3.0" min="0" step="0.1"></div>
+                    <div class="input-col"><label for="tripsIndriver">Viagens:</label><input type="number" id="tripsIndriver" placeholder="5" min="0" step="1"></div>
+                </div>
+            </div>
+
+            <!-- PARTICULAR -->
+            <div class="app-group">
+                <label class="app-title">PARTICULAR</label>
+                <div class="input-row">
+                    <div class="input-col full-width"><label for="gainPrivate">R$:</label><input type="number" id="gainPrivate" placeholder="80.00" min="0" step="0.01"></div>
+                    <div class="input-col"><label for="hoursPrivate">Horas:</label><input type="number" id="hoursPrivate" placeholder="1.5" min="0" step="0.1"></div>
+                    <div class="input-col"><label for="tripsPrivate">Viagens:</label><input type="number" id="tripsPrivate" placeholder="2" min="0" step="1"></div>
+                </div>
+            </div>
+            
+            <!-- VENDAS (Sem Horas/Viagens) -->
+            <div class="app-group" style="border-bottom: none;">
+                <label class="app-title" for="gainProducts">VENDAS/PRODUTOS</label>
+                <div class="input-row">
+                    <div class="input-col" style="flex: 3;"><label for="gainProducts">R$:</label><input type="number" id="gainProducts" placeholder="50.00" min="0" step="0.01"></div>
+                </div>
+            </div>
         </div>
 
         <!-- Cartão de Despesas (COLUNA DIREITA 2 - Forçado a pular linha em desktop se houver espaço) -->
@@ -421,6 +565,13 @@
     <button id="saveButton">SALVAR LANÇAMENTO</button>
     <button id="clearButton">NOVO LANÇAMENTO (LIMPAR)</button>
     
+    <!-- NOVO CONTÊINER PARA EXPORTAÇÃO E IMPORTAÇÃO -->
+    <div class="data-management-container">
+        <button id="exportButton" class="data-management-btn">EXPORTAR DADOS (JSON)</button>
+        <button id="importButton" class="data-management-btn">IMPORTAR DADOS (JSON)</button>
+        <input type="file" id="importFile" accept=".json" style="display:none;">
+    </div>
+    
     <div id="resultDisplay" class="summary-card"> 
         <div class="result-line">LUCRO LÍQUIDO DO DIA: R$ 0,00</div>
         <div class="result-line">CUSTO TOTAL DO DIA: R$ 0,00</div>
@@ -437,6 +588,16 @@
             <!-- Registros serão inseridos aqui -->
         </ul>
     </div>
+    
+    <!-- NOVO CARTÃO: GRÁFICO DE TENDÊNCIA -->
+    <div class="summary-card">
+        <div class="section-title" style="color: #00ccff; text-shadow: 0 0 8px #00ccff;">TENDÊNCIA MENSAL DE LUCRO</div>
+        <div class="chart-container" style="height: 300px;">
+            <canvas id="trendChart"></canvas>
+            <div class="chart-title">Evolução do Lucro Líquido Diário (R$)</div>
+        </div>
+    </div>
+
 </div>
 
 <script>
@@ -451,6 +612,9 @@
     let allRecords = []; 
     let gainChartInstance = null;
     let expenseChartInstance = null;
+    let gainPerHourChartInstance = null;
+    let tripsPerHourChartInstance = null;
+    let trendChartInstance = null; // NOVO
     let currentCalculatedData = null; 
     let recordIdToUpdate = document.getElementById('recordIdToUpdate'); 
 
@@ -479,9 +643,17 @@
         dailyKmInput: document.getElementById('dailyKmInput'),
         fixedCostPerKm: document.getElementById('fixedCostPerKm'),
         gainUber: document.getElementById('gainUber'),
+        hoursUber: document.getElementById('hoursUber'),
+        tripsUber: document.getElementById('tripsUber'),
         gain99: document.getElementById('gain99'), 
+        hours99: document.getElementById('hours99'),
+        trips99: document.getElementById('trips99'),
         gainIndriver: document.getElementById('gainIndriver'), 
+        hoursIndriver: document.getElementById('hoursIndriver'),
+        tripsIndriver: document.getElementById('tripsIndriver'),
         gainPrivate: document.getElementById('gainPrivate'),
+        hoursPrivate: document.getElementById('hoursPrivate'),
+        tripsPrivate: document.getElementById('tripsPrivate'),
         gainProducts: document.getElementById('gainProducts'),
         expenseParking: document.getElementById('expenseParking'),
         expenseEmergency: document.getElementById('expenseEmergency'),
@@ -502,6 +674,10 @@
         resultDisplay: document.getElementById('resultDisplay'),
         historyList: document.getElementById('historyList'),
         loadingHistory: document.getElementById('loadingHistory'),
+        // Botões de backup
+        exportButton: document.getElementById('exportButton'),
+        importButton: document.getElementById('importButton'),
+        importFile: document.getElementById('importFile'),
         // Totalizadores
         monthlyTotalNetProfit: document.getElementById('monthlyTotalNetProfit'), 
         monthlyTotalGains: document.getElementById('monthlyTotalGains'),
@@ -514,6 +690,12 @@
         monthlyProgressLabel: document.getElementById('monthlyProgressLabel'),
         weeklyProgressValue: document.getElementById('weeklyProgressValue'),
         monthlyProgressValue: document.getElementById('monthlyProgressValue'),
+        // Barras de Progresso
+        weeklyProgressBar: document.getElementById('weeklyProgressBar'),
+        monthlyProgressBar: document.getElementById('monthlyProgressBar'),
+        // Novo Gráfico
+        trendChartCanvas: document.getElementById('trendChart'),
+        
         platformReportBody: document.getElementById('platformReportBody')
     };
 
@@ -610,6 +792,76 @@
         calculateDailyProfit();
     }
 
+    // --- FUNÇÃO DE BACKUP (EXPORTAÇÃO/IMPORTAÇÃO) ---
+    function exportData() {
+        const data = {
+            records: allRecords,
+            goals: {
+                weeklyGoal,
+                monthlyGoal,
+                fixedCostPerKmValue
+            }
+        };
+
+        const dataStr = JSON.stringify(data, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        const date = new Date().toISOString().slice(0, 10);
+        a.download = `rastreador_dados_${date}.json`;
+        a.href = url;
+        
+        // CORREÇÃO: Adicionar o link ao body para garantir o clique simulado
+        document.body.appendChild(a); 
+        a.click();
+        
+        // Limpar após o clique
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    
+    function importData() {
+        elements.importFile.click(); // Abre o seletor de arquivo
+    }
+    
+    function handleImportFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                
+                if (!importedData.records || !Array.isArray(importedData.records)) {
+                    alert('Erro: Arquivo JSON inválido. Verifique o formato do histórico.');
+                    return;
+                }
+                
+                if (confirm(`Deseja substituir o histórico atual com ${importedData.records.length} lançamentos importados?`)) {
+                    // Substitui os registros
+                    allRecords = importedData.records;
+                    saveRecords();
+
+                    // Tenta carregar metas, se existirem
+                    if (importedData.goals) {
+                        localStorage.setItem(LOCAL_STORAGE_KEY_GOALS, JSON.stringify(importedData.goals));
+                    }
+                    
+                    // Recarrega o app para refletir a mudança
+                    loadGoals(); 
+                    alert('Dados importados com sucesso!');
+                }
+
+            } catch (error) {
+                console.error('Erro ao ler ou parsear arquivo de importação:', error);
+                alert('Erro ao importar. Certifique-se de que o arquivo é um JSON válido e não foi modificado.');
+            }
+        };
+        reader.readAsText(file);
+    }
+    
     // --- FUNÇÃO DE SALVAMENTO / ATUALIZAÇÃO ---
     async function saveRecord() {
         if (!currentCalculatedData) {
@@ -643,9 +895,17 @@
     // --- FUNÇÃO DE LIMPEZA ---
     function clearInputFields() {
         elements.gainUber.value = '';
+        elements.hoursUber.value = '';
+        elements.tripsUber.value = '';
         elements.gain99.value = '';
+        elements.hours99.value = '';
+        elements.trips99.value = '';
         elements.gainIndriver.value = '';
+        elements.hoursIndriver.value = '';
+        elements.tripsIndriver.value = '';
         elements.gainPrivate.value = '';
+        elements.hoursPrivate.value = '';
+        elements.tripsPrivate.value = '';
         elements.gainProducts.value = '';
         elements.expenseFuel.value = '';
         elements.expenseFood.value = '';
@@ -664,7 +924,7 @@
     
     // --- FUNÇÕES DE TOTALIZAÇÃO E UI ---
     
-    function updateProgressDisplay(currentTotal, goal, displayLabelElement, displayValueElement) {
+    function updateProgressDisplay(currentTotal, goal, displayLabelElement, displayValueElement, progressBarElement) {
         let progress = 0;
         let progressColor = '#777'; 
         
@@ -690,6 +950,22 @@
 
         displayValueElement.style.color = progressColor;
         displayValueElement.style.textShadow = `0 0 5px ${progressColor}`;
+        
+        // --- NOVO: Lógica da Barra de Progresso ---
+        const barWidth = Math.min(progress, 100); 
+        progressBarElement.style.width = `${barWidth}%`;
+        
+        if (barWidth >= 100) {
+            progressBarElement.style.boxShadow = `0 0 8px ${profitColor}`;
+            progressBarElement.style.background = `linear-gradient(90deg, ${goalMetColor}, ${profitColor})`;
+        } else if (barWidth > 0) {
+            progressBarElement.style.boxShadow = `0 0 5px ${goalMetColor}`;
+            progressBarElement.style.background = `linear-gradient(90deg, ${lossColor}, ${goalMetColor})`;
+        } else {
+            progressBarElement.style.boxShadow = `none`;
+            progressBarElement.style.background = `none`;
+        }
+        // --- FIM Lógica da Barra de Progresso ---
     }
 
     function updateSummary(gains, costs, netProfit) {
@@ -710,7 +986,7 @@
         elements.weeklyTotalGains.style.color = totalGains >= 0 ? goalMetColor : lossColor; 
         
         elements.weeklyGoalDisplay.textContent = formatCurrency(weeklyGoal);
-        updateProgressDisplay(totalGains, weeklyGoal, elements.weeklyProgressLabel, elements.weeklyProgressValue);
+        updateProgressDisplay(totalGains, weeklyGoal, elements.weeklyProgressLabel, elements.weeklyProgressValue, elements.weeklyProgressBar);
     }
 
     function updateMonthlyDisplay(totalProfit, totalGains) {
@@ -723,7 +999,7 @@
         elements.monthlyTotalGains.style.color = totalGains >= 0 ? goalMetColor : lossColor; 
         
         elements.monthlyGoalDisplay.textContent = formatCurrency(monthlyGoal);
-        updateProgressDisplay(totalGains, monthlyGoal, elements.monthlyProgressLabel, elements.monthlyProgressValue);
+        updateProgressDisplay(totalGains, monthlyGoal, elements.monthlyProgressLabel, elements.monthlyProgressValue, elements.monthlyProgressBar);
     }
     
     
@@ -736,7 +1012,178 @@
         }
         return new Chart(ctx, { type, data, options });
     }
+    
+    // --- NOVO GRÁFICO DE TENDÊNCIA DE LINHA ---
+    function updateTrendChart(records) {
+        const currentYearMonth = new Date().toISOString().slice(0, 7);
+        // Filtra e agrupa registros apenas do mês atual
+        const monthlyRecords = records.filter(doc => doc.dateInfo && doc.dateInfo.startsWith(currentYearMonth));
+        
+        // Mapeia lucros diários (chave: dia do mês, valor: lucro)
+        const dailyProfits = {};
+        monthlyRecords.forEach(doc => {
+            const dayOfMonth = parseInt(doc.dateInfo.slice(8, 10), 10);
+            dailyProfits[dayOfMonth] = (dailyProfits[dayOfMonth] || 0) + doc.netProfit;
+        });
+        
+        const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+        const labels = Array.from({ length: daysInMonth }, (_, i) => (i + 1).toString()); // 1, 2, 3...
+        const data = labels.map(day => dailyProfits[parseInt(day, 10)] || 0);
+        
+        const chartData = {
+            labels: labels,
+            datasets: [{
+                label: 'Lucro Líquido (R$)',
+                data: data,
+                borderColor: NEON_COLORS.INDRIVER,
+                backgroundColor: 'rgba(0, 255, 102, 0.2)',
+                tension: 0.4,
+                borderWidth: 3,
+                pointRadius: 4,
+                pointBackgroundColor: NEON_COLORS.PRODUCTS,
+                fill: true,
+            }]
+        };
 
+        const options = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { 
+                    beginAtZero: true, 
+                    ticks: { color: NEON_COLORS.PRODUCTS, callback: function(value) { return 'R$ ' + value; } },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                x: { 
+                    ticks: { color: NEON_COLORS.PRODUCTS },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                }
+            },
+            plugins: { legend: { display: false } }
+        };
+
+        if (trendChartInstance) trendChartInstance.destroy();
+        trendChartInstance = createChart('trendChart', 'line', chartData, options);
+    }
+    
+    // --- FIM NOVO GRÁFICO DE TENDÊNCIA ---
+
+
+    function calculateEfficiencyMetrics(records) {
+        const currentYearMonth = new Date().toISOString().slice(0, 7); 
+        
+        // Estrutura para somar os totais mensais por plataforma
+        let monthlyMetrics = {
+            UBER: { gains: 0, hours: 0, trips: 0 },
+            NINETY_NINE: { gains: 0, hours: 0, trips: 0 },
+            INDRIVER: { gains: 0, hours: 0, trips: 0 },
+            PRIVATE: { gains: 0, hours: 0, trips: 0 },
+        };
+
+        records.forEach(doc => {
+            const docYearMonth = doc.dateInfo ? doc.dateInfo.slice(0, 7) : null;
+            
+            if (docYearMonth === currentYearMonth) {
+                // Soma os valores
+                monthlyMetrics.UBER.gains += doc.gainUber || 0;
+                monthlyMetrics.UBER.hours += doc.hoursUber || 0;
+                monthlyMetrics.UBER.trips += doc.tripsUber || 0;
+                
+                monthlyMetrics.NINETY_NINE.gains += doc.gain99 || 0;
+                monthlyMetrics.NINETY_NINE.hours += doc.hours99 || 0;
+                monthlyMetrics.NINETY_NINE.trips += doc.trips99 || 0;
+
+                monthlyMetrics.INDRIVER.gains += doc.gainIndriver || 0;
+                monthlyMetrics.INDRIVER.hours += doc.hoursIndriver || 0;
+                monthlyMetrics.INDRIVER.trips += doc.tripsIndriver || 0;
+                
+                monthlyMetrics.PRIVATE.gains += doc.gainPrivate || 0;
+                monthlyMetrics.PRIVATE.hours += doc.hoursPrivate || 0;
+                monthlyMetrics.PRIVATE.trips += doc.tripsPrivate || 0;
+            }
+        });
+        
+        const platforms = ['UBER', 'NINETY_NINE', 'INDRIVER', 'PRIVATE'];
+        const metrics = {
+            gainPerHour: [],
+            tripsPerHour: [],
+            labels: [],
+            colors: []
+        };
+        
+        platforms.forEach(p => {
+            const data = monthlyMetrics[p];
+            
+            if (data.gains > 0) { // Só inclui a plataforma se ela tiver ganhos no mês
+                const label = p === 'NINETY_NINE' ? '99' : p === 'PRIVATE' ? 'PART.' : p;
+                metrics.labels.push(label);
+                metrics.colors.push(NEON_COLORS[p]);
+
+                // Cálculo seguro: Ganho por Hora (R$/h)
+                const gainPerHour = data.hours > 0 ? data.gains / data.hours : 0;
+                metrics.gainPerHour.push(gainPerHour);
+
+                // Cálculo seguro: Viagens por Hora
+                const tripsPerHour = data.hours > 0 ? data.trips / data.hours : 0;
+                metrics.tripsPerHour.push(tripsPerHour);
+            }
+        });
+
+        return metrics;
+    }
+
+    function updateEfficiencyCharts(metrics) {
+        // 1. Ganho por Hora (R$/h)
+        const gainPerHourData = {
+            labels: metrics.labels,
+            datasets: [{
+                label: 'R$ / Hora',
+                data: metrics.gainPerHour,
+                backgroundColor: metrics.colors,
+                borderColor: '#fff',
+                borderWidth: 1,
+            }]
+        };
+        
+        const gainPerHourOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { color: NEON_COLORS.INDRIVER, callback: function(value) { return 'R$ ' + value.toFixed(2); } } },
+                x: { ticks: { color: NEON_COLORS.INDRIVER } }
+            },
+            plugins: { legend: { display: false } }
+        };
+        
+        if (gainPerHourChartInstance) gainPerHourChartInstance.destroy();
+        gainPerHourChartInstance = createChart('gainPerHourChart', 'bar', gainPerHourData, gainPerHourOptions);
+        
+        // 2. Viagens por Hora
+        const tripsPerHourData = {
+            labels: metrics.labels,
+            datasets: [{
+                label: 'Viagens / Hora',
+                data: metrics.tripsPerHour,
+                backgroundColor: metrics.colors,
+                borderColor: '#fff',
+                borderWidth: 1,
+            }]
+        };
+        
+        const tripsPerHourOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, ticks: { color: NEON_COLORS.INDRIVER, callback: function(value) { return value.toFixed(1); } } },
+                x: { ticks: { color: NEON_COLORS.INDRIVER } }
+            },
+            plugins: { legend: { display: false } }
+        };
+
+        if (tripsPerHourChartInstance) tripsPerHourChartInstance.destroy();
+        tripsPerHourChartInstance = createChart('tripsPerHourChart', 'bar', tripsPerHourData, tripsPerHourOptions);
+    }
+    
     function updateGainChart(gainBreakdown) {
         // Abreviado para caber melhor na tela
         const labels = ['UBER', '99', 'IND.', 'PART.', 'VENDAS']; 
@@ -833,6 +1280,8 @@
             updateWeeklyDisplay(0, 0);
             updateGainChart(monthlyGainBreakdown);
             updateExpenseChart(monthlyExpenseBreakdown);
+            updateEfficiencyCharts({ gainPerHour: [], tripsPerHour: [], labels: [], colors: [] });
+            updateTrendChart([]);
             return;
         }
 
@@ -863,10 +1312,14 @@
             }
         });
         
+        const efficiencyMetrics = calculateEfficiencyMetrics(records);
+
         updateMonthlyDisplay(monthlyTotalProfit, monthlyTotalGains);
         updateWeeklyDisplay(weeklyTotalProfit, weeklyTotalGains);
         updateGainChart(monthlyGainBreakdown);
         updateExpenseChart(monthlyExpenseBreakdown);
+        updateEfficiencyCharts(efficiencyMetrics); // Atualiza os gráficos de eficiência
+        updateTrendChart(records); // NOVO: Atualiza o Gráfico de Tendência
     }
 
     function updateResultDisplay(profit, totalCostToday, totalCostPerKm, profitPerKm, error = null) {
@@ -915,12 +1368,21 @@
             totalDailyCost,
             netProfit,
             profitPerKm,
-            // Ganhos
+            // Ganhos (R$)
             gainUber: getFloatValue(elements.gainUber),
             gain99: getFloatValue(elements.gain99),
             gainIndriver: getFloatValue(elements.gainIndriver),
             gainPrivate: getFloatValue(elements.gainPrivate),
             gainProducts: getFloatValue(elements.gainProducts),
+            // Ganhos (Horas/Viagens) - NOVOS CAMPOS
+            hoursUber: getFloatValue(elements.hoursUber),
+            tripsUber: getFloatValue(elements.tripsUber),
+            hours99: getFloatValue(elements.hours99),
+            trips99: getFloatValue(elements.trips99),
+            hoursIndriver: getFloatValue(elements.hoursIndriver),
+            tripsIndriver: getFloatValue(elements.tripsIndriver),
+            hoursPrivate: getFloatValue(elements.hoursPrivate),
+            tripsPrivate: getFloatValue(elements.tripsPrivate),
             // Despesas
             expenseFuel: getFloatValue(elements.expenseFuel),
             expenseFood: getFloatValue(elements.expenseFood),
@@ -938,12 +1400,24 @@
         elements.dailyInfo.value = data.dateInfo;
         elements.dailyKmInput.value = data.dailyKm;
         
+        // Ganhos (R$)
         elements.gainUber.value = data.gainUber;
         elements.gain99.value = data.gain99;
         elements.gainIndriver.value = data.gainIndriver;
         elements.gainPrivate.value = data.gainPrivate;
         elements.gainProducts.value = data.gainProducts;
         
+        // Ganhos (Horas/Viagens) - NOVOS CAMPOS
+        elements.hoursUber.value = data.hoursUber || '';
+        elements.tripsUber.value = data.tripsUber || '';
+        elements.hours99.value = data.hours99 || '';
+        elements.trips99.value = data.trips99 || '';
+        elements.hoursIndriver.value = data.hoursIndriver || '';
+        elements.tripsIndriver.value = data.tripsIndriver || '';
+        elements.hoursPrivate.value = data.hoursPrivate || '';
+        elements.tripsPrivate.value = data.tripsPrivate || '';
+
+        // Despesas
         elements.expenseFuel.value = data.expenseFuel;
         elements.expenseFood.value = data.expenseFood;
         elements.expenseParking.value = data.expenseParking;
@@ -994,15 +1468,54 @@
             
             const detailsSpan = document.createElement('span');
             detailsSpan.className = 'history-details';
-            detailsSpan.textContent = `KM: ${dailyKm} | Bruto: ${formatCurrency(totalGains)}`;
+            // Exibe as novas métricas de performance no histórico para uma análise rápida (Total de Horas e Viagens)
+            const totalHours = (data.hoursUber || 0) + (data.hours99 || 0) + (data.hoursIndriver || 0) + (data.hoursPrivate || 0);
+            const totalTrips = (data.tripsUber || 0) + (data.trips99 || 0) + (data.tripsIndriver || 0) + (data.tripsPrivate || 0);
+
+            detailsSpan.textContent = `KM: ${dailyKm} | Bruto: ${formatCurrency(totalGains)} | H: ${totalHours.toFixed(1)} | V: ${totalTrips}`;
 
             dataContainer.appendChild(dateSpan);
             dataContainer.appendChild(profitSpan);
             dataContainer.appendChild(detailsSpan); 
 
             listItem.appendChild(dataContainer);
+            
+            // CONTROLES DE EXCLUSÃO (NOVO)
+            const controlsDiv = document.createElement('div');
+            controlsDiv.className = 'history-controls';
+            
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.innerHTML = '&#128465;'; // Ícone de Lixeira (Trash icon)
+            deleteBtn.title = 'Excluir Lançamento';
+            
+            // CORREÇÃO: Usar o closure para garantir que o ID é passado e que o clique não é propagado
+            deleteBtn.onclick = (e) => {
+                e.stopPropagation(); 
+                if (confirm(`Tem certeza que deseja EXCLUIR o lançamento de ${dateDisplay}? Esta ação é irreversível.`)) {
+                    deleteRecord(data.id);
+                }
+            };
+            
+            controlsDiv.appendChild(deleteBtn);
+            listItem.appendChild(controlsDiv);
+
+
             elements.historyList.appendChild(listItem);
         });
+    }
+
+    function deleteRecord(recordId) {
+        const initialCount = allRecords.length;
+        allRecords = allRecords.filter(record => record.id !== recordId);
+        
+        if (allRecords.length < initialCount) {
+            saveRecords();
+            loadGoals(); // Recarrega tudo para atualizar gráficos e totais
+            alert('Lançamento excluído com sucesso!');
+        } else {
+            alert('Erro: Lançamento não encontrado.');
+        }
     }
 
     function setTodayDate() {
@@ -1041,6 +1554,17 @@
     if (elements.saveGoalsButton) {
         elements.saveGoalsButton.addEventListener('click', saveGoals);
     }
+    
+    if (elements.exportButton) {
+        elements.exportButton.addEventListener('click', exportData);
+    }
+    if (elements.importButton) {
+        elements.importButton.addEventListener('click', importData);
+    }
+    if (elements.importFile) {
+        elements.importFile.addEventListener('change', handleImportFile);
+    }
+
 
     const inputElements = document.querySelectorAll('input[type="number"], input[type="date"]');
     inputElements.forEach(input => {
@@ -1059,4 +1583,3 @@
 </script>
 </body>
 </html>
-
