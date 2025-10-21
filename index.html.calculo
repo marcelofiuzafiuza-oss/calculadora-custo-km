@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparador de Lucro Diário</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+
+    <style>
+        :root {
+            --color-bg: #1a1a2e;
+            --color-card: #2e2e4f;
+            --color-text: #e0f7fa;
+            --color-neon-blue: #00bcd4;
+            --color-neon-green: #00e676;
+            --color-neon-red: #ff3366;
+            --font-display: 'Orbitron', sans-serif;
+            --font-mono: 'Share Tech Mono', monospace;
+        }
+
+        body {
+            font-family: var(--font-mono);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            padding-bottom: 50px;
+        }
+
+        .neon-glow {
+            text-shadow: 0 0 5px var(--color-neon-blue), 0 0 10px var(--color-neon-blue);
+        }
+
+        .neon-card {
+            background-color: var(--color-card);
+            border: 2px solid var(--color-neon-blue);
+            box-shadow: 0 0 15px rgba(0, 188, 212, 0.4);
+            border-radius: 12px;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        input[type="date"] {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--color-neon-green);
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-family: var(--font-mono);
+            text-shadow: 0 0 2px var(--color-neon-green);
+        }
+
+        input[type="number"]:focus, input[type="text"]:focus, input[type="date"]:focus {
+            outline: none;
+            box-shadow: 0 0 8px var(--color-neon-green);
+        }
+
+        .result-display {
+            font-family: var(--font-display);
+            font-weight: 700;
+        }
+
+        .btn-neon {
+            background-color: var(--color-neon-blue);
+            color: var(--color-bg);
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+
+        .btn-neon:hover {
+            background-color: var(--color-neon-green);
+            box-shadow: 0 0 10px var(--color-neon-green);
+        }
+        
+        .income-input-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+        .income-input-group:last-child {
+            border-bottom: none;
+        }
+        .income-input-group input {
+            text-align: right;
+            max-width: 60%;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="appContainer" class="max-w-xl mx-auto space-y-6">
+        <h1 class="text-3xl text-center font-bold text-white mb-6 neon-glow" style="font-family: var(--font-display);">
+            COMPARADOR DE DESEMPENHO DIÁRIO
+        </h1>
+
+        <div class="neon-card p-5 space-y-4">
+            <h2 class="text-xl font-bold text-cyan-400">CALCULADORA DE CORRIDA PARTICULAR</h2>
+            
+            <div>
+                <label for="calcOrigin" class="text-xs block text-gray-400">PARTIDA</label>
+                <input type="text" id="calcOrigin" placeholder="Rua A, N° 100, São Paulo" class="w-full">
+            </div>
+            <div>
+                <label for="calcDestination" class="text-xs block text-gray-400">DESTINO</label>
+                <input type="text" id="calcDestination" placeholder="Av. B, 50, Campinas" class="w-full">
+            </div>
+            
+            <button id="fetchRouteButton" class="w-full btn-neon py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 shadow-lg mt-2">CALCULAR KM/TEMPO (MAPS API)</button>
+            <p id="routeStatus" class="text-center text-sm text-yellow-400 mt-2 font-bold">STATUS DO CÁLCULO</p>
+
+            <hr class="border-gray-700">
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label for="calcKm" class="text-xs block text-gray-400">DISTÂNCIA (KM) <span class="text-yellow-400">(Manual/Auto)</span></label>
+                    <input type="number" id="calcKm" placeholder="15.5" min="0" step="0.1" class="w-full">
+                </div>
+                <div>
+                    <label for="calcTime" class="text-xs block text-gray-400">TEMPO (MINUTOS) <span class="text-yellow-400">(Manual/Auto)</span></label>
+                    <input type="number" id="calcTime" placeholder="25" min="0" step="1" class="w-full">
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-3">
+                 <div class="col-span-2">
+                    <label for="calcRate" class="text-xs block text-gray-400">VALOR/KM REFERÊNCIA (R$)</label>
+                    <input type="number" id="calcRate" placeholder="Ex: 2.50" min="0" step="0.01" class="w-full">
+                </div>
+                <div>
+                    <label for="calcMargin" class="text-xs block text-gray-400">MARGEM (%)</label>
+                    <input type="number" id="calcMargin" placeholder="Ex: 20" min="0" step="1" class="w-full">
+                </div>
+            </div>
+            
+             <div>
+                <label for="calcToll" class="text-xs block text-gray-400">PEDÁGIO (R$)</label>
+                <input type="number" id="calcToll" placeholder="Ex: 7.50" min="0" step="0.01" class="w-full">
+            </div>
+
+            <div class="flex justify-between border-t border-cyan-500 pt-3">
+                <span class="text-lg text-yellow-400 font-bold">CUSTO BASE (KM + Tempo):</span>
+                <span id="calcBaseCostDisplay" class="text-lg result-display text-yellow-400">R$ 0,00</span>
+            </div>
+            
+            <div class="flex justify-between border-t border-cyan-500 pt-3">
+                <span class="text-lg text-green-400 font-bold">VALOR MÍNIMO IDEAL:</span>
+                <span id="calcFinalValueDisplay" class="text-2xl result-display text-green-400">R$ 0,00</span>
+            </div>
+            
+        </div>
+        <div class="neon-card p-5 space-y-4">
+            <h2 class="text-xl font-bold text-cyan-400">DADOS CHAVE</h2>
+            
+            <label for="dateInput" class="text-xs block text-gray-400">DATA</label>
+            <input type="date" id="dateInput" class="w-full mb-3">
+
+            <label for="kmInput" class="text-xs block text-gray-400">KM PERCORRIDO NO DIA</label>
+            <input type="number" id="kmInput" placeholder="Ex: 350" min="0" step="1" class="w-full mb-3">
+
+            <div>
+                <label for="projectedProfitInput" class="text-xs block text-gray-400">PROJEÇÃO DE LUCRO (R$)</label>
+                <input type="number" id="projectedProfitInput" placeholder="Ex: 300.00" min="0" step="0.01" class="w-full">
+            </div>
+        </div>
+        
+        <div class="neon-card p-5 space-y-4">
+            <h2 class="text-xl font-bold text-cyan-400">GANHO BRUTO POR ORIGEM (R$)</h2>
+            
+            <div id="incomeInputs" class="space-y-2">
+                
+                <div class="income-input-group">
+                    <label class="text-gray-300">Uber:</label>
+                    <input type="number" id="incomeUber" placeholder="0.00" min="0" step="0.01">
+                </div>
+                
+                <div class="income-input-group">
+                    <label class="text-gray-300">99:</label>
+                    <input type="number" id="income99" placeholder="0.00" min="0" step="0.01">
+                </div>
+                
+                <div class="income-input-group">
+                    <label class="text-gray-300">Indriver:</label>
+                    <input type="number" id="incomeIndriver" placeholder="0.00" min="0" step="0.01">
+                </div>
+                
+                <div class="income-input-group">
+                    <label class="text-gray-300">Particular:</label>
+                    <input type="number" id="incomeParticular" placeholder="0.00" min="0" step="0.01">
+                </div>
+                
+                <div class="income-input-group">
+                    <label class="text-gray-300">Loja/Entrega:</label>
+                    <input type="number" id="incomeLoja" placeholder="0.00" min="0" step="0.01">
+                </div>
+                
+                <div class="flex justify-between border-t border-cyan-500 pt-3">
+                    <span class="text-lg text-cyan-400 font-bold">GANHO BRUTO TOTAL:</span>
+                    <span id="realProfitTotalDisplay" class="text-lg result-display text-green-400">R$ 0,00</span>
+                </div>
+                
+            </div>
+        </div>
+
+        <div class="neon-card p-5 space-y-4">
+            <h2 class="text-xl font-bold text-cyan-400">REGISTRO DE GASTOS VARIÁVEIS</h2>
+            
+            <div id="expenseInputs" class="space-y-3">
+                </div>
+
+            <div class="grid grid-cols-3 gap-2 mt-4">
+                <input type="text" id="newExpenseDescription" placeholder="Descrição (Ex: Combustível)" class="col-span-2">
+                <input type="number" id="newExpenseValue" placeholder="Valor" min="0" step="0.01">
+            </div>
+            <button id="addExpenseButton" class="w-full btn-neon py-2 mt-2 rounded-lg bg-green-500 hover:bg-green-400 shadow-md">ADICIONAR GASTO</button>
+        </div>
+
+
+        <div class="neon-card p-5 space-y-4">
+            <h2 class="text-xl font-bold text-cyan-400 mb-4">RESULTADOS E ANÁLISE</h2>
+
+            <div id="results" class="space-y-3">
+                <div class="flex justify-between border-b border-gray-600 pb-2">
+                    <span class="text-sm text-gray-400">Total de Custos Variáveis:</span>
+                    <span id="totalExpensesDisplay" class="text-lg result-display text-red-400">R$ 0,00</span>
+                </div>
+                
+                <div class="flex justify-between pb-2">
+                    <span class="text-sm text-gray-400">Lucro Líquido do Dia:</span>
+                    <span id="netProfitDisplay" class="text-lg result-display text-green-400">R$ 0,00</span>
+                </div>
+                
+                <div class="flex justify-between border-t border-gray-600 pt-3">
+                    <span class="text-sm text-gray-400">Lucro por KM:</span>
+                    <span id="profitPerKmDisplay" class="text-xl result-display text-green-400">R$ 0,000</span>
+                </div>
+
+                <div class="flex justify-between pt-3">
+                    <span class="text-sm text-gray-400">Diferença da Projeção:</span>
+                    <span id="projectionDifferenceDisplay" class="text-xl result-display text-yellow-400">- R$ 300,00</span>
+                </div>
+            </div>
+            
+            <button id="calculateButton" class="w-full btn-neon py-3 mt-4 rounded-lg shadow-lg">CALCULAR DESEMPENHO</button>
+
+        </div>
+        
+        <div class="flex space-x-3">
+            <button id="saveButton" class="flex-1 btn-neon py-3 rounded-lg bg-indigo-500 hover:bg-indigo-400 shadow-md">SALVAR LANÇAMENTO</button>
+            <button id="clearButton" class="flex-1 btn-neon py-3 rounded-lg bg-gray-500 hover:bg-gray-400 shadow-md">LIMPAR</button>
+        </div>
+        
+        <div class="neon-card p-5">
+            <h2 class="text-xl font-bold text-cyan-400 mb-4">HISTÓRICO LOCAL</h2>
+            <ul id="historyList" class="space-y-3">
+                <li class="text-center text-sm text-gray-500">Nenhum registro encontrado.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDCN4MiCDSvq0A8DmmahQLxPyLrXjlAOvg&libraries=places&callback=initMapServices"></script>
+
+    <script>
+        // Variáveis globais para os serviços do Google Maps
+        let directionsService;
+        
+        // Função de callback da API do Google Maps
+        function initMapServices() {
+            if (typeof google !== 'undefined' && google.maps && google.maps.DirectionsService) {
+                directionsService = new google.maps.DirectionsService();
+            } else {
+                DOM.routeStatus.textContent = "Erro: API do Google Maps não carregada.";
+                DOM.routeStatus.classList.remove('text-yellow-400');
+                DOM.routeStatus.classList.add('text-red-400');
+            }
+            
+            initializeApp();
+        }
+
+        const DOM = {
+            dateInput: document.getElementById('dateInput'),
+            kmInput: document.getElementById('kmInput'),
+            projectedProfitInput: document.getElementById('projectedProfitInput'),
+            
+            incomeUber: document.getElementById('incomeUber'),
+            income99: document.getElementById('income99'),
+            incomeIndriver: document.getElementById('incomeIndriver'),
+            incomeParticular: document.getElementById('incomeParticular'),
+            incomeLoja: document.getElementById('incomeLoja'),
+            realProfitTotalDisplay: document.getElementById('realProfitTotalDisplay'),
+
+            calcOrigin: document.getElementById('calcOrigin'),
+            calcDestination: document.getElementById('calcDestination'),
+            fetchRouteButton: document.getElementById('fetchRouteButton'),
+            routeStatus: document.getElementById('routeStatus'),
+            calcKm: document.getElementById('calcKm'),
+            calcTime: document.getElementById('calcTime'),
+            calcRate: document.getElementById('calcRate'),
+            calcMargin: document.getElementById('calcMargin'),
+            calcToll: document.getElementById('calcToll'),
+            calcBaseCostDisplay: document.getElementById('calcBaseCostDisplay'),
+            calcFinalValueDisplay: document.getElementById('calcFinalValueDisplay'),
+            
+            calculateButton: document.getElementById('calculateButton'),
+            addExpenseButton: document.getElementById('addExpenseButton'),
+            newExpenseDescription: document.getElementById('newExpenseDescription'),
+            newExpenseValue: document.getElementById('newExpenseValue'),
+            expenseInputs: document.getElementById('expenseInputs'),
+            totalExpensesDisplay: document.getElementById('totalExpensesDisplay'),
+            netProfitDisplay: document.getElementById('netProfitDisplay'),
+            profitPerKmDisplay: document.getElementById('profitPerKmDisplay'),
+            projectionDifferenceDisplay: document.getElementById('projectionDifferenceDisplay'),
+            saveButton: document.getElementById('saveButton'),
+            clearButton: document.getElementById('clearButton'),
+            historyList: document.getElementById('historyList'),
+        };
+
+        const LOCAL_STORAGE_KEY = 'profit_projection_records';
+        let expenses = []; 
+        let records = [];  
+
+        const inputFieldsToWatch = [
+            DOM.kmInput, 
+            DOM.projectedProfitInput,
+            DOM.incomeUber, 
+            DOM.income99, 
+            DOM.incomeIndriver, 
+            DOM.incomeParticular, 
+            DOM.incomeLoja
+        ];
+        
+        // Mantive os campos KM e Tempo aqui para que o cálculo seja disparado quando o usuário digitar manualmente.
+        const calcFieldsToWatch = [
+            DOM.calcRate,
+            DOM.calcMargin,
+            DOM.calcToll,
+            DOM.calcKm, 
+            DOM.calcTime
+        ];
+
+
+        // --- FUNÇÕES AUXILIARES ---
+
+        function getFloatValue(element) {
+            if (!element) return 0;
+            const value = parseFloat(element.value.replace(',', '.')); 
+            return isNaN(value) ? 0 : value;
+        }
+
+        function formatCurrency(value, decimals = 2) {
+            const sign = value < 0 ? '- ' : '';
+            const absValue = Math.abs(value);
+            return `${sign}R$ ${absValue.toFixed(decimals).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+        }
+
+        function formatTime(seconds) {
+            return Math.ceil(seconds / 60); 
+        }
+
+        function formatDistance(meters) {
+            return (meters / 1000).toFixed(1); 
+        }
+
+        function generateUniqueId() {
+            return 'id-' + Date.now() + Math.random().toString(16).substring(2, 6);
+        }
+        
+        function setTodayDate() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            DOM.dateInput.value = `${yyyy}-${mm}-${dd}`;
+        }
+        
+        // --- FUNÇÕES DA CALCULADORA ---
+
+        function fetchRouteData() {
+            if (!directionsService) {
+                DOM.routeStatus.textContent = "Erro: Serviço de Rotas indisponível (API do Google não carregou).";
+                DOM.routeStatus.classList.remove('text-yellow-400');
+                DOM.routeStatus.classList.add('text-red-400');
+                return;
+            }
+
+            const origin = DOM.calcOrigin.value.trim();
+            const destination = DOM.calcDestination.value.trim();
+
+            if (!origin || !destination) {
+                DOM.routeStatus.textContent = "Preencha Partida e Destino.";
+                DOM.routeStatus.classList.remove('text-green-400', 'text-yellow-400');
+                DOM.routeStatus.classList.add('text-red-400');
+                return;
+            }
+
+            DOM.routeStatus.textContent = "Calculando rota...";
+            DOM.routeStatus.classList.remove('text-green-400', 'text-red-400');
+            DOM.routeStatus.classList.add('text-yellow-400'); 
+            DOM.fetchRouteButton.disabled = true;
+
+            const request = {
+                origin: origin,
+                destination: destination,
+                travelMode: 'DRIVING'
+            };
+
+            directionsService.route(request, (response, status) => {
+                DOM.fetchRouteButton.disabled = false;
+                
+                if (status === 'OK') {
+                    const route = response.routes[0];
+                    if (!route || !route.legs || route.legs.length === 0) {
+                        DOM.routeStatus.textContent = `Erro interno: Rota OK, mas dados de percurso vazios.`;
+                        DOM.routeStatus.classList.remove('text-green-400', 'text-yellow-400');
+                        DOM.routeStatus.classList.add('text-red-400');
+                        console.error('API Status OK, but route data is missing or empty.', response);
+                        return;
+                    }
+                    
+                    const leg = route.legs[0];
+                    
+                    const distanceKm = formatDistance(leg.distance.value);
+                    const timeMinutes = formatTime(leg.duration.value);
+
+                    // AQUI ATUALIZA OS CAMPOS (sobrescrevendo o manual, se houver)
+                    DOM.calcKm.value = distanceKm;
+                    DOM.calcTime.value = timeMinutes;
+
+                    DOM.routeStatus.textContent = `✅ SUCESSO: ${distanceKm} KM em ${timeMinutes} Min.`;
+                    DOM.routeStatus.classList.remove('text-red-400', 'text-yellow-400');
+                    DOM.routeStatus.classList.add('text-green-400');
+                    
+                    calculatePrivateRun(); 
+                } else {
+                    let errorMessage = `❌ ERRO DE API. Status: ${status}.`;
+                    
+                    if (status === 'ZERO_RESULTS' || status === 'NOT_FOUND') {
+                        errorMessage += " Verifique se os endereços estão completos (Rua, Cidade, Estado).";
+                    } else if (status === 'REQUEST_DENIED') {
+                        errorMessage += " Chave de API inválida, restrições de domínio ou APIs (Directions/Places) desativadas.";
+                    }
+                    
+                    DOM.routeStatus.textContent = errorMessage;
+                    DOM.routeStatus.classList.remove('text-green-400', 'text-yellow-400');
+                    DOM.routeStatus.classList.add('text-red-400');
+                    
+                    console.error("Google Maps Directions API Error. Status:", status, "Response:", response);
+
+                    // Limpa os campos se der erro
+                    DOM.calcKm.value = '';
+                    DOM.calcTime.value = '';
+                    calculatePrivateRun(); 
+                }
+            });
+        }
+        
+        function calculatePrivateRun() {
+            const km = getFloatValue(DOM.calcKm);
+            const time = getFloatValue(DOM.calcTime);
+            const ratePerKm = getFloatValue(DOM.calcRate);
+            const margin = getFloatValue(DOM.calcMargin);
+            const toll = getFloatValue(DOM.calcToll);
+
+            const ratePerMinute = 0.30; 
+            
+            const costKm = km * ratePerKm;
+            const costTime = time * ratePerMinute;
+            
+            const baseCost = costKm + costTime;
+            const totalCost = baseCost + toll;
+            
+            const finalValue = totalCost / (1 - (margin / 100));
+
+            DOM.calcBaseCostDisplay.textContent = formatCurrency(baseCost);
+            
+            if (finalValue && isFinite(finalValue) && margin < 100) {
+                 DOM.calcFinalValueDisplay.textContent = formatCurrency(finalValue);
+            } else {
+                 DOM.calcFinalValueDisplay.textContent = 'R$ 0,00';
+            }
+        }
+
+
+        // --- GESTÃO DE GASTOS VARIÁVEIS ---
+
+        function renderExpenses() {
+            DOM.expenseInputs.innerHTML = '';
+            let totalExpenses = 0;
+
+            if (expenses.length === 0) {
+                DOM.expenseInputs.innerHTML = '<p class="text-center text-sm text-gray-500">Nenhum gasto adicionado.</p>';
+            }
+
+            expenses.forEach(expense => {
+                totalExpenses += expense.value;
+                const item = document.createElement('div');
+                item.className = 'flex justify-between items-center text-sm bg-gray-800 p-2 rounded-lg';
+                item.innerHTML = `
+                    <span class="text-gray-300">${expense.description}</span>
+                    <span class="text-red-400 font-bold">${formatCurrency(expense.value)}</span>
+                    <button data-id="${expense.id}" class="text-red-500 hover:text-red-400 text-lg ml-2 leading-none">&times;</button>
+                `;
+                item.querySelector('button').addEventListener('click', deleteExpense);
+                DOM.expenseInputs.appendChild(item);
+            });
+            
+            calculatePerformance();
+        }
+
+        function addExpense() {
+            const description = DOM.newExpenseDescription.value.trim();
+            const value = getFloatValue(DOM.newExpenseValue);
+
+            if (description === '' || value <= 0) {
+                alert('Preencha a descrição e o valor do gasto.');
+                return;
+            }
+
+            expenses.push({
+                id: generateUniqueId(),
+                description,
+                value,
+            });
+
+            DOM.newExpenseDescription.value = '';
+            DOM.newExpenseValue.value = '';
+            renderExpenses();
+        }
+
+        function deleteExpense(event) {
+            const id = event.target.dataset.id;
+            expenses = expenses.filter(exp => exp.id !== id);
+            renderExpenses();
+        }
+
+
+        // --- CÁLCULO DE PERFORMANCE ---
+
+        function calculatePerformance() {
+            const km = getFloatValue(DOM.kmInput);
+            const projectedProfit = getFloatValue(DOM.projectedProfitInput);
+            
+            const incomeValues = {
+                uber: getFloatValue(DOM.incomeUber),
+                '99': getFloatValue(DOM.income99),
+                indriver: getFloatValue(DOM.incomeIndriver),
+                particular: getFloatValue(DOM.incomeParticular),
+                loja: getFloatValue(DOM.incomeLoja)
+            };
+            
+            const realGains = incomeValues.uber + incomeValues['99'] + incomeValues.indriver + incomeValues.particular + incomeValues.loja;
+            
+            let totalExpenses = 0;
+            expenses.forEach(exp => totalExpenses += exp.value);
+            
+            const netProfit = realGains - totalExpenses;
+            const profitPerKm = km > 0 ? netProfit / km : 0;
+            const projectionDifference = realGains - projectedProfit;
+
+            const profitColor = netProfit >= 0 ? 'text-green-400' : 'text-red-400';
+            const kmColor = profitPerKm >= 0 ? 'text-green-400' : 'text-red-400';
+            const diffColor = projectionDifference >= 0 ? 'text-green-400' : 'text-red-400';
+            
+            DOM.realProfitTotalDisplay.textContent = formatCurrency(realGains);
+            DOM.realProfitTotalDisplay.classList.remove('text-green-400', 'text-red-400');
+            DOM.realProfitTotalDisplay.classList.add(realGains >= 0 ? 'text-green-400' : 'text-red-400');
+
+            DOM.totalExpensesDisplay.textContent = formatCurrency(totalExpenses);
+            
+            DOM.netProfitDisplay.textContent = formatCurrency(netProfit);
+            DOM.netProfitDisplay.classList.remove('text-green-400', 'text-red-400');
+            DOM.netProfitDisplay.classList.add(profitColor);
+
+            DOM.profitPerKmDisplay.textContent = formatCurrency(profitPerKm, 3);
+            DOM.profitPerKmDisplay.classList.remove('text-green-400', 'text-red-400');
+            DOM.profitPerKmDisplay.classList.add(kmColor);
+
+            DOM.projectionDifferenceDisplay.textContent = formatCurrency(projectionDifference);
+            DOM.projectionDifferenceDisplay.classList.remove('text-green-400', 'text-red-400', 'text-yellow-400');
+            DOM.projectionDifferenceDisplay.classList.add(diffColor);
+
+            return {
+                km,
+                projectedProfit,
+                realGains,
+                totalExpenses,
+                netProfit,
+                profitPerKm,
+                projectionDifference,
+                expenses,
+                incomeDetails: incomeValues,
+            };
+        }
+        
+        // --- GESTÃO DE HISTÓRICO ---
+        
+        function loadHistory() {
+            const recordsJson = localStorage.getItem(LOCAL_STORAGE_KEY);
+            records = recordsJson ? JSON.parse(recordsJson) : [];
+            records.sort((a, b) => (a.dateInfo < b.dateInfo ? 1 : -1));
+            renderHistoryList();
+        }
+
+        function saveHistory() {
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(records));
+        }
+
+        function renderHistoryList() {
+            DOM.historyList.innerHTML = '';
+
+            if (records.length === 0) {
+                 DOM.historyList.innerHTML = '<li class="text-center text-sm text-gray-500 p-2">Nenhum registro encontrado.</li>';
+                return;
+            }
+
+            records.forEach(data => {
+                const profitColor = data.netProfit >= 0 ? 'text-green-400' : 'text-red-400';
+                const realGainsColor = data.projectionDifference >= 0 ? 'text-green-400' : 'text-red-400';
+                
+                let incomeDetailsHtml = '';
+                if (data.incomeDetails) {
+                    for (const [key, value] of Object.entries(data.incomeDetails)) {
+                        if (value > 0) {
+                            const label = key.charAt(0).toUpperCase() + key.slice(1).replace('99', '99');
+                            incomeDetailsHtml += `<p class="text-xs text-gray-600 ml-4">${label}: ${formatCurrency(value)}</p>`;
+                        }
+                    }
+                }
+                
+                const listItem = document.createElement('li');
+                listItem.className = 'neon-card p-3 flex justify-between items-start cursor-pointer hover:bg-gray-700 transition duration-150';
+                
+                listItem.innerHTML = `
+                    <div>
+                        <span class="text-sm font-bold text-white">${data.dateInfo} - ${data.km} KM</span>
+                        <p class="text-xs text-gray-400 mt-1">Lucro Líquido: <span class="${profitColor}">${formatCurrency(data.netProfit)}</span></p>
+                        
+                        <div class="mt-2 space-y-0">
+                            <p class="text-xs text-gray-500 font-bold">GANHO BRUTO (${formatCurrency(data.realGains)}):</p>
+                            ${incomeDetailsHtml}
+                        </div>
+                        
+                        <div class="mt-2">
+                             <p class="text-xs text-gray-500">Projetado: <span class="text-yellow-400">${formatCurrency(data.projectedProfit)}</span></p>
+                             <p class="text-xs text-gray-500">Diferença: <span class="${realGainsColor}">${formatCurrency(data.projectionDifference)}</span></p>
+                        </div>
+                    </div>
+                    <button data-id="${data.id}" class="text-red-500 hover:text-red-400 text-lg ml-2 leading-none delete-record-btn">&times;</button>
+                `;
+                DOM.historyList.appendChild(listItem);
+            });
+            
+            document.querySelectorAll('.delete-record-btn').forEach(btn => {
+                btn.addEventListener('click', deleteRecord);
+            });
+        }
+        
+        function saveRecord() {
+            const data = calculatePerformance();
+            if (data.km === 0 && data.realGains === 0) {
+                alert('Preencha os dados de KM ou Lucro (por origem) antes de salvar.');
+                return;
+            }
+            
+            const newRecord = {
+                id: generateUniqueId(),
+                dateInfo: DOM.dateInput.value || new Date().toISOString().slice(0, 10),
+                ...data,
+                expenses: JSON.parse(JSON.stringify(expenses)),
+            };
+            
+            records.push(newRecord);
+            saveHistory();
+            alert('Lançamento salvo com sucesso!');
+            loadHistory(); 
+            
+            clearAllInputs();
+        }
+
+        function deleteRecord(event) {
+            const id = event.target.dataset.id;
+            if (confirm('Tem certeza que deseja EXCLUIR este lançamento?')) {
+                records = records.filter(record => record.id !== id);
+                saveHistory();
+                loadHistory(); 
+            }
+        }
+        
+        function clearAllInputs() {
+            DOM.kmInput.value = '';
+            DOM.projectedProfitInput.value = '';
+            
+            [DOM.incomeUber, DOM.income99, DOM.incomeIndriver, DOM.incomeParticular, DOM.incomeLoja].forEach(input => input.value = '');
+
+            DOM.calcOrigin.value = '';
+            DOM.calcDestination.value = '';
+            DOM.routeStatus.textContent = 'STATUS DO CÁLCULO';
+            DOM.routeStatus.classList.remove('text-green-400', 'text-red-400');
+            DOM.routeStatus.classList.add('text-yellow-400'); 
+            [DOM.calcKm, DOM.calcTime, DOM.calcRate, DOM.calcMargin, DOM.calcToll].forEach(input => input.value = ''); 
+
+            DOM.newExpenseDescription.value = '';
+            DOM.newExpenseValue.value = '';
+            expenses = [];
+            renderExpenses();
+            setTodayDate();
+            calculatePerformance(); 
+            calculatePrivateRun();
+        }
+
+
+        // --- INICIALIZAÇÃO ---
+
+        function initializeApp() {
+            setTodayDate(); 
+            loadHistory();
+            renderExpenses();
+            calculatePerformance(); 
+            calculatePrivateRun(); 
+        }
+        
+        // --- EVENT LISTENERS ---
+
+        DOM.addExpenseButton.addEventListener('click', addExpense);
+        DOM.calculateButton.addEventListener('click', calculatePerformance); 
+        DOM.saveButton.addEventListener('click', saveRecord);
+        DOM.clearButton.addEventListener('click', clearAllInputs);
+
+        DOM.fetchRouteButton.addEventListener('click', fetchRouteData);
+
+        inputFieldsToWatch.forEach(input => {
+            input.addEventListener('input', calculatePerformance);
+        });
+        
+        // Atualizar calculadora ao digitar nos campos manuais/preenchidos
+        calcFieldsToWatch.forEach(input => {
+            input.addEventListener('input', calculatePrivateRun);
+        });
+
+    </script>
+</body>
+</html>
