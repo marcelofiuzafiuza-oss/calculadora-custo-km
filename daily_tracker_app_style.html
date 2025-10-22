@@ -910,12 +910,21 @@
         if (!recordCollectionRef) return; 
 
         try {
-            const q = query(recordCollectionRef, orderBy("dateInfo", "desc"));
+            // REMOVIDO: orderBy("dateInfo", "desc") para contornar o erro de permissão/índice faltante.
+            const q = query(recordCollectionRef);
 
             onSnapshot(q, (snapshot) => {
                 allRecords = [];
                 snapshot.forEach((doc) => {
                     allRecords.push({ id: doc.id, ...doc.data() });
+                });
+
+                // NOVO: Ordenar os registros localmente por 'dateInfo' decrescente (mais recentes primeiro).
+                allRecords.sort((a, b) => {
+                    // Assume formato 'YYYY-MM-DD' para comparação de strings
+                    if (a.dateInfo < b.dateInfo) return 1;
+                    if (a.dateInfo > b.dateInfo) return -1;
+                    return 0;
                 });
 
                 // Chamadas de atualização da UI
