@@ -400,6 +400,11 @@
                 </div>
                 <div id="geminiCitations" class="text-xs text-gray-500 mt-2 space-y-1"></div>
             </div>
+            
+            <!-- NOVO: Aviso para Chave API em ambientes externos -->
+            <div id="geminiApiKeyWarning" class="text-xs text-red-400 bg-red-900/50 p-2 rounded-lg mt-2 hidden">
+                <!-- Conteúdo será preenchido pelo JS -->
+            </div>
 
             <!-- Cartão de Resumo Diário (POSIÇÃO MOVIDA) -->
             <div class="bg-gray-800 p-4 rounded-xl card-shadow border border-gray-700">
@@ -537,7 +542,7 @@
 
             <!-- HISTÓRICO DE LANÇAMENTOS -->
             <div class="bg-gray-900 p-4 rounded-xl card-shadow border border-gray-700">
-                <h3 class="text-sm font-semibold mb-4 text-white">HISTÓRICO DE LANÇAMENTOS</h3>
+                <h3 class="text-sm font-semibold mb-4浪费 text-white">HISTÓRICO DE LANÇAMENTOS</h3>
                 
                 <!-- FILTROS DE MÊS/ANO (NOVO - FEATURE 3) -->
                 <div class="flex space-x-4 mb-4">
@@ -594,9 +599,9 @@
     let timerStartTime = 0;
     
     // --- Configuração Gemini API ---
-    // A chave API é mantida vazia para uso no ambiente Canvas
+    // A chave API foi inserida aqui para que funcione em hosts externos.
+    const apiKey = "AIzaSyDrFQMxaxadzXpWccj-ddds3QSXw_BcVLc"; // <-- CHAVE INSERIDA
     const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=";
-    const apiKey = ""; 
 
     // Cores Vibrantes (Tailwind e Chart.js)
     const VIBRANT_COLORS = {
@@ -671,7 +676,6 @@
         monthlyPredictionLoading: document.getElementById('monthlyPredictionLoading'), 
         monthlySummaryMonthLabel: document.getElementById('monthlySummaryMonthLabel'),
         
-
         // Elementos Cálculo Fixo
         calculateFixedCostButton: document.getElementById('calculateFixedCostButton'),
         monthlyKmEstimate: document.getElementById('monthlyKmEstimate'),
@@ -712,7 +716,8 @@
         geminiAnalysisContent: document.getElementById('geminiAnalysisContent'),
         geminiCitations: document.getElementById('geminiCitations'),
         geminiLoading: document.getElementById('geminiLoading'),
-
+        geminiApiKeyWarning: document.getElementById('geminiApiKeyWarning'), // NOVO ELEMENTO
+        
         // Elementos de Autenticação
         appContentContainer: document.getElementById('appContentContainer'), 
         
@@ -1401,6 +1406,13 @@
             console.error("Erro: Elementos Gemini não carregados.");
             return;
         }
+        
+        // Se a chave API não estiver definida em um ambiente externo, não faça a chamada.
+        if (apiKey === "") {
+             elements.geminiAnalysisContent.innerHTML = 'Análise da IA indisponível: A chave de API Gemini não foi configurada para este host.';
+             elements.geminiLoading.classList.add('hidden');
+             return;
+        }
 
         elements.geminiAnalysisContent.innerHTML = 'Aguarde, o Coach Financeiro Gemini está analisando seus dados...';
         elements.geminiLoading.classList.remove('hidden');
@@ -1501,6 +1513,11 @@
              return;
         }
 
+        if (apiKey === "") {
+             predictionElement.textContent = 'Projeção indisponível (Chave API não configurada).';
+             loadingElement.classList.add('hidden');
+             return;
+        }
 
         if (goal <= 0) {
             predictionElement.textContent = 'Defina uma meta para ter uma projeção.';
@@ -2186,6 +2203,18 @@
         elements.dailyInfo.value = `${yyyy}-${mm}-${dd}`;
     }
     
+    // NOVO: Checa e exibe o aviso da API Key
+    function checkApiKeyWarning() {
+        if (!elements.geminiApiKeyWarning) return;
+        
+        if (apiKey === "") {
+             elements.geminiApiKeyWarning.classList.remove('hidden');
+             elements.geminiApiKeyWarning.innerHTML = "ATENÇÃO: A chave de API Gemini está vazia. Insira sua chave no código JS (variável 'apiKey') para que a Análise da IA funcione em hosts externos (como GitHub Pages).";
+        } else {
+             elements.geminiApiKeyWarning.classList.add('hidden');
+        }
+    }
+
     // --- FUNÇÃO DE INICIALIZAÇÃO LOCAL (Substitui Firebase Init) ---
     
     function initializeAppLocal() {
@@ -2214,6 +2243,9 @@
         const waitRatePerHour = waitRatePerMinute * 60;
         elements.waitRateDisplay.textContent = `R$ ${waitRatePerMinute.toFixed(2)}/min`;
         elements.waitPerHourDisplay.textContent = `R$ ${waitRatePerHour.toFixed(0)}/h`;
+        
+        // 6. NOVO: Checa e exibe o aviso da API Key
+        checkApiKeyWarning(); 
     }
     
     // --- EVENT LISTENERS ---
