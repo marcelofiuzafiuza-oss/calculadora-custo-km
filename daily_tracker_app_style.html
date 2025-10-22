@@ -551,6 +551,9 @@
     let isAuthReady = false; 
     setLogLevel('debug'); 
 
+    // Adicionado para lidar com o modo de demonstração (configuração ausente)
+    const DEMO_MODE_USER_ID = 'DEMO_MODE_NO_PERSISTENCE'; 
+
     // Variáveis Globais para Metas (Carregadas do Firestore)
     let weeklyGoal = 0;
     let monthlyGoal = 0;
@@ -754,6 +757,7 @@
     // --- FUNÇÕES DE PERSISTÊNCIA FIREBASE ---
     
     function getRecordCollectionRef() {
+        if (userId === DEMO_MODE_USER_ID) return null; // Novo: Evita chamadas ao Firestore em Modo Demo
         if (!userId || userId === 'Deslogado') {
              console.warn("Tentativa de acessar coleção sem userId.");
              return null;
@@ -762,6 +766,7 @@
     }
 
     function getFixedCostDocRef() {
+        if (userId === DEMO_MODE_USER_ID) return null; // Novo: Evita chamadas ao Firestore em Modo Demo
         if (!userId || userId === 'Deslogado') {
              console.warn("Tentativa de acessar doc de preferências sem userId.");
              return null;
@@ -770,7 +775,7 @@
     }
 
     async function loadFixedCostInputs() {
-        if (!isAuthReady || userId === 'Deslogado') return;
+        if (!isAuthReady || userId === 'Deslogado' || userId === DEMO_MODE_USER_ID) return;
 
         // É ESSENCIAL que os elementos abaixo estejam definidos no objeto 'elements'
         elements.weeklyGoalDisplay.textContent = 'Carregando...';
@@ -778,6 +783,8 @@
 
         try {
             const docRef = getFixedCostDocRef();
+            // A verificação de docRef nulo é coberta pelo retorno no início da função devido ao DEMO_MODE_USER_ID
+            
             const docSnap = await getDoc(docRef);
             const data = docSnap.exists() ? docSnap.data() : {};
             
@@ -823,8 +830,15 @@
     }
 
     async function saveFixedCostInputs(showSuccessLog = false) {
-        if (!isAuthReady || userId === 'Deslogado') {
-            console.warn("Tentativa de salvar configurações no Modo Anônimo. Os dados persistem na sessão atual, mas o log de erro foi removido.");
+        if (!isAuthReady || userId === 'Deslogado' || userId === DEMO_MODE_USER_ID) {
+            console.warn("Tentativa de salvar configurações. Em modo anônimo/demo, os dados persistem apenas na sessão atual.");
+            // Atualiza os globais mesmo em modo demo para manter a UI consistente
+            weeklyGoal = getFloatValue(elements.weeklyGoalInput);
+            monthlyGoal = getFloatValue(elements.monthlyGoalInput);
+            fixedCostPerKmValue = getFloatValue(elements.fixedCostPerKm);
+            
+            elements.weeklyGoalDisplay.textContent = formatCurrency(weeklyGoal);
+            elements.monthlyGoalDisplay.textContent = formatCurrency(monthlyGoal);
             return;
         }
 
@@ -872,9 +886,8 @@
     
     // Função para salvar Metas e Configurações (CHAMADA PELO BOTÃO)
     async function saveGoals() {
-        if (!isAuthReady || userId === 'Deslogado') {
-             console.warn("Tentativa de salvar metas no Modo Anônimo. Os dados persistem na sessão atual.");
-            return;
+        if (!isAuthReady || userId === 'Deslogado' || userId === DEMO_MODE_USER_ID) {
+             console.warn("Tentativa de salvar metas. Em modo anônimo/demo, os dados persistem apenas na sessão atual.");
         }
         await saveFixedCostInputs(true); 
         calculateSummaries(allRecords); 
@@ -883,7 +896,11 @@
 
 
     function loadRecords() {
-        if (!isAuthReady || userId === 'Deslogado') return;
+        if (!isAuthReady || userId === 'Deslogado' || userId === DEMO_MODE_USER_ID) {
+            elements.loadingHistory.textContent = 'Modo Demonstração: Persistência de dados desabilitada.';
+            elements.loadingHistory.style.display = 'block';
+            return;
+        }
 
         // Apenas a lista de histórico deve mostrar "Sincronizando"
         elements.loadingHistory.textContent = "Sincronizando dados com o Firestore...";
@@ -962,7 +979,8 @@
         const fixedCostPerKmResult = totalFixedCostMonthly / kmEstimate;
 
         elements.fixedCostPerKm.value = fixedCostPerKmResult.toFixed(3);
-        
+        fixedCostPerKmValue = fixedCostPerKmResult; // Update global value
+
         if (saveGoalsFlag) {
             saveFixedCostInputs(true); 
         }
@@ -1530,6 +1548,12 @@
     function handleImportFile(event) {
         const file = event.target.files[0];
         if (!file) return;
+        
+        if (userId === DEMO_MODE_USER_ID) {
+            console.error("Operação de Importação não permitida em Modo Demo (Sem persistência).");
+            // No alert(), usando console.error.
+            return;
+        }
 
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -1572,9 +1596,10 @@
             return;
         }
         
-        if (!isAuthReady || userId === 'Deslogado') {
-             console.warn("Tentativa de salvar registro no Modo Anônimo.");
-            return;
+        if (!isAuthReady || userId === 'Deslogado' || userId === DEMO_MODE_USER_ID) {
+             console.warn("Tentativa de salvar registro. Em modo anônimo/demo, o registro não será persistido na nuvem.");
+             clearInputFields(); 
+             return;
         }
 
         const isUpdate = recordIdToUpdate.value !== '';
@@ -1688,7 +1713,12 @@
         elements.weeklyTotalGainsDisplay.textContent = formatCurrency(totalGains);
 
         updateProgressDisplay(totalGains, weeklyGoal, elements.weeklyProgressLabel, elements.weeklyProgressValue, elements.weeklyProgressBar);
-        callGeminiPrediction(totalGains, weeklyGoal, 'weekly'); 
+        // Não chama a IA em modo demo
+        if (userId !== DEMO_MODE_USER_ID) {
+            callGeminiPrediction(totalGains, weeklyGoal, 'weekly'); 
+        } else {
+            elements.weeklyPredictionText.textContent = 'Projeção indisponível (Modo Demo).';
+        }
     }
 
     function updateMonthlyDisplay(totalProfit, totalGains) {
@@ -1702,7 +1732,12 @@
         elements.monthlyTotalGainsDisplay.textContent = formatCurrency(totalGains);
 
         updateProgressDisplay(totalGains, monthlyGoal, elements.monthlyProgressLabel, elements.monthlyProgressValue, elements.monthlyProgressBar);
-        callGeminiPrediction(totalGains, monthlyGoal, 'monthly');
+        // Não chama a IA em modo demo
+        if (userId !== DEMO_MODE_USER_ID) {
+            callGeminiPrediction(totalGains, monthlyGoal, 'monthly');
+        } else {
+            elements.monthlyPredictionText.textContent = 'Projeção indisponível (Modo Demo).';
+        }
     }
     
 
@@ -1862,7 +1897,15 @@
         elements.saveButton.textContent = recordIdToUpdate.value !== '' ? "ATUALIZAR LANÇAMENTO" : "SALVAR LANÇAMENTO";
 
         if (totalGains > 0) {
-            callGeminiAnalysis(currentCalculatedData);
+            // Não chama a IA em modo demo
+            if (userId !== DEMO_MODE_USER_ID) {
+                callGeminiAnalysis(currentCalculatedData);
+            } else {
+                if (elements.geminiAnalysisContent && elements.geminiCitations) {
+                    elements.geminiAnalysisContent.innerHTML = 'Análise de IA desabilitada no Modo Demo (Sem conexão com a nuvem).';
+                    elements.geminiCitations.innerHTML = '';
+                }
+            }
         } else {
             // Este é o bloco que falhava se geminiAnalysisContent fosse undefined
             if (elements.geminiAnalysisContent && elements.geminiCitations) {
@@ -2015,8 +2058,8 @@
     }
 
     async function deleteRecord(recordId) {
-        if (!isAuthReady || userId === 'Deslogado') {
-             console.warn("Tentativa de excluir registro no Modo Anônimo.");
+        if (!isAuthReady || userId === 'Deslogado' || userId === DEMO_MODE_USER_ID) {
+             console.warn("Tentativa de excluir registro. Em modo anônimo/demo, a exclusão não será persistida na nuvem.");
             return;
         }
 
@@ -2065,11 +2108,42 @@
         try {
             appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
             const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-
+            
+            // CHECK FOR MISSING FIREBASE CONFIG (The core of the fix for running on static hosts)
             if (Object.keys(firebaseConfig).length === 0) {
-                elements.loggedInUserDisplay.textContent = 'Configuração do Firebase ausente.';
-                return;
+                // --- MODO DEMO (CONFIG AUSENTE) ---
+                userId = DEMO_MODE_USER_ID; // Define um ID claro para Modo Demo
+                isAuthReady = true;
+                
+                elements.loggedInUserDisplay.textContent = 'Configuração do Firebase ausente. Modo Somente-UI.';
+                elements.appContentContainer.classList.remove('hidden');
+
+                // 1. Define valores padrão razoáveis no escopo global e na UI para evitar erros
+                weeklyGoal = 1200.00;
+                monthlyGoal = 5000.00;
+                fixedCostPerKmValue = 0.600; // Valor razoável para demo
+
+                elements.weeklyGoalDisplay.textContent = formatCurrency(weeklyGoal);
+                elements.monthlyGoalDisplay.textContent = formatCurrency(monthlyGoal);
+                elements.fixedCostPerKm.value = fixedCostPerKmValue.toFixed(3);
+                elements.weeklyGoalInput.value = weeklyGoal.toFixed(2);
+                elements.monthlyGoalInput.value = monthlyGoal.toFixed(2);
+                
+                // 2. Limpa o histórico (será preenchido pela função loadRecords em modo demo)
+                allRecords = [];
+                elements.historyList.innerHTML = '';
+                elements.loadingHistory.style.display = 'block';
+                elements.loadingHistory.textContent = 'Modo Demonstração: Persistência de dados desabilitada.';
+
+                calculateSummaries(allRecords); // Recalcula totais com dados vazios
+                calculateDailyProfit(); // Atualiza cálculos atuais
+                
+                console.warn("Firebase config absent. Running in UI-Only/Demo Mode. Persistence disabled.");
+
+                return; // CRUCIAL: Interrompe a execução antes de tentar chamar initializeApp sem config.
             }
+            
+            // --- CÓDIGO NORMAL (DENTRO DO CANVAS COM CONFIG) ---
 
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
@@ -2094,9 +2168,8 @@
                     
                     elements.loggedInUserDisplay.textContent = user.uid;
                     
-                    // Mostra a UI e o botão SAIR (agora removido)
+                    // Mostra a UI
                     elements.appContentContainer.classList.remove('hidden'); 
-                    // elements.signOutButton.classList.remove('hidden'); // Botão removido do HTML
 
                     if (user.isAnonymous) {
                         console.log("Modo Anônimo Ativo. Dados salvos com o ID atual.");
