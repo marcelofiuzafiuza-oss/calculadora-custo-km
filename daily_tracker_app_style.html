@@ -1,0 +1,2215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAX ROTA - Gestão de Lucratividade</title>
+    <!-- Carregamento do Tailwind CSS para a estética moderna -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    
+    <style>
+        :root {
+            --color-bg-dark: #121212;
+            --color-card: #1f1f1f;
+            --color-text: #e0e0e0;
+            --color-accent: #00bcd4; /* Azul Ciano Vibrante */
+            --color-profit: #4caf50; /* Verde Elétrico */
+            --color-loss: #ff5252;   /* Vermelho Suave */
+            --font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--color-bg-dark);
+            color: var(--color-text);
+            padding-bottom: 50px;
+        }
+
+        /* Estilo para inputs (reforçando o design moderno) */
+        input[type="number"], 
+        input[type="text"],
+        input[type="date"],
+        select { /* Adicionado SELECT */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background-color: #2a2a2a;
+            color: var(--color-text);
+            font-size: 1rem;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        input[type="number"]:focus, input[type="text"]:focus, input[type="date"]:focus, select:focus {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 5px var(--color-accent);
+            outline: none;
+        }
+        
+        /* Estilos específicos para o painel de Auth */
+        .auth-input {
+            padding: 8px;
+            font-size: 0.875rem;
+            margin-bottom: 8px;
+        }
+
+        /* Estilo para botões (mantendo a vibrância) */
+        .btn-primary {
+            background-color: var(--color-accent);
+            color: #000;
+            font-weight: 700;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #00a4b3;
+        }
+
+        /* Classes de layout para gráficos/cards */
+        .card-shadow {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        .text-xs-custom {
+             font-size: 0.7rem; 
+        }
+
+        /* Custom style for input groups alignment */
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+        }
+        
+        /* Ajuste para o Histórico (fonte menor para detalhes) */
+        .history-item {
+            font-size: 0.75rem;
+            line-height: 1.3;
+        }
+        .history-details {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        /* Estilo para Gráficos */
+        .chart-container {
+            height: 250px;
+        }
+        
+        .loading-animation {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid var(--color-accent);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* === Destaque de cor por Seção (Input Number) === */
+        
+        /* 1. CALCULADORA DE TARIFA PARTICULAR (Magenta/Pink) */
+        #appContentContainer .grid > div:nth-child(1) input[type="number"] {
+            color: #ff99cc !important; /* Soft Pink/Magenta for Private Fare inputs */
+            font-weight: 700 !important;
+        }
+
+        /* 2. CALCULADORA DE CUSTO FIXO (Ciano/Accent) */
+        #appContentContainer .grid > div:nth-child(2) input[type="number"] {
+            color: var(--color-accent) !important; /* Cyan for Fixed Cost inputs */
+            font-weight: 700 !important;
+        }
+        
+        /* 3. DADOS CHAVE & METAS */
+        /* Metas R$ (Amarelo) */
+        #appContentContainer .grid > div:nth-child(3) input[type="number"]:not(#dailyKmInput):not(#fixedCostPerKm) {
+            color: #ffcc00 !important; /* Yellow/Amber color for R$ reference inputs */
+            font-weight: 700 !important;
+        }
+
+        /* 3.5. Destaque Específico: KM Diário (Ciano) */
+        #dailyKmInput {
+            color: var(--color-accent) !important; /* Cyan for KM metric */
+            font-weight: 700 !important;
+        }
+        
+        /* 3.6. Custo Fixo por KM (Amarelo) */
+        #fixedCostPerKm {
+            color: #ffcc00 !important;
+            font-weight: 700 !important;
+        }
+
+        /* 4. Destaque de Ganhos (Verde/Profit) */
+        #appContentContainer .grid > div:nth-child(4) input[type="number"] {
+            color: var(--color-profit) !important; /* Green */
+            font-weight: 700 !important; 
+        }
+
+        /* 5. Destaque de Despesas (Vermelho/Loss) */
+        #appContentContainer .grid > div:nth-child(5) input[type="number"] {
+            color: var(--color-loss) !important; /* Red */
+            font-weight: 700 !important; 
+        }
+        
+        /* Styling the final monthly cost display */
+        #totalMonthlyFixedCostDisplay {
+            color: #ffcc00; 
+            font-size: 1rem; 
+            font-weight: 700;
+        }
+        /* Styling the final private fare display */
+        #privateFareDisplay {
+            color: var(--color-profit); 
+            font-size: 1.5rem; 
+            font-weight: 700;
+        }
+        
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div id="mainAppContainer" class="max-w-7xl mx-auto space-y-6">
+        <h2 class="text-3xl font-bold text-center mb-6 text-white tracking-wider">MAX ROTA - Gestão de Lucratividade</h2>
+
+        <!-- CAMPO DE INFORMAÇÃO DO DIA & USUÁRIO -->
+        <div class="flex flex-wrap gap-3 mb-6">
+            <div class="flex-1 min-w-[120px]">
+                <label for="dailyInfo" class="text-xs-custom block mb-1 text-gray-400">DATA DO LANÇAMENTO</label>
+                <input type="date" id="dailyInfo" class="w-full text-xs-custom">
+            </div>
+
+            <!-- PAINEL DE AUTENTICAÇÃO SIMPLIFICADO -->
+            <div id="authSection" class="flex-1 min-w-[120px] bg-gray-900 p-3 rounded-xl card-shadow border border-gray-700">
+                <!-- ID do Usuário (Centralizado e Simples) -->
+                <div class="space-y-1">
+                    <label class="text-xs-custom block mb-1 text-gray-400">STATUS/ID ATUAL</label>
+                    
+                    <!-- Display principal que será atualizado no JS -->
+                    <div id="loggedInUserDisplay" class="w-full text-xs-custom py-1 px-1 bg-gray-800 rounded-lg text-yellow-400 overflow-hidden break-all text-center" title="ID Completo do Usuário">
+                        Carregando...
+                    </div>
+                    
+                    <!-- BOTÃO SAIR REMOVIDO: O ID será mantido até o cache ser limpo. -->
+                </div>
+            </div>
+            <!-- FIM DO PAINEL DE AUTENTICAÇÃO -->
+        </div>
+        
+        <!-- APLICATIVO CONTEÚDO PRINCIPAL (HIDDEN UNTIL LOGGED IN) -->
+        <div id="appContentContainer" class="hidden space-y-6">
+
+            <!-- BANNER DE ALERTAS DE RISCO (NOVO - FEATURE 4) -->
+            <div id="riskAlertBanner" class="hidden bg-red-800/50 p-3 rounded-lg border border-red-700 text-sm font-semibold text-red-300">
+                <!-- Conteúdo do Alerta de Risco -->
+            </div>
+
+            <!-- CARTÕES DE ENTRADA (MÉTRICAS, GANHOS, DESPESAS) -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                
+                <!-- 1. CALCULADORA DE TARIFA PARTICULAR (NOVA POSIÇÃO: 1) -->
+                <div class="bg-gray-900 p-4 rounded-xl card-shadow border border-gray-700 col-span-1">
+                    <h3 class="text-sm font-semibold mb-4 text-pink-400">CALCULADORA DE TARIFA PARTICULAR</h3>
+                    
+                    <label for="rideKm" class="text-xs-custom block mb-1 text-gray-400">DISTÂNCIA (KM):</label>
+                    <input type="number" id="rideKm" placeholder="Ex: 15.5" min="0" step="0.1" class="mb-3" oninput="calculatePrivateFare()">
+                    
+                    <label for="rideTimeMinutes" class="text-xs-custom block mb-1 text-gray-400">TEMPO ESTIMADO (Min):</label>
+                    <input type="number" id="rideTimeMinutes" placeholder="Ex: 25" min="0" step="1" class="mb-4" oninput="calculatePrivateFare()">
+                    
+                    <label for="rideKmRate" class="text-xs-custom block mb-1 text-gray-400">VALOR POR KM DE REFERÊNCIA (R$):</label>
+                    <input type="number" id="rideKmRate" placeholder="Ex: 2.50" min="0" step="0.01" class="mb-4" oninput="calculatePrivateFare()">
+                    
+                    <label for="tollCost" class="text-xs-custom block mb-1 text-gray-400">PEDÁGIO (R$):</label>
+                    <input type="number" id="tollCost" placeholder="Ex: 5.00" min="0" step="0.01" class="mb-3" oninput="calculatePrivateFare()">
+                    
+                    <label for="profitMarginPercent" class="text-xs-custom block mb-1 text-gray-400">MARGEM DE LUCRO (%):</label>
+                    <input type="number" id="profitMarginPercent" placeholder="Ex: 20" min="0" step="1" class="mb-4" oninput="calculatePrivateFare()">
+
+                    <h4 class="text-xs font-semibold mb-2 text-red-400 border-t border-gray-700 pt-3">CRONÔMETRO DE ESPERA (Apenas se o cliente aguardar)</h4>
+                    <div class="flex items-center justify-between space-x-2">
+                        <div id="waitTimeDisplay" class="text-xl font-mono text-cyan-400 bg-gray-800 p-2 rounded flex-1 text-center">00:00:00</div>
+                        <input type="hidden" id="waitTimeMinutes" value="0">
+                        <button id="startWaitButton" class="bg-green-500 hover:bg-green-600 text-black py-2 rounded-lg font-bold w-1/3">INICIAR</button>
+                        <button id="resetWaitButton" class="bg-gray-500 hover:bg-gray-600 text-black py-2 rounded-lg font-bold w-1/3">ZERAR</button>
+                    </div>
+
+                    <div class="text-center mt-4 p-3 bg-gray-800 rounded-lg">
+                        <div class="text-xs text-gray-400">TARIFA SUGERIDA (C/ MARGEM)</div>
+                        <div id="privateFareDisplay" class="text-2xl mt-1">R$ 0,00</div>
+                        <div class="text-xs text-gray-500 mt-1">Ref.: R$ <span id="timeRateDisplay">0,35/min</span> + R$ <span id="waitRateDisplay">0,83/min</span> (<span id="waitPerHourDisplay">R$ 50/h</span>) + <span id="marginDisplay">20%</span> Margem</div>
+                    </div>
+
+                </div>
+
+                <!-- 2. CALCULADORA DE CUSTO FIXO (NOVA POSIÇÃO: 2) -->
+                <div class="bg-gray-900 p-4 rounded-xl card-shadow border border-gray-700 col-span-1">
+                    <h3 class="text-sm font-semibold mb-4 text-yellow-400">CALCULADORA DE CUSTO FIXO</h3>
+                    
+                    <label for="monthlyKmEstimate" class="text-xs-custom block mb-1 text-gray-400">KM ESTIMADO POR MÊS:</label>
+                    <input type="number" id="monthlyKmEstimate" placeholder="Ex: 6000" min="1" step="1" class="mb-3">
+                    
+                    <h4 class="text-xs font-semibold mb-2 text-green-400 border-t border-gray-700 pt-3">CUSTOS MENSAIS E PERIÓDICOS</h4>
+                    
+                    <label for="costProLabore" class="text-xs-custom block mb-1 text-gray-400">PRO-LABORE R$ (Mensal):</label>
+                    <input type="number" id="costProLabore" placeholder="Ex: 3000.00" min="0" step="0.01" class="mb-3">
+                    
+                    <label for="costVehiclePayment" class="text-xs-custom block mb-1 text-gray-400">ALUGUEL/PRESTAÇÃO R$ (Mensal):</label>
+                    <input type="number" id="costVehiclePayment" placeholder="Ex: 1500.00" min="0" step="0.01" class="mb-3">
+
+                    <label for="costMobileInternet" class="text-xs-custom block mb-1 text-gray-400">INTERNET MÓVEL R$ (Mensal):</label>
+                    <input type="number" id="costMobileInternet" placeholder="Ex: 50.00" min="0" step="0.01" class="mb-3">
+                    
+                    <label for="costAesthetics" class="text-xs-custom block mb-1 text-gray-400">ESTÉTICA R$ (Mensal):</label>
+                    <input type="number" id="costAesthetics" placeholder="Ex: 80.00" min="0" step="0.01" class="mb-3">
+
+                    <label for="costOilChange" class="text-xs-custom block mb-1 text-gray-400">TROCA DE ÓLEO R$ (A cada 2 meses):</label>
+                    <input type="number" id="costOilChange" placeholder="Ex: 200.00" min="0" step="0.01" class="mb-3">
+
+                    <label for="costTireChange" class="text-xs-custom block mb-1 text-gray-400">TROCA DE PNEU R$ (A cada 3 meses):</label>
+                    <input type="number" id="costTireChange" placeholder="Ex: 600.00" min="0" step="0.01" class="mb-3">
+
+                    <label for="costAnnualInsurance" class="text-xs-custom block mb-1 text-gray-400">SEGURO R$ (Mensal):</label>
+                    <input type="number" id="costAnnualInsurance" placeholder="Ex: 3000.00" min="0" step="0.01" class="mb-3">
+
+                    <label for="costAnnualDocumentation" class="text-xs-custom block mb-1 text-gray-400">DOCUMENTAÇÃO R$ (Anual):</label>
+                    <input type="number" id="costAnnualDocumentation" placeholder="Ex: 1500.00" min="0" step="0.01" class="mb-3">
+
+                    <label for="costAnnualDepreciation" class="text-xs-custom block mb-1 text-gray-400">DEPRECIAÇÃO R$ (Anual):</label>
+                    <input type="number" id="costAnnualDepreciation" placeholder="Ex: 4800.00" min="0" step="0.01" class="mb-4">
+                    
+                    <button id="calculateFixedCostButton" class="w-full bg-yellow-500 hover:bg-yellow-600 text-black py-2.5 rounded-lg font-bold">
+                        CALCULAR CUSTO FIXO / KM
+                    </button>
+                    <div class="text-center text-xs text-gray-400 mt-2" id="totalMonthlyFixedCostDisplay">Total Fixo Mensal: R$ 0,00</div>
+
+                </div>
+                
+                <!-- 3. DADOS CHAVE & METAS (NOVA POSIÇÃO: 3) -->
+                <div class="bg-gray-900 p-4 rounded-xl card-shadow border border-gray-700 col-span-1">
+                    <h3 class="text-sm font-semibold mb-4 text-cyan-400">DADOS & METAS</h3>
+                    
+                    <!-- MOVIDO PARA O TOPO -->
+                    <h4 class="text-xs font-semibold mb-2 text-green-400 border-b border-gray-700 pb-3">DEFINIÇÃO DE METAS (BRUTO)</h4>
+                    
+                    <label for="weeklyGoalInput" class="text-xs-custom block mb-1 text-gray-400">META SEMANAL R$:</label>
+                    <input type="number" id="weeklyGoalInput" placeholder="Ex: 1200.00" min="0" step="0.01" class="mb-3">
+                    
+                    <label for="monthlyGoalInput" class="text-xs-custom block mb-1 text-gray-400">META MENSAL R$:</label>
+                    <input type="number" id="monthlyGoalInput" placeholder="Ex: 5000.00" min="0" step="0.01" class="mb-3">
+                    
+                    <button id="saveGoalsButton" class="w-full btn-primary py-2.5 mb-4">SALVAR METAS</button>
+                    
+                    <!-- DADOS DIÁRIOS MOVIDOS PARA BAIXO -->
+                    <h4 class="text-xs font-semibold mb-2 text-green-400 border-t border-gray-700 pt-3">LANÇAMENTO DIÁRIO</h4>
+                    
+                    <label for="dailyKmInput" class="text-xs-custom block mb-1 text-gray-400">KM PERCORRIDO NO DIA:</label>
+                    <input type="number" id="dailyKmInput" placeholder="Ex: 350" min="0" step="1" class="mb-3">
+                    
+                    <label for="fixedCostPerKm" class="text-xs-custom block mb-1 text-gray-400">CUSTO FIXO POR KM (R$):</label>
+                    <input type="number" id="fixedCostPerKm" placeholder="Calculado" min="0" step="0.001" class="mb-4">
+                    
+                </div>
+                
+                <!-- 4. GANHOS BRUTOS (NOVA POSIÇÃO: 4) -->
+                <div class="bg-gray-900 p-4 rounded-xl card-shadow border border-gray-700 lg:col-span-1 xl:col-span-1">
+                    <h3 class="text-sm font-semibold mb-4 text-cyan-400">GANHOS BRUTOS</h3>
+                    
+                    <!-- Estrutura de Ganhos com 3 Colunas: R$, Horas, Viagens -->
+                    <div class="space-y-3">
+                        <!-- UBER -->
+                        <div class="border-b border-gray-700 pb-2"><label class="text-xs-custom block mb-1 text-green-400">UBER</label>
+                            <div class="input-grid">
+                                <input type="number" id="gainUber" placeholder="R$" min="0" step="0.01" class="col-span-2">
+                                <input type="number" id="hoursUber" placeholder="Horas" min="0" step="0.1">
+                                <input type="number" id="tripsUber" placeholder="Viagens" min="0" step="1">
+                            </div>
+                        </div>
+                        <!-- 99 -->
+                        <div class="border-b border-gray-700 pb-2"><label class="text-xs-custom block mb-1 text-green-400">99</label>
+                            <div class="input-grid">
+                                <input type="number" id="gain99" placeholder="R$" min="0" step="0.01" class="col-span-2">
+                                <input type="number" id="hours99" placeholder="Horas" min="0" step="0.1">
+                                <input type="number" id="trips99" placeholder="Viagens" min="0" step="1">
+                            </div>
+                        </div>
+                        <!-- INDRIVER -->
+                        <div class="border-b border-gray-700 pb-2"><label class="text-xs-custom block mb-1 text-green-400">INDRIVER</label>
+                            <div class="input-grid">
+                                <input type="number" id="gainIndriver" placeholder="R$" min="0" step="0.01" class="col-span-2">
+                                <input type="number" id="hoursIndriver" placeholder="Horas" min="0" step="0.1">
+                                <input type="number" id="tripsIndriver" placeholder="Viagens" min="0" step="1">
+                            </div>
+                        </div>
+                        <!-- PARTICULAR -->
+                        <div class="border-b border-gray-700 pb-2"><label class="text-xs-custom block mb-1 text-green-400">PARTICULAR</label>
+                            <div class="input-grid">
+                                <input type="number" id="gainPrivate" placeholder="R$" min="0" step="0.01" class="col-span-2">
+                                <input type="number" id="hoursPrivate" placeholder="Horas" min="0" step="0.1">
+                                <input type="number" id="tripsPrivate" placeholder="Viagens" min="0" step="1">
+                            </div>
+                        </div>
+                        <!-- VENDAS -->
+                        <div><label class="text-xs-custom block mb-1 text-green-400">VENDAS/PRODUTOS</label>
+                            <input type="number" id="gainProducts" placeholder="R$" min="0" step="0.01" class="w-full">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. DESPESAS VARIÁVEIS (NOVA POSIÇÃO: 5) -->
+                <div class="bg-gray-900 p-4 rounded-xl card-shadow border border-gray-700 lg:col-span-1 xl:col-span-1">
+                    <h3 class="text-sm font-semibold mb-4 text-cyan-400">DESPESAS VARIÁVEIS</h3>
+                    <div class="space-y-3">
+                        <label for="expenseFuel" class="text-xs-custom block mb-1 text-gray-400">COMBUSTÍVEL ABASTECIDO R$:</label>
+                        <input type="number" id="expenseFuel" placeholder="Ex: 150.00" min="0" step="0.01" class="mb-3">
+                        
+                        <label for="expenseFood" class="text-xs-custom block mb-1 text-gray-400">ALIMENTAÇÃO R$:</label>
+                        <input type="number" id="expenseFood" placeholder="Ex: 40.00" min="0" step="0.01" class="mb-3">
+                        
+                        <label for="expenseParking" class="text-xs-custom block mb-1 text-gray-400">ESTACIONAMENTO R$:</label>
+                        <input type="number" id="expenseParking" placeholder="Ex: 15.00" min="0" step="0.01" class="mb-3">
+                        
+                        <label for="expenseEmergency" class="text-xs-custom block mb-1 text-gray-400">EMERGÊNCIA R$:</label>
+                        <input type="number" id="expenseEmergency" placeholder="Ex: 0.00" min="0" step="0.01" class="mb-3">
+                        
+                        <label for="expenseOthers" class="text-xs-custom block mb-1 text-gray-400">OUTRAS DESPESAS R$:</label>
+                        <input type="number" id="expenseOthers" placeholder="Ex: 5.00" min="0" step="0.01" class="mb-3">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- BOTÕES DE AÇÃO -->
+            <div class="flex flex-wrap gap-4 mb-6">
+                <button id="calculateButton" class="flex-1 btn-primary text-sm py-3">CALCULAR LUCRO DO DIA</button>
+                <button id="saveButton" class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-sm py-3 rounded-lg font-bold">SALVAR LANÇAMENTO</button>
+                <button id="clearButton" class="flex-1 bg-purple-500 hover:bg-purple-600 text-sm py-3 rounded-lg font-bold">NOVO LANÇAMENTO</button>
+            </div>
+
+            <!-- ✨ ANÁLISE GEMINI (LLM) - NOVA POSIÇÃO: AQUI ✨ -->
+            <div id="geminiAnalysisCard" class="bg-gray-900 p-4 rounded-xl card-shadow border border-indigo-500">
+                <h3 class="text-sm font-semibold mb-3 text-indigo-400 flex items-center">
+                    <span class="mr-2">ANÁLISE DE PERFORMANCE DIÁRIA ✨</span>
+                    <span id="geminiLoading" class="loading-animation hidden"></span>
+                </h3>
+                <div id="geminiAnalysisContent" class="text-sm text-gray-300">
+                    Calcule o seu lucro do dia para receber um feedback e dicas do Coach Financeiro Gemini!
+                </div>
+                <div id="geminiCitations" class="text-xs text-gray-500 mt-2 space-y-1"></div>
+            </div>
+
+            <!-- Cartão de Resumo Diário (POSIÇÃO MOVIDA) -->
+            <div class="bg-gray-800 p-4 rounded-xl card-shadow border border-gray-700">
+                <h3 class="text-sm font-semibold mb-3 text-cyan-400">RESUMO DO DIA</h3>
+                <div id="summaryDisplay" class="space-y-2">
+                    <!-- Cores aplicadas via JS -->
+                    <div class="flex justify-between text-sm"><span class="text-gray-400">Recebimentos Brutos:</span><span class="font-medium text-white" id="summaryGains">R$ 0,00</span></div>
+                    <div class="flex justify-between text-sm"><span class="text-gray-400">Custos Totais (Estimado):</span><span class="font-medium text-red-400" id="summaryCosts">R$ 0,00</span></div>
+                    <div class="flex justify-between text-lg font-bold pt-1 border-t border-gray-700">
+                        <span class="text-white">SALDO LÍQUIDO:</span>
+                        <span id="summaryNetProfit" class="text-white">R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CAMPO OCULTO PARA SABER SE ESTAMOS EDITANDO -->
+            <input type="hidden" id="recordIdToUpdate" value="">
+
+            <!-- Cartão de Resultados Detalhados -->
+            <div id="resultDisplay" class="bg-gray-800 p-4 rounded-xl card-shadow border border-cyan-500">
+                <!-- Cores aplicadas via JS -->
+                <div class="flex justify-between text-sm py-1"><span class="text-gray-400">Lucro Líquido:</span><span class="font-bold text-white" id="resultNetProfit">R$ 0,00</span></div>
+                <div class="flex justify-between text-sm py-1"><span class="text-gray-400">Custo Total do Dia:</span><span class="font-bold text-red-400" id="resultTotalCost">R$ 0,00</span></div>
+                <div class="flex justify-between text-sm py-1"><span class="text-gray-400">Custo Total por KM:</span><span class="font-bold text-red-400" id="resultCostPerKm">R$ 0,000</span></div>
+                <div class="flex justify-between text-lg font-bold pt-2 border-t border-gray-700 mt-2">
+                    <span class="text-white">LUCRO POR KM:</span>
+                    <span id="resultProfitPerKm" class="text-white">R$ 0,000</span>
+                </div>
+            </div>
+
+            <!-- TOTALIZADORES E BARRAS DE PROGRESSO -->
+            <div class="bg-gray-800 p-4 rounded-xl card-shadow border border-yellow-500">
+                <h3 class="text-sm font-semibold mb-3 text-yellow-400">TOTALIZADORES</h3>
+                
+                <!-- Totalizador Semanal -->
+                <div class="border-b border-gray-700 pb-3 mb-3">
+                    <!-- Cor aplicada via JS (weeklyTotalNetProfit) -->
+                    <div class="flex justify-between text-sm"><span class="text-gray-400">SEMANA (Líq.):</span><span class="font-bold text-white" id="weeklyTotalNetProfit">R$ 0,00</span></div>
+                    
+                    <!-- NOVO: Total Bruto Semanal -->
+                    <div class="flex justify-between text-sm"><span class="text-gray-400">SEMANA (Bruto):</span><span class="font-bold text-green-400" id="weeklyTotalGainsDisplay">R$ 0,00</span></div>
+                    
+                    <div class="flex justify-between text-sm"><span class="text-gray-400">META SEMANAL (BRUTO):</span><span class="font-bold text-yellow-400" id="weeklyGoalDisplay">R$ 0,00</span></div>
+                    <div class="flex justify-between text-sm mt-1"><span id="weeklyProgressLabel" class="text-cyan-400">PROG. 0%:</span><span id="weeklyProgressValue" class="text-cyan-400">0%</span></div>
+                    <div class="h-2 bg-gray-700 rounded-full mt-1 overflow-hidden"><div id="weeklyProgressBar" class="h-full" style="width: 0;"></div></div>
+                    <!-- Previsão Semanal (NOVO - FEATURE 1) -->
+                    <div class="text-xs pt-2 text-gray-400 flex items-center">
+                        <span class="mr-1 text-indigo-400">PROJEÇÃO:</span>
+                        <span id="weeklyPredictionLoading" class="loading-animation hidden w-3 h-3 mr-1"></span>
+                        <span id="weeklyPredictionText">...</span>
+                    </div>
+                </div>
+
+                <!-- Totalizador Mensal -->
+                <div class="pb-1">
+                    <!-- Cor aplicada via JS (monthlyTotalNetProfit) -->
+                    <div class="flex justify-between text-sm"><span class="text-gray-400" id="monthlySummaryMonthLabel">MÊS ATUAL (Líq.):</span><span class="font-bold text-white" id="monthlyTotalNetProfit">R$ 0,00</span></div>
+                    
+                    <!-- NOVO: Total Bruto Mensal -->
+                    <div class="flex justify-between text-sm"><span class="text-gray-400">MÊS ATUAL (Bruto):</span><span class="font-bold text-green-400" id="monthlyTotalGainsDisplay">R$ 0,00</span></div>
+                    
+                    <div class="flex justify-between text-sm"><span class="text-gray-400">META MENSAL (BRUTO):</span><span class="font-bold text-yellow-400" id="monthlyGoalDisplay">R$ 0,00</span></div>
+                    <div class="flex justify-between text-sm mt-1"><span id="monthlyProgressLabel" class="text-cyan-400">PROG. 0%:</span><span class="text-cyan-400" id="monthlyProgressValue">0%</span></div>
+                    <div class="h-2 bg-gray-700 rounded-full mt-1 overflow-hidden"><div id="monthlyProgressBar" class="h-full" style="width: 0;"></div></div>
+                    <!-- Previsão Mensal (NOVO - FEATURE 1) -->
+                    <div class="text-xs pt-2 text-gray-400 flex items-center">
+                        <span class="mr-1 text-indigo-400">PROJEÇÃO:</span>
+                        <span id="monthlyPredictionLoading" class="loading-animation hidden w-3 h-3 mr-1"></span>
+                        <span id="monthlyPredictionText">...</span>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- GRÁFICOS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> <!-- Ajustado para 2 colunas -->
+                
+                <!-- DISTRIBUIÇÃO DE GANHOS -->
+                <div class="bg-gray-800 p-4 rounded-xl card-shadow border border-green-500">
+                    <h3 class="text-sm font-semibold mb-3 text-green-400">DISTRIBUIÇÃO DE GANHOS</h3>
+                    <div class="chart-container"><canvas id="gainChart"></canvas></div>
+                </div>
+
+                <!-- DISTRIBUIÇÃO DE DESPESAS -->
+                <div class="bg-gray-800 p-4 rounded-xl card-shadow border border-red-500">
+                    <h3 class="text-sm font-semibold mb-3 text-red-400">DISTRIBUIÇÃO DE DESPESAS</h3>
+                    <div class="chart-container"><canvas id="expenseChart"></canvas></div>
+                </div>
+
+                <!-- MÉTRICAS DE EFICIÊNCIA (2 colunas) -->
+                <div class="bg-gray-800 p-4 rounded-xl card-shadow border border-cyan-500 md:col-span-2">
+                    <h3 class="text-sm font-semibold mb-3 text-cyan-400">MÉTRICAS DE EFICIÊNCIA POR HORA</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="chart-container"><canvas id="gainPerHourChart"></canvas></div>
+                        <div class="chart-container"><canvas id="tripsPerHourChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- GRÁFICO DE TENDÊNCIA (2 colunas) -->
+                <div class="bg-gray-800 p-4 rounded-xl card-shadow border border-indigo-500 md:col-span-2">
+                    <h3 class="text-sm font-semibold mb-3 text-indigo-400">TENDÊNCIA MENSAL DE LUCRO</h3>
+                    <div class="chart-container h-64"><canvas id="trendChart"></canvas></div>
+                </div>
+            </div>
+
+
+            <!-- HISTÓRICO DE LANÇAMENTOS -->
+            <div class="bg-gray-900 p-4 rounded-xl card-shadow border border-gray-700">
+                <h3 class="text-sm font-semibold mb-4 text-white">HISTÓRICO DE LANÇAMENTOS</h3>
+                
+                <!-- FILTROS DE MÊS/ANO (NOVO - FEATURE 3) -->
+                <div class="flex space-x-4 mb-4">
+                    <select id="filterMonth" class="w-full text-xs-custom">
+                        <option value="">Todos os Meses</option>
+                    </select>
+                    <select id="filterYear" class="w-full text-xs-custom">
+                        <option value="">Todos os Anos</option>
+                    </select>
+                </div>
+
+                <div id="loadingHistory" class="text-center text-gray-500 text-xs py-4">Carregando dados locais...</div>
+                <ul id="historyList" class="space-y-3">
+                    <!-- Registros serão inseridos aqui -->
+                </ul>
+            </div>
+            
+            <!-- GERENCIAMENTO DE DADOS -->
+            <div class="data-management-container flex flex-wrap gap-3 pb-6">
+                <button id="exportButton" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm py-3 rounded-lg font-bold">EXPORTAR DADOS (JSON)</button>
+                <button id="importButton" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white text-sm py-3 rounded-lg font-bold">IMPORTAR DADOS (JSON)</button>
+                <input type="file" id="importFile" accept=".json" class="hidden">
+            </div>
+
+        </div>
+        <!-- FIM DO CONTEÚDO PRINCIPAL -->
+
+    </div>
+
+<script type="module">
+    // FIREBASE IMPORTS
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    // IMPORTAÇÕES SEM GoogleAuthProvider e signInWithPopup
+    import { getAuth, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, orderBy, addDoc, collectionGroup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    
+    // FIREBASE GLOBAL VARIABLES
+    let db;
+    let auth;
+    let userId = 'Deslogado'; // Agora inicializa como deslogado
+    let appId;
+    let isAuthReady = false; 
+    setLogLevel('debug'); 
+
+    // Variáveis Globais para Metas (Carregadas do Firestore)
+    let weeklyGoal = 0;
+    let monthlyGoal = 0;
+    let fixedCostPerKmValue = 0; 
+    let allRecords = []; 
+    let gainChartInstance = null;
+    let expenseChartInstance = null;
+    let gainPerHourChartInstance = null;
+    let tripsPerHourChartInstance = null;
+    let trendChartInstance = null; 
+    let currentCalculatedData = null; 
+    const recordIdToUpdate = document.getElementById('recordIdToUpdate'); 
+
+    // --- VARIÁVEIS PARA O CRONÔMETRO DE ESPERA ---
+    let waitTimeInterval = null;
+    let totalWaitSeconds = 0;
+    let timerStartTime = 0;
+    
+    // --- Configuração Gemini API ---
+    const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=";
+    const apiKey = ""; 
+
+    // Cores Vibrantes (Tailwind e Chart.js)
+    const VIBRANT_COLORS = {
+        UBER: '#00ccff', // Azul Ciano
+        NINETY_NINE: '#ffcc00', // Amarelo
+        INDRIVER: '#4caf50', // Verde Profundo
+        PRIVATE: '#ff33cc', // Magenta
+        PRODUCTS: '#00ffff', // Ciano Claro
+        FUEL: '#ff4444', // Vermelho Forte
+        FOOD: '#ff7700', // Laranja
+        PARKING: '#9933ff', // Roxo
+        EMERGENCY: '#ff0000', // Vermelho Vívido
+        OTHERS: '#ff9900', // Âmbar
+        TEXT_LIGHT: '#e0e0e0',
+        TEXT_DARK: '#1f1f1f',
+        BACKGROUND: '#121212',
+    };
+    
+    // --- CONSTANTES PARA CÁLCULO DE TARIFA PARTICULAR (MÉDIA DE APP) ---
+    const PRIVATE_FARE_CONSTANTS = {
+        DEFAULT_KM_RATE: 2.00,       
+        DEFAULT_TIME_RATE: 0.35,     
+        DEFAULT_WAIT_RATE: 50.00 / 60, 
+    };
+
+    // Estilos de cor para a UI
+    const profitColor = '#4caf50'; // Tailwind green-500
+    const lossColor = '#ff5252'; // Tailwind red-500
+    const goalMetColor = '#00bcd4'; // Tailwind cyan-500
+
+    // Elementos do DOM (ATUALIZADO PARA REMOVER OS ITENS EXCLUÍDOS DO HTML)
+    const elements = {
+        dailyKmInput: document.getElementById('dailyKmInput'),
+        fixedCostPerKm: document.getElementById('fixedCostPerKm'),
+        dailyInfo: document.getElementById('dailyInfo'), 
+        calculateButton: document.getElementById('calculateButton'),
+        saveButton: document.getElementById('saveButton'),
+        clearButton: document.getElementById('clearButton'),
+        loggedInUserDisplay: document.getElementById('loggedInUserDisplay'), // Mantido
+        weeklyGoalInput: document.getElementById('weeklyGoalInput'),
+        monthlyGoalInput: document.getElementById('monthlyGoalInput'),
+        saveGoalsButton: document.getElementById('saveGoalsButton'),
+        
+        // Elementos de Resumo e Resultado (CORRIGIDOS)
+        summaryGains: document.getElementById('summaryGains'),
+        summaryCosts: document.getElementById('summaryCosts'),
+        summaryNetProfit: document.getElementById('summaryNetProfit'),
+        resultNetProfit: document.getElementById('resultNetProfit'),
+        resultTotalCost: document.getElementById('resultTotalCost'),
+        resultCostPerKm: document.getElementById('resultCostPerKm'),
+        resultProfitPerKm: document.getElementById('resultProfitPerKm'),
+        
+        // Elementos de Metas/Progresso/Totalizadores (CORRIGIDOS)
+        weeklyGoalDisplay: document.getElementById('weeklyGoalDisplay'), 
+        monthlyGoalDisplay: document.getElementById('monthlyGoalDisplay'), 
+        weeklyTotalNetProfit: document.getElementById('weeklyTotalNetProfit'),
+        monthlyTotalNetProfit: document.getElementById('monthlyTotalNetProfit'),
+        weeklyProgressLabel: document.getElementById('weeklyProgressLabel'),
+        weeklyProgressValue: document.getElementById('weeklyProgressValue'),
+        weeklyProgressBar: document.getElementById('weeklyProgressBar'),
+        weeklyPredictionText: document.getElementById('weeklyPredictionText'), 
+        weeklyPredictionLoading: document.getElementById('weeklyPredictionLoading'), 
+        monthlyPredictionText: document.getElementById('monthlyPredictionText'), 
+        monthlyPredictionLoading: document.getElementById('monthlyPredictionLoading'), 
+        
+        // NOVOS ELEMENTOS: Total Bruto
+        weeklyTotalGainsDisplay: document.getElementById('weeklyTotalGainsDisplay'),
+        monthlyTotalGainsDisplay: document.getElementById('monthlyTotalGainsDisplay'),
+
+        // Elementos Cálculo Fixo
+        calculateFixedCostButton: document.getElementById('calculateFixedCostButton'),
+        monthlyKmEstimate: document.getElementById('monthlyKmEstimate'),
+        costProLabore: document.getElementById('costProLabore'),
+        costVehiclePayment: document.getElementById('costVehiclePayment'),
+        costMobileInternet: document.getElementById('costMobileInternet'),
+        costAesthetics: document.getElementById('costAesthetics'),
+        costOilChange: document.getElementById('costOilChange'),
+        costTireChange: document.getElementById('costTireChange'),
+        costAnnualInsurance: document.getElementById('costAnnualInsurance'),
+        costAnnualDocumentation: document.getElementById('costAnnualDocumentation'),
+        costAnnualDepreciation: document.getElementById('costAnnualDepreciation'),
+        totalMonthlyFixedCostDisplay: document.getElementById('totalMonthlyFixedCostDisplay'),
+
+        // Elementos Calculadora Particular
+        startWaitButton: document.getElementById('startWaitButton'),
+        resetWaitButton: document.getElementById('resetWaitButton'),
+        waitTimeDisplay: document.getElementById('waitTimeDisplay'),
+        waitTimeMinutes: document.getElementById('waitTimeMinutes'), 
+        rideKm: document.getElementById('rideKm'),
+        rideTimeMinutes: document.getElementById('rideTimeMinutes'),
+        rideKmRate: document.getElementById('rideKmRate'),
+        tollCost: document.getElementById('tollCost'),
+        profitMarginPercent: document.getElementById('profitMarginPercent'), 
+        privateFareDisplay: document.getElementById('privateFareDisplay'),
+        // Referências internas (para exibir as constantes)
+        timeRateDisplay: document.getElementById('timeRateDisplay'),
+        waitRateDisplay: document.getElementById('waitRateDisplay'),
+        marginDisplay: document.getElementById('marginDisplay'),
+        waitPerHourDisplay: document.getElementById('waitPerHourDisplay'), 
+
+        // Elementos Novos (Features)
+        riskAlertBanner: document.getElementById('riskAlertBanner'), 
+        filterMonth: document.getElementById('filterMonth'),         
+        filterYear: document.getElementById('filterYear'),           
+        
+        // Elementos Gemini (ADICIONADOS)
+        geminiAnalysisContent: document.getElementById('geminiAnalysisContent'),
+        geminiCitations: document.getElementById('geminiCitations'),
+        geminiLoading: document.getElementById('geminiLoading'),
+
+        // Elementos de Autenticação
+        // authLoading, authStatusBlock, authMessage, loggedInUserEmail removidos
+        // signOutButton: document.getElementById('signOutButton'), // REMOVIDO DO HTML AGORA
+        appContentContainer: document.getElementById('appContentContainer'), 
+        
+        // Elementos de Ganho e Despesa
+        gainUber: document.getElementById('gainUber'),
+        gain99: document.getElementById('gain99'),
+        gainIndriver: document.getElementById('gainIndriver'),
+        gainPrivate: document.getElementById('gainPrivate'),
+        gainProducts: document.getElementById('gainProducts'),
+        hoursUber: document.getElementById('hoursUber'),
+        tripsUber: document.getElementById('tripsUber'),
+        hours99: document.getElementById('hours99'),
+        trips99: document.getElementById('trips99'),
+        hoursIndriver: document.getElementById('hoursIndriver'),
+        tripsIndriver: document.getElementById('tripsIndriver'),
+        hoursPrivate: document.getElementById('hoursPrivate'),
+        tripsPrivate: document.getElementById('tripsPrivate'),
+        expenseParking: document.getElementById('expenseParking'),
+        expenseEmergency: document.getElementById('expenseEmergency'),
+        expenseFood: document.getElementById('expenseFood'),
+        expenseFuel: document.getElementById('expenseFuel'),
+        expenseOthers: document.getElementById('expenseOthers'),
+        historyList: document.getElementById('historyList'),
+        loadingHistory: document.getElementById('loadingHistory'),
+        exportButton: document.getElementById('exportButton'),
+        importButton: document.getElementById('importButton'),
+        importFile: document.getElementById('importFile'),
+        monthlySummaryMonthLabel: document.getElementById('monthlySummaryMonthLabel'), 
+    };
+
+    // --- FUNÇÕES AUXILIARES ---
+
+    function getFloatValue(element) {
+        if (!element) return 0;
+        const value = parseFloat(element.value);
+        return isNaN(value) ? 0 : value;
+    }
+
+    function formatCurrency(value, decimals = 2) {
+        return `R$ ${value.toFixed(decimals).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+    }
+    
+    function formatDateDisplay(dateString) {
+        if (!dateString) return '';
+        const parts = dateString.split('-'); 
+        if (parts.length === 3) {
+            return `${parts[2]}/${parts[1]}/${parts[0]}`; 
+        }
+        return dateString;
+    }
+    
+    function getStartOfWeek(date) {
+        const d = new Date(date);
+        const day = d.getDay(); 
+        const diff = d.getDate() - day; 
+        const startOfWeek = new Date(d.setDate(diff));
+        
+        const yyyy = startOfWeek.getFullYear();
+        const mm = String(startOfWeek.getMonth() + 1).padStart(2, '0');
+        const dd = String(startOfWeek.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    }
+    
+    function generateUniqueId() {
+        return crypto.randomUUID(); 
+    }
+    
+    // --- FUNÇÕES DE PERSISTÊNCIA FIREBASE ---
+    
+    function getRecordCollectionRef() {
+        if (!userId || userId === 'Deslogado') {
+             console.warn("Tentativa de acessar coleção sem userId.");
+             return null;
+        }
+        return collection(db, `artifacts/${appId}/users/${userId}/profit_tracker_data`);
+    }
+
+    function getFixedCostDocRef() {
+        if (!userId || userId === 'Deslogado') {
+             console.warn("Tentativa de acessar doc de preferências sem userId.");
+             return null;
+        }
+        return doc(db, `artifacts/${appId}/users/${userId}/preferences/fixed_costs_and_goals`);
+    }
+
+    async function loadFixedCostInputs() {
+        if (!isAuthReady || userId === 'Deslogado') return;
+
+        // É ESSENCIAL que os elementos abaixo estejam definidos no objeto 'elements'
+        elements.weeklyGoalDisplay.textContent = 'Carregando...';
+        elements.monthlyGoalDisplay.textContent = 'Carregando...';
+
+        try {
+            const docRef = getFixedCostDocRef();
+            const docSnap = await getDoc(docRef);
+            const data = docSnap.exists() ? docSnap.data() : {};
+            
+            // Load data into global scope and UI inputs
+            weeklyGoal = data.weeklyGoal || 0;
+            monthlyGoal = data.monthlyGoal || 0;
+            fixedCostPerKmValue = data.fixedCostPerKmValue || 0;
+            
+            elements.weeklyGoalInput.value = weeklyGoal > 0 ? weeklyGoal.toFixed(2) : '';
+            elements.monthlyGoalInput.value = monthlyGoal > 0 ? monthlyGoal.toFixed(2) : '';
+            elements.weeklyGoalDisplay.textContent = formatCurrency(weeklyGoal);
+            elements.monthlyGoalDisplay.textContent = formatCurrency(monthlyGoal);
+            
+            if (fixedCostPerKmValue > 0) {
+                 elements.fixedCostPerKm.value = fixedCostPerKmValue.toFixed(3);
+            } else {
+                 elements.fixedCostPerKm.value = '';
+            }
+
+            // Load calculator inputs (Fixed Cost)
+            if (data.monthlyKmEstimate) elements.monthlyKmEstimate.value = data.monthlyKmEstimate;
+            if (data.costProLabore) elements.costProLabore.value = data.costProLabore;
+            if (data.costVehiclePayment) elements.costVehiclePayment.value = data.costVehiclePayment;
+            if (data.costMobileInternet) elements.costMobileInternet.value = data.costMobileInternet;
+            if (data.costAesthetics) elements.costAesthetics.value = data.costAesthetics;
+            if (data.costOilChange) elements.costOilChange.value = data.costOilChange;
+            if (data.costTireChange) elements.costTireChange.value = data.costTireChange;
+            if (data.costAnnualInsurance) elements.costAnnualInsurance.value = data.costAnnualInsurance;
+            if (data.costAnnualDocumentation) elements.costAnnualDocumentation.value = data.costAnnualDocumentation;
+            if (data.costAnnualDepreciation) elements.costAnnualDepreciation.value = data.costAnnualDepreciation;
+            
+            // Load the Margin input value (Private Fare)
+            if (data.profitMarginPercent) elements.profitMarginPercent.value = data.profitMarginPercent;
+            else elements.profitMarginPercent.value = '20'; 
+
+            // Trigger local recalculations with loaded data
+            calculateAndSetFixedCost(false); 
+            calculatePrivateFare(); 
+
+        } catch (e) {
+            console.error("Erro ao carregar configurações (Fixed Costs/Goals):", e);
+        }
+    }
+
+    async function saveFixedCostInputs(showSuccessLog = false) {
+        if (!isAuthReady || userId === 'Deslogado') {
+            console.warn("Tentativa de salvar configurações no Modo Anônimo. Os dados persistem na sessão atual, mas o log de erro foi removido.");
+            return;
+        }
+
+        try {
+            const docRef = getFixedCostDocRef();
+            const data = {
+                // Fixed Cost Inputs
+                monthlyKmEstimate: getFloatValue(elements.monthlyKmEstimate),
+                costProLabore: getFloatValue(elements.costProLabore),
+                costVehiclePayment: getFloatValue(elements.costVehiclePayment),
+                costMobileInternet: getFloatValue(elements.costMobileInternet),
+                costAesthetics: getFloatValue(elements.costAesthetics),
+                costOilChange: getFloatValue(elements.costOilChange),
+                costTireChange: getFloatValue(elements.costTireChange),
+                costAnnualInsurance: getFloatValue(elements.costAnnualInsurance),
+                costAnnualDocumentation: getFloatValue(elements.costAnnualDocumentation),
+                costAnnualDepreciation: getFloatValue(elements.costAnnualDepreciation),
+                
+                // Private Fare Config (Margin)
+                profitMarginPercent: getFloatValue(elements.profitMarginPercent),
+                
+                // Goals and calculated fixedCostPerKm 
+                weeklyGoal: getFloatValue(elements.weeklyGoalInput),
+                monthlyGoal: getFloatValue(elements.monthlyGoalInput),
+                fixedCostPerKmValue: getFloatValue(elements.fixedCostPerKm)
+            };
+            
+            await setDoc(docRef, data, { merge: true });
+            
+            // Update global state after saving
+            weeklyGoal = data.weeklyGoal;
+            monthlyGoal = data.monthlyGoal;
+            fixedCostPerKmValue = data.fixedCostPerKmValue;
+            
+            elements.weeklyGoalDisplay.textContent = formatCurrency(weeklyGoal);
+            elements.monthlyGoalDisplay.textContent = formatCurrency(monthlyGoal);
+            
+            if (showSuccessLog) {
+                 console.log("Configurações salvas no Firestore.");
+            }
+        } catch (e) {
+            console.error("Erro ao salvar configurações (Fixed Costs/Goals) no Firestore:", e);
+        }
+    }
+    
+    // Função para salvar Metas e Configurações (CHAMADA PELO BOTÃO)
+    async function saveGoals() {
+        if (!isAuthReady || userId === 'Deslogado') {
+             console.warn("Tentativa de salvar metas no Modo Anônimo. Os dados persistem na sessão atual.");
+            return;
+        }
+        await saveFixedCostInputs(true); 
+        calculateSummaries(allRecords); 
+        calculateDailyProfit(); 
+    }
+
+
+    function loadRecords() {
+        if (!isAuthReady || userId === 'Deslogado') return;
+
+        // Apenas a lista de histórico deve mostrar "Sincronizando"
+        elements.loadingHistory.textContent = "Sincronizando dados com o Firestore...";
+        elements.loadingHistory.style.display = 'block';
+        
+        const recordCollectionRef = getRecordCollectionRef();
+        if (!recordCollectionRef) return; 
+
+        try {
+            const q = query(recordCollectionRef, orderBy("dateInfo", "desc"));
+
+            onSnapshot(q, (snapshot) => {
+                allRecords = [];
+                snapshot.forEach((doc) => {
+                    allRecords.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Chamadas de atualização da UI
+                populateFilterOptions();
+                renderHistory(allRecords);
+                calculateSummaries(allRecords); 
+                calculateDailyProfit();
+                
+                elements.loadingHistory.style.display = allRecords.length > 0 ? 'none' : 'block';
+                if (allRecords.length === 0) {
+                     elements.loadingHistory.textContent = "Nenhum lançamento encontrado. Comece a adicionar um registro diário!";
+                }
+
+                console.log(`Firestore: ${allRecords.length} registros carregados e atualizados em tempo real.`);
+            }, (error) => {
+                console.error("Erro ao obter snapshot dos registros:", error);
+                elements.loadingHistory.textContent = "ERRO ao carregar dados do Firestore. Tente sair e entrar novamente.";
+            });
+
+        } catch (e) {
+            console.error("Erro ao configurar onSnapshot para registros:", e);
+        }
+    }
+    
+    // --- FUNÇÕES DE CÁLCULO DE CUSTO FIXO ---
+
+    function calculateAndDisplayMonthlyCostTotal() {
+        // 1. Custos Mensais Diretos
+        const directMonthly = getFloatValue(elements.costProLabore) + 
+                              getFloatValue(elements.costVehiclePayment) + 
+                              getFloatValue(elements.costMobileInternet) + 
+                              getFloatValue(elements.costAesthetics);
+
+        // 2. Custos Periódicos Convertidos
+        const oilMonthly = getFloatValue(elements.costOilChange) / 2;     // A cada 2 meses
+        const tireMonthly = getFloatValue(elements.costTireChange) / 3;   // A cada 3 meses
+        
+        // 3. Custos Anuais Convertidos
+        const insuranceMonthly = getFloatValue(elements.costAnnualInsurance);
+        const documentationMonthly = getFloatValue(elements.costAnnualDocumentation) / 12;
+        const depreciationMonthly = getFloatValue(elements.costAnnualDepreciation) / 12;
+
+        return directMonthly + oilMonthly + tireMonthly + 
+               insuranceMonthly + documentationMonthly + depreciationMonthly;
+    }
+    
+    // Calcula o custo/km localmente e, opcionalmente, salva o resultado no Firestore.
+    function calculateAndSetFixedCost(saveGoalsFlag = false) { 
+        const kmEstimate = getFloatValue(elements.monthlyKmEstimate);
+        const totalFixedCostMonthly = calculateAndDisplayMonthlyCostTotal();
+
+        // Atualiza display do total mensal
+        elements.totalMonthlyFixedCostDisplay.textContent = `Total Fixo Mensal: ${formatCurrency(totalFixedCostMonthly)}`;
+
+        if (kmEstimate <= 0) {
+            elements.totalMonthlyFixedCostDisplay.textContent = "Erro: KM Estimado deve ser maior que zero.";
+            elements.fixedCostPerKm.value = '';
+            return;
+        }
+
+        const fixedCostPerKmResult = totalFixedCostMonthly / kmEstimate;
+
+        elements.fixedCostPerKm.value = fixedCostPerKmResult.toFixed(3);
+        
+        if (saveGoalsFlag) {
+            saveFixedCostInputs(true); 
+        }
+        
+        calculateDailyProfit();
+    }
+
+    // --- FUNÇÕES DE GRÁFICO (mantidas, sem alterações na lógica) ---
+    // (createChart, createChartOptions, createBarGradient, calculateEfficiencyMetrics, updateGainChart, updateExpenseChart, updateEfficiencyCharts, updateTrendChart)
+    
+    function createChart(chartId, type, data, options) {
+        const ctx = document.getElementById(chartId).getContext('2d');
+        if (Chart.getChart(ctx)) {
+            Chart.getChart(ctx).destroy();
+        }
+        return new Chart(ctx, { type, data, options });
+    }
+
+    function createChartOptions(yLabelCallback = null) {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { 
+                    beginAtZero: true, 
+                    ticks: { color: VIBRANT_COLORS.TEXT_LIGHT, callback: yLabelCallback },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                },
+                x: { 
+                    ticks: { color: VIBRANT_COLORS.TEXT_LIGHT },
+                    grid: { color: 'rgba(255, 255, 255, 0.1)' }
+                }
+            },
+            plugins: { legend: { display: false } },
+            elements: {
+                bar: {
+                    borderRadius: 8, 
+                    borderSkipped: false, 
+                }
+            }
+        };
+    }
+    
+    function createBarGradient(ctx, chartArea, colorHex) {
+        if (!chartArea || !colorHex) return colorHex; 
+        
+        const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+        
+        let darkerColor = colorHex + 'C0'; 
+        let lighterColor = colorHex + 'FF';
+        
+        if (colorHex === VIBRANT_COLORS.UBER) { lighterColor = '#33dfff'; darkerColor = '#0088aa'; }
+        if (colorHex === VIBRANT_COLORS.NINETY_NINE) { lighterColor = '#ffee77'; darkerColor = '#aa8800'; }
+        if (colorHex === VIBRANT_COLORS.INDRIVER) { lighterColor = '#77ff77'; darkerColor = '#33aa33'; }
+        if (colorHex === VIBRANT_COLORS.PRIVATE) { lighterColor = '#ff66ee'; darkerColor = '#aa3399'; }
+        if (colorHex === VIBRANT_COLORS.FUEL) { lighterColor = '#ff8888'; darkerColor = '#aa3333'; }
+
+        gradient.addColorStop(0, darkerColor);  
+        gradient.addColorStop(1, lighterColor); 
+        
+        return gradient;
+    }
+    
+    function calculateEfficiencyMetrics(records) {
+        const currentYearMonth = new Date().toISOString().slice(0, 7); 
+        
+        let monthlyMetrics = {
+            UBER: { gains: 0, hours: 0, trips: 0 },
+            NINETY_NINE: { gains: 0, hours: 0, trips: 0 },
+            INDRIVER: { gains: 0, hours: 0, trips: 0 },
+            PRIVATE: { gains: 0, hours: 0, trips: 0 },
+        };
+
+        records.forEach(doc => {
+            const docYearMonth = doc.dateInfo ? doc.dateInfo.slice(0, 7) : null;
+            
+            if (docYearMonth === currentYearMonth) {
+                monthlyMetrics.UBER.gains += doc.gainUber || 0;
+                monthlyMetrics.UBER.hours += doc.hoursUber || 0;
+                monthlyMetrics.UBER.trips += doc.tripsUber || 0;
+                
+                monthlyMetrics.NINETY_NINE.gains += doc.gain99 || 0;
+                monthlyMetrics.NINETY_NINE.hours += doc.hours99 || 0;
+                monthlyMetrics.NINETY_NINE.trips += doc.trips99 || 0;
+
+                monthlyMetrics.INDRIVER.gains += doc.gainIndriver || 0;
+                monthlyMetrics.INDRIVER.hours += doc.hoursIndriver || 0;
+                monthlyMetrics.INDRIVER.trips += doc.tripsIndriver || 0;
+                
+                monthlyMetrics.PRIVATE.gains += doc.gainPrivate || 0;
+                monthlyMetrics.PRIVATE.hours += doc.hoursPrivate || 0;
+                monthlyMetrics.PRIVATE.trips += doc.tripsPrivate || 0;
+            }
+        });
+        
+        const platforms = ['UBER', 'NINETY_NINE', 'INDRIVER', 'PRIVATE'];
+        const metrics = {
+            gainPerHour: [],
+            tripsPerHour: [],
+            labels: [],
+            colors: []
+        };
+        
+        platforms.forEach(p => {
+            const data = monthlyMetrics[p];
+            
+            if (data.gains > 0) {
+                const label = p === 'NINETY_NINE' ? '99' : p === 'PRIVATE' ? 'PART.' : p;
+                metrics.labels.push(label);
+                metrics.colors.push(VIBRANT_COLORS[p]);
+
+                const gainPerHour = data.hours > 0 ? data.gains / data.hours : 0;
+                metrics.gainPerHour.push(gainPerHour);
+
+                const tripsPerHour = data.hours > 0 ? data.trips / data.hours : 0;
+                metrics.tripsPerHour.push(tripsPerHour);
+            }
+        });
+
+        return metrics;
+    }
+
+    function updateGainChart(gainBreakdown) {
+        const labels = ['UBER', '99', 'IND.', 'PART.', 'VENDAS']; 
+        const data = [
+            gainBreakdown.UBER, gainBreakdown.NINETY_NINE, gainBreakdown.INDRIVER,
+            gainBreakdown.PRIVATE, gainBreakdown.PRODUCTS
+        ];
+        
+        const colors = [
+            VIBRANT_COLORS.UBER, VIBRANT_COLORS.NINETY_NINE, VIBRANT_COLORS.INDRIVER,
+            VIBRANT_COLORS.PRIVATE, VIBRANT_COLORS.PRODUCTS
+        ];
+
+        const chartData = {
+            labels: labels,
+            datasets: [{
+                label: 'Ganhos Brutos (R$)',
+                data: data,
+                backgroundColor: function(context) {
+                    const ctx = context.chart.ctx;
+                    const chartArea = context.chart.chartArea;
+                    const baseColor = colors[context.dataIndex];
+                    return createBarGradient(ctx, chartArea, baseColor);
+                },
+                borderColor: VIBRANT_COLORS.TEXT_LIGHT,
+                borderWidth: 1,
+            }]
+        };
+
+        const options = createChartOptions(function(value) { return 'R$ ' + value; });
+
+        if (gainChartInstance) gainChartInstance.destroy();
+        gainChartInstance = createChart('gainChart', 'bar', chartData, options);
+    }
+    
+    function updateExpenseChart(expenseBreakdown) {
+        const labels = ['COMB.', 'ALIM.', 'ESTAC.', 'EMERG.', 'OUTROS'];
+        const data = [
+            expenseBreakdown.FUEL, expenseBreakdown.FOOD, expenseBreakdown.PARKING,
+            expenseBreakdown.EMERGENCY, expenseBreakdown.OTHERS
+        ];
+        
+        const colors = [
+            VIBRANT_COLORS.FUEL, VIBRANT_COLORS.FOOD, VIBRANT_COLORS.PARKING,
+            VIBRANT_COLORS.EMERGENCY, VIBRANT_COLORS.OTHERS
+        ];
+
+        const chartData = {
+            labels: labels,
+            datasets: [{
+                label: 'Despesas Variáveis (R$)',
+                data: data,
+                backgroundColor: function(context) {
+                    const ctx = context.chart.ctx;
+                    const chartArea = context.chart.chartArea;
+                    const baseColor = colors[context.dataIndex];
+                    return createBarGradient(ctx, chartArea, baseColor);
+                },
+                borderColor: VIBRANT_COLORS.TEXT_LIGHT,
+                borderWidth: 1,
+            }]
+        };
+
+        const options = createChartOptions(function(value) { return 'R$ ' + value; });
+
+        if (expenseChartInstance) expenseChartInstance.destroy();
+        expenseChartInstance = createChart('expenseChart', 'bar', chartData, options);
+    }
+    
+    function updateEfficiencyCharts(metrics) {
+        // 1. Ganho por Hora (R$/h)
+        const gainPerHourData = {
+            labels: metrics.labels,
+            datasets: [{
+                label: 'R$ / Hora',
+                data: metrics.gainPerHour,
+                backgroundColor: function(context) {
+                    const ctx = context.chart.ctx;
+                    const chartArea = context.chart.chartArea;
+                    const baseColor = metrics.colors[context.dataIndex];
+                    return createBarGradient(ctx, chartArea, baseColor);
+                },
+                borderColor: VIBRANT_COLORS.TEXT_LIGHT,
+                borderWidth: 1,
+            }]
+        };
+        
+        const gainPerHourOptions = createChartOptions(function(value) { return 'R$ ' + value.toFixed(2); });
+        
+        if (gainPerHourChartInstance) gainPerHourChartInstance.destroy();
+        gainPerHourChartInstance = createChart('gainPerHourChart', 'bar', gainPerHourData, gainPerHourOptions);
+        
+        // 2. Viagens por Hora
+        const tripsPerHourData = {
+            labels: metrics.labels,
+            datasets: [{
+                label: 'Viagens / Hora',
+                data: metrics.tripsPerHour,
+                backgroundColor: function(context) {
+                    const ctx = context.chart.ctx;
+                    const chartArea = context.chart.chartArea;
+                    const baseColor = metrics.colors[context.dataIndex];
+                    return createBarGradient(ctx, chartArea, baseColor);
+                },
+                borderColor: VIBRANT_COLORS.TEXT_LIGHT,
+                borderWidth: 1,
+            }]
+        };
+        
+        const tripsPerHourOptions = createChartOptions(function(value) { return value.toFixed(1); });
+
+        if (tripsPerHourChartInstance) tripsPerHourChartInstance.destroy();
+        tripsPerHourChartInstance = createChart('tripsPerHourChart', 'bar', tripsPerHourData, tripsPerHourOptions);
+    }
+
+    function updateTrendChart(records) {
+        const currentYearMonth = new Date().toISOString().slice(0, 7);
+        const monthlyRecords = records.filter(doc => doc.dateInfo && doc.dateInfo.startsWith(currentYearMonth));
+        
+        const dailyProfits = {};
+        monthlyRecords.forEach(doc => {
+            const dayOfMonth = parseInt(doc.dateInfo.slice(8, 10), 10);
+            dailyProfits[dayOfMonth] = (dailyProfits[dayOfMonth] || 0) + doc.netProfit;
+        });
+        
+        const daysInMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate();
+        const labels = Array.from({ length: daysInMonth }, (_, i) => (i + 1).toString());
+        const data = labels.map(day => dailyProfits[parseInt(day, 10)] || 0);
+        
+        const trendLineColor = VIBRANT_COLORS.INDRIVER; 
+        
+        const chartData = {
+            labels: labels,
+            datasets: [{
+                label: 'Lucro Líquido (R$)',
+                data: data,
+                borderColor: trendLineColor,
+                borderWidth: 3,
+                tension: 0.4,
+                pointRadius: 4,
+                pointBackgroundColor: trendLineColor,
+                fill: true, 
+                backgroundColor: function(context) {
+                    const chart = context.chart;
+                    const { ctx, chartArea } = chart;
+                    if (!chartArea) return null;
+
+                    const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+                    gradient.addColorStop(0, trendLineColor + '77'); 
+                    gradient.addColorStop(1, VIBRANT_COLORS.BACKGROUND + '00'); 
+                    return gradient;
+                }
+            }]
+        };
+
+        const options = createChartOptions(function(value) { return 'R$ ' + value; });
+
+        if (trendChartInstance) trendChartInstance.destroy();
+        trendChartInstance = createChart('trendChart', 'line', chartData, options);
+    }
+    
+    // --- FIM DAS FUNÇÕES DE GRÁFICO ---
+
+
+    
+    // --- FUNÇÃO CALCULADORA PARTICULAR ---
+    
+    function calculatePrivateFare() {
+        const km = getFloatValue(elements.rideKm);
+        const timeMinutes = getFloatValue(elements.rideTimeMinutes);
+        const kmRate = getFloatValue(elements.rideKmRate) || PRIVATE_FARE_CONSTANTS.DEFAULT_KM_RATE; 
+        const tolls = getFloatValue(elements.tollCost);
+        const waitMinutes = getFloatValue(elements.waitTimeMinutes);
+        
+        const marginPercent = getFloatValue(elements.profitMarginPercent);
+
+        const timeRate = PRIVATE_FARE_CONSTANTS.DEFAULT_TIME_RATE; 
+        const waitRate = PRIVATE_FARE_CONSTANTS.DEFAULT_WAIT_RATE; 
+
+        const baseFareKm = (km * kmRate);
+        const baseFareTime = (timeMinutes * timeRate);
+        
+        const waitCost = waitMinutes * waitRate;
+        
+        const subtotal = baseFareKm + baseFareTime + waitCost + tolls;
+
+        const finalFare = subtotal * (1 + marginPercent / 100);
+
+        elements.privateFareDisplay.textContent = formatCurrency(finalFare);
+        
+        elements.marginDisplay.textContent = `${marginPercent.toFixed(0)}% Margem`;
+        elements.waitRateDisplay.textContent = `R$ ${waitRate.toFixed(2)}/min`; 
+
+
+        const inputsToColor = [
+            elements.rideKm, elements.rideTimeMinutes, elements.rideKmRate, elements.tollCost, elements.profitMarginPercent
+        ];
+        // Note: Color updating logic removed for brevity but can be re-added if necessary
+    }
+    // Torna a função acessível globalmente para oninput no HTML
+    window.calculatePrivateFare = calculatePrivateFare; 
+
+    // --- FUNÇÕES CRONÔMETRO DE ESPERA ---
+
+    function updateWaitTimer() {
+        const now = Date.now();
+        const elapsedSeconds = Math.floor((now - timerStartTime) / 1000) + totalWaitSeconds;
+        
+        const h = Math.floor(elapsedSeconds / 3600);
+        const m = Math.floor((elapsedSeconds % 3600) / 60);
+        const s = elapsedSeconds % 60;
+        
+        const displayH = String(h).padStart(2, '0');
+        const displayM = String(m).padStart(2, '0');
+        const displayS = String(s).padStart(2, '0');
+
+        elements.waitTimeDisplay.textContent = `${displayH}:${displayM}:${displayS}`;
+        elements.waitTimeMinutes.value = elapsedSeconds / 60; 
+        
+        calculatePrivateFare(); 
+    }
+
+    function startTimer() {
+        if (waitTimeInterval !== null) {
+            pauseTimer();
+            return;
+        }
+
+        timerStartTime = Date.now();
+        elements.waitTimeDisplay.style.color = VIBRANT_COLORS.INDRIVER; 
+        waitTimeInterval = setInterval(updateWaitTimer, 1000);
+        
+        elements.startWaitButton.textContent = 'PAUSAR';
+        elements.startWaitButton.classList.add('bg-red-500', 'hover:bg-red-600');
+        elements.startWaitButton.classList.remove('bg-green-500', 'hover:bg-green-600');
+    }
+
+    function pauseTimer() {
+        if (waitTimeInterval === null) return;
+        
+        clearInterval(waitTimeInterval);
+        totalWaitSeconds = Math.floor((Date.now() - timerStartTime) / 1000) + totalWaitSeconds;
+        waitTimeInterval = null;
+        
+        elements.waitTimeDisplay.style.color = VIBRANT_COLORS.TEXT_LIGHT;
+        elements.startWaitButton.textContent = 'INICIAR';
+        elements.startWaitButton.classList.add('bg-green-500', 'hover:bg-green-600');
+        elements.startWaitButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+    }
+
+    function resetTimer() {
+        pauseTimer();
+        totalWaitSeconds = 0;
+        timerStartTime = 0;
+        elements.waitTimeDisplay.textContent = '00:00:00';
+        elements.waitTimeMinutes.value = 0;
+        calculatePrivateFare();
+    }
+    
+    // --- FUNÇÃO GEMINI (LLM) ---
+    // (callGeminiAnalysis, callGeminiPrediction - kept in place)
+
+    async function callGeminiAnalysis(dailyData) {
+        // Correção de segurança: verificar se os elementos existem antes de usá-los.
+        if (!elements.geminiAnalysisContent || !elements.geminiLoading || !elements.geminiCitations) {
+            console.error("Erro: Elementos Gemini não carregados.");
+            return;
+        }
+
+        elements.geminiAnalysisContent.innerHTML = 'Aguarde, o Coach Financeiro Gemini está analisando seus dados...';
+        elements.geminiLoading.classList.remove('hidden');
+        elements.geminiCitations.innerHTML = '';
+
+        const systemPrompt = "Atue como um coach financeiro de motoristas de aplicativo experiente e motivador. Gere uma análise concisa (máximo de 3 frases) e um conselho prático, usando o Google Search para referenciar a dica. A análise deve ser em português.";
+        
+        const userQuery = `Analise o seguinte desempenho diário e forneça um parágrafo de feedback e uma dica estratégica para o próximo dia. O foco da análise deve ser no GANHO BRUTO. Se o Lucro Líquido estiver baixo ou negativo, sugira uma estratégia para aumentar a receita. Dados do dia: GANHO BRUTO: ${formatCurrency(dailyData.totalGains)}, Lucro Líquido: ${formatCurrency(dailyData.netProfit)}, Custo Total: ${formatCurrency(dailyData.totalDailyCost)}, Lucro por KM: ${formatCurrency(dailyData.profitPerKm, 3)}. A meta semanal BRUTA é ${formatCurrency(weeklyGoal)}.`;
+
+
+        const payload = {
+            contents: [{ parts: [{ text: userQuery }] }],
+            tools: [{ "google_search": {} }],
+            systemInstruction: {
+                parts: [{ text: systemPrompt }]
+            },
+        };
+
+        for (let i = 0; i < 3; i++) { 
+            try {
+                const response = await fetch(GEMINI_API_URL + apiKey, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const text = candidate.content.parts[0].text;
+                    elements.geminiAnalysisContent.innerHTML = text;
+                    
+                    let sources = [];
+                    const groundingMetadata = candidate.groundingMetadata;
+                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                        sources = groundingMetadata.groundingAttributions
+                            .map(attribution => ({
+                                uri: attribution.web?.uri,
+                                title: attribution.web?.title,
+                            }))
+                            .filter(source => source.uri && source.title);
+                    }
+                    
+                    if (sources.length > 0) {
+                        elements.geminiCitations.innerHTML = 'Fontes: ' + sources.map(s => `<a href="${s.uri}" target="_blank" class="underline text-indigo-400 hover:text-indigo-300">${s.title}</a>`).join(', ');
+                    } else {
+                         elements.geminiCitations.innerHTML = 'Dica gerada pela IA.';
+                    }
+
+                    elements.geminiLoading.classList.add('hidden');
+                    return; 
+                } else {
+                    throw new Error("Resposta da API vazia ou inválida.");
+                }
+            } catch (error) {
+                console.error(`Attempt ${i + 1} failed (Gemini Analysis):`, error);
+                if (i < 2) {
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000)); 
+                } else {
+                    elements.geminiAnalysisContent.innerHTML = 'Falha ao conectar ou analisar os dados. Tente novamente mais tarde.';
+                    elements.geminiCitations.innerHTML = '';
+                }
+            }
+        }
+        elements.geminiLoading.classList.add('hidden');
+    }
+    
+    async function callGeminiPrediction(totalGains, goal, type) {
+        const predictionElement = type === 'weekly' ? elements.weeklyPredictionText : elements.monthlyPredictionText;
+        const loadingElement = type === 'weekly' ? elements.weeklyPredictionLoading : elements.monthlyPredictionLoading;
+        
+        if (goal <= 0) {
+            predictionElement.textContent = 'Defina uma meta para ter uma projeção.';
+            return;
+        }
+
+        loadingElement.classList.remove('hidden');
+        predictionElement.textContent = 'Calculando projeção...';
+
+        let daysRemaining;
+        let queryContext;
+        if (type === 'weekly') {
+            const today = new Date();
+            const dayOfWeek = today.getDay(); 
+            const daysPassed = today.getDay(); 
+            daysRemaining = 7 - daysPassed;
+            queryContext = `Faltam ${daysRemaining} dias para a meta semanal terminar (total de 7 dias). O GANHO BRUTO ATUAL é de ${formatCurrency(totalGains)}. A meta BRUTA é ${formatCurrency(goal)}.`;
+        } else { 
+            const today = new Date();
+            const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+            const daysPassed = today.getDate();
+            daysRemaining = daysInMonth - daysPassed;
+            queryContext = `Faltam ${daysRemaining} dias para a meta mensal terminar (total de ${daysInMonth} dias). O GANHO BRUTO ATUAL é de ${formatCurrency(totalGains)}. A meta BRUTA é ${formatCurrency(goal)}.`;
+        }
+        
+        const systemPrompt = "Atue como um analista financeiro. Com base no contexto, gere uma previsão concisa (máximo de 2 frases) sobre se a meta será alcançada ou o quanto falta, e sugira uma ação imediata (e.g., Aumentar rodagem diária). Não use o Google Search.";
+
+        const userQuery = `Gere uma previsão para o período. ${queryContext} O que o motorista deve fazer para garantir o resultado?`;
+
+        const payload = {
+            contents: [{ parts: [{ text: userQuery }] }],
+            systemInstruction: {
+                parts: [{ text: systemPrompt }]
+            },
+        };
+
+        for (let i = 0; i < 3; i++) {
+            try {
+                const response = await fetch(GEMINI_API_URL + apiKey, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const text = result.candidates?.[0]?.content?.parts?.[0]?.text || 'Falha ao gerar previsão.';
+                
+                predictionElement.textContent = text;
+                loadingElement.classList.add('hidden');
+                return; 
+
+            } catch (error) {
+                console.error(`Tentativa ${i + 1} falhou no callGeminiPrediction:`, error);
+                if (i < 2) {
+                    await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000)); 
+                } else {
+                    predictionElement.textContent = 'Erro ao carregar a projeção. Falha na conexão com a IA.';
+                }
+            }
+        }
+        loadingElement.classList.add('hidden');
+    }
+    
+    // --- FUNÇÃO DE BACKUP (EXPORTAÇÃO/IMPORTAÇÃO) ---
+    // (exportData, importData, handleImportFile - kept in place)
+
+    function exportData() {
+        const data = {
+            records: allRecords,
+            goals: {
+                weeklyGoal,
+                monthlyGoal,
+                fixedCostPerKmValue
+            }
+        };
+
+        const dataStr = JSON.stringify(data, null, 2);
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        
+        const date = new Date().toISOString().slice(0, 10);
+        a.download = `maxrota_dados_${date}.json`;
+        a.href = url;
+        
+        document.body.appendChild(a); 
+        a.click();
+        
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    
+    function importData() {
+        elements.importFile.click();
+    }
+    
+    function handleImportFile(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                
+                if (!importedData.records || !Array.isArray(importedData.records)) {
+                    console.error('Erro: Arquivo JSON inválido. Verifique o formato do histórico.');
+                    return;
+                }
+                
+                if (window.confirm(`Tem certeza que deseja importar ${importedData.records.length} lançamentos? Eles serão adicionados ao seu histórico atual.`)) {
+                    
+                    const recordsCollection = getRecordCollectionRef();
+                    for (const record of importedData.records) {
+                        const { id, ...dataToSave } = record; 
+                        await addDoc(recordsCollection, dataToSave);
+                    }
+
+                    if (importedData.goals) {
+                        const configDoc = getFixedCostDocRef();
+                        await setDoc(configDoc, importedData.goals, { merge: true });
+                    }
+                    
+                    console.log('Dados importados com sucesso para o Firestore! A interface será atualizada em breve.');
+                }
+
+            } catch (error) {
+                console.error('Erro ao ler ou parsear arquivo de importação:', error);
+                console.error('Erro ao importar. Certifique-se de que o arquivo é um JSON válido e não foi modificado.');
+            }
+        };
+        reader.readAsText(file);
+    }
+    
+    // --- FUNÇÃO DE SALVAMENTO / ATUALIZAÇÃO ---
+    async function saveRecord() {
+        if (!currentCalculatedData) {
+            console.error('Calcule o lucro do dia antes de salvar.');
+            return;
+        }
+        
+        if (!isAuthReady || userId === 'Deslogado') {
+             console.warn("Tentativa de salvar registro no Modo Anônimo.");
+            return;
+        }
+
+        const isUpdate = recordIdToUpdate.value !== '';
+        
+        try {
+            const dataToSave = { ...currentCalculatedData };
+            delete dataToSave.id;
+            
+            if (isUpdate) {
+                const docRef = doc(getRecordCollectionRef(), recordIdToUpdate.value);
+                await updateDoc(docRef, dataToSave);
+                console.log('Lançamento atualizado no Firestore!');
+            } else {
+                await addDoc(getRecordCollectionRef(), dataToSave);
+                console.log('Lançamento salvo no Firestore!');
+            }
+            
+            clearInputFields(); 
+            
+        } catch (e) {
+            console.error("Erro ao salvar lançamento no Firestore:", e);
+        }
+    }
+    
+    // --- FUNÇÃO DE LIMPEZA ---
+    function clearInputFields() {
+        // Clear value of all input fields
+        elements.gainUber.value = ''; elements.hoursUber.value = ''; elements.tripsUber.value = '';
+        elements.gain99.value = ''; elements.hours99.value = ''; elements.trips99.value = '';
+        elements.gainIndriver.value = ''; elements.hoursIndriver.value = ''; elements.tripsIndriver.value = '';
+        elements.gainPrivate.value = ''; elements.hoursPrivate.value = ''; elements.tripsPrivate.value = '';
+        elements.gainProducts.value = '';
+        elements.expenseFuel.value = ''; elements.expenseFood.value = ''; elements.expenseParking.value = '';
+        elements.expenseEmergency.value = ''; elements.expenseOthers.value = '';
+        elements.dailyKmInput.value = '';
+        
+        recordIdToUpdate.value = ''; 
+        elements.saveButton.textContent = "SALVAR LANÇAMENTO";
+
+        setTodayDate();
+        calculateDailyProfit();
+    }
+    
+    // --- FUNÇÕES DE TOTALIZAÇÃO E UI (mantidas) ---
+    // ...
+    
+    function updateProgressDisplay(currentTotal, goal, displayLabelElement, displayValueElement, progressBarElement) {
+        // CORREÇÃO: Adicionando verificação de nulidade para evitar TypeError
+        if (!displayLabelElement || !displayValueElement || !progressBarElement) {
+            console.warn("Elemento de progresso faltando ou indefinido. Abortando atualização de progresso.");
+            return; 
+        }
+
+        let progress = 0;
+        let finalColor = '#777'; 
+        let backgroundStyle = '#777'; 
+
+        if (goal > 0) {
+            progress = (currentTotal / goal) * 100;
+            
+            const peakGreen = profitColor; 
+            const midGreen = '#2c772e'; 
+
+            if (progress >= 100) {
+                finalColor = peakGreen; 
+                backgroundStyle = `linear-gradient(to right, ${midGreen}, ${peakGreen})`;
+                displayLabelElement.textContent = `META ATINGIDA:`;
+            } else if (progress > 0) {
+                finalColor = goalMetColor; 
+                backgroundStyle = `linear-gradient(to right, ${midGreen}, ${peakGreen})`;
+                displayLabelElement.textContent = `PROG. ${progress.toFixed(0)}%:`;
+            } else {
+                finalColor = lossColor; 
+                backgroundStyle = lossColor; 
+                displayLabelElement.textContent = `PROG. ${progress.toFixed(0)}%:`;
+            }
+            displayValueElement.textContent = `${progress.toFixed(1)}%`;
+        } else {
+            finalColor = '#777';
+            backgroundStyle = finalColor;
+            displayLabelElement.textContent = `SEM META:`;
+            displayValueElement.textContent = `N/A`;
+        }
+
+        displayValueElement.style.color = finalColor;
+        
+        const barWidth = Math.min(progress, 100); 
+        progressBarElement.style.width = `${barWidth}%`;
+        
+        progressBarElement.style.background = backgroundStyle;
+    }
+
+    function updateSummary(gains, costs, netProfit) {
+        elements.summaryGains.textContent = formatCurrency(gains);
+        elements.summaryCosts.textContent = formatCurrency(costs);
+        elements.summaryNetProfit.textContent = formatCurrency(netProfit);
+        
+        // Aplica as cores ao Saldo Líquido
+        elements.summaryNetProfit.classList.remove('text-green-400', 'text-red-400', 'text-white');
+        elements.summaryNetProfit.classList.add(netProfit >= 0 ? 'text-green-400' : 'text-red-400');
+    }
+    
+    function updateWeeklyDisplay(totalProfit, totalGains) {
+        // Aplica as cores ao Total Semanal (Líq.)
+        const profitClass = totalProfit >= 0 ? 'text-green-400' : 'text-red-400';
+        elements.weeklyTotalNetProfit.textContent = formatCurrency(totalProfit);
+        elements.weeklyTotalNetProfit.classList.remove('text-green-400', 'text-red-400', 'text-white');
+        elements.weeklyTotalNetProfit.classList.add(profitClass);
+        
+        // Exibe o Total Bruto Semanal
+        elements.weeklyTotalGainsDisplay.textContent = formatCurrency(totalGains);
+
+        updateProgressDisplay(totalGains, weeklyGoal, elements.weeklyProgressLabel, elements.weeklyProgressValue, elements.weeklyProgressBar);
+        callGeminiPrediction(totalGains, weeklyGoal, 'weekly'); 
+    }
+
+    function updateMonthlyDisplay(totalProfit, totalGains) {
+        // Aplica as cores ao Total Mensal (Líq.)
+        const profitClass = totalProfit >= 0 ? 'text-green-400' : 'text-red-400';
+        elements.monthlyTotalNetProfit.textContent = formatCurrency(totalProfit);
+        elements.monthlyTotalNetProfit.classList.remove('text-green-400', 'text-red-400', 'text-white');
+        elements.monthlyTotalNetProfit.classList.add(profitClass);
+        
+        // Exibe o Total Bruto Mensal
+        elements.monthlyTotalGainsDisplay.textContent = formatCurrency(totalGains);
+
+        updateProgressDisplay(totalGains, monthlyGoal, elements.monthlyProgressLabel, elements.monthlyProgressValue, elements.monthlyProgressBar);
+        callGeminiPrediction(totalGains, monthlyGoal, 'monthly');
+    }
+    
+
+    function calculateSummaries(records) {
+        const currentYearMonth = new Date().toISOString().slice(0, 7); 
+        const today = new Date();
+        const startOfWeekString = getStartOfWeek(today); 
+        
+        let monthlyTotalProfit = 0;
+        let monthlyTotalGains = 0;
+        let monthlyGainBreakdown = { UBER: 0, NINETY_NINE: 0, INDRIVER: 0, PRIVATE: 0, PRODUCTS: 0 };
+        let monthlyExpenseBreakdown = { FUEL: 0, FOOD: 0, PARKING: 0, EMERGENCY: 0, OTHERS: 0 };
+        
+        let weeklyTotalProfit = 0;
+        let weeklyTotalGains = 0;
+        
+        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        const [currentYear, currentMonthIndex] = currentYearMonth.split('-');
+        const monthLabel = monthNames[parseInt(currentMonthIndex) - 1] + ' / ' + currentYear;
+        
+        elements.monthlySummaryMonthLabel.textContent = `${monthLabel} (Líq.):`;
+
+        if (records.length === 0) {
+            updateMonthlyDisplay(0, 0);
+            updateWeeklyDisplay(0, 0);
+            // Initialize charts with empty data if no records
+            updateGainChart(monthlyGainBreakdown);
+            updateExpenseChart(monthlyExpenseBreakdown);
+            updateEfficiencyCharts({ gainPerHour: [], tripsPerHour: [], labels: [], colors: [] });
+            updateTrendChart([]);
+            return;
+        }
+
+        records.forEach(doc => {
+            const docDate = doc.dateInfo; 
+            const docYearMonth = docDate ? doc.dateInfo.slice(0, 7) : null;
+            
+            if (docYearMonth === currentYearMonth) {
+                monthlyTotalProfit += doc.netProfit;
+                monthlyTotalGains += doc.totalGains;
+                
+                monthlyGainBreakdown.UBER += doc.gainUber || 0;
+                monthlyGainBreakdown.NINETY_NINE += doc.gain99 || 0;
+                monthlyGainBreakdown.INDRIVER += doc.gainIndriver || 0;
+                monthlyGainBreakdown.PRIVATE += doc.gainPrivate || 0;
+                monthlyGainBreakdown.PRODUCTS += doc.gainProducts || 0;
+                
+                monthlyExpenseBreakdown.FUEL += doc.expenseFuel || 0;
+                monthlyExpenseBreakdown.FOOD += doc.expenseFood || 0;
+                monthlyExpenseBreakdown.PARKING += doc.expenseParking || 0;
+                monthlyExpenseBreakdown.EMERGENCY += doc.expenseEmergency || 0;
+                monthlyExpenseBreakdown.OTHERS += doc.expenseOthers || 0;
+            }
+
+            if (docDate && docDate >= startOfWeekString) {
+                weeklyTotalProfit += doc.netProfit;
+                weeklyTotalGains += doc.totalGains;
+            }
+        });
+        
+        const efficiencyMetrics = calculateEfficiencyMetrics(records);
+
+        updateMonthlyDisplay(monthlyTotalProfit, monthlyTotalGains);
+        updateWeeklyDisplay(weeklyTotalProfit, weeklyTotalGains);
+        updateGainChart(monthlyGainBreakdown);
+        updateExpenseChart(monthlyExpenseBreakdown);
+        updateEfficiencyCharts(efficiencyMetrics);
+        updateTrendChart(records);
+        
+        checkAndDisplayAlerts(records, monthlyTotalProfit, monthlyTotalGains, weeklyTotalProfit);
+    }
+
+    function updateResultDisplay(profit, totalCostToday, totalCostPerKm, profitPerKm, error = null) {
+        
+        if (error) {
+            elements.resultProfitPerKm.textContent = 'N/A';
+            elements.resultProfitPerKm.classList.remove('text-green-400', 'text-red-400');
+            elements.resultProfitPerKm.classList.add('text-yellow-400');
+            return;
+        }
+
+        // 1. Lucro Líquido
+        const profitColorFinal = profit >= 0 ? 'text-green-400' : 'text-red-400';
+        elements.resultNetProfit.textContent = formatCurrency(profit);
+        elements.resultNetProfit.classList.remove('text-green-400', 'text-red-400', 'text-white');
+        elements.resultNetProfit.classList.add(profitColorFinal);
+
+        // 2. Custo Total do Dia (Mantido em vermelho para indicar saída de caixa)
+        elements.resultTotalCost.textContent = formatCurrency(totalCostToday);
+        // elements.resultTotalCost.classList.remove('text-red-400'); // Não precisa, já está fixo
+
+        // 3. Custo Total por KM (Mantido em vermelho para indicar custo)
+        elements.resultCostPerKm.textContent = formatCurrency(totalCostPerKm, 3);
+        // elements.resultCostPerKm.classList.remove('text-red-400'); // Não precisa, já está fixo
+        
+        // 4. Lucro por KM
+        const profitPerKmColor = profitPerKm >= 0 ? 'text-green-400' : 'text-red-400';
+        elements.resultProfitPerKm.textContent = formatCurrency(profitPerKm, 3);
+        elements.resultProfitPerKm.classList.remove('text-green-400', 'text-red-400', 'text-white');
+        elements.resultProfitPerKm.classList.add(profitPerKmColor);
+    }
+
+    function calculateDailyProfit() {
+        const dailyKm = getFloatValue(elements.dailyKmInput);
+        const fixedCostPerKm = getFloatValue(elements.fixedCostPerKm);
+        
+        const totalGains = getFloatValue(elements.gainUber) + getFloatValue(elements.gain99) + getFloatValue(elements.gainIndriver) + getFloatValue(elements.gainPrivate) + getFloatValue(elements.gainProducts);
+        const totalVariableExpenses = getFloatValue(elements.expenseParking) + getFloatValue(elements.expenseEmergency) + getFloatValue(elements.expenseFood) + getFloatValue(elements.expenseFuel) + getFloatValue(elements.expenseOthers);
+        
+        const totalFixedCostToday = dailyKm * fixedCostPerKm;
+        const totalDailyCost = totalVariableExpenses + totalFixedCostToday;
+        const netProfit = totalGains - totalDailyCost;
+        
+        if (dailyKm === 0 && totalGains > 0) {
+            updateResultDisplay(netProfit, totalDailyCost, 0, 0, "KM Rodado é necessário");
+            currentCalculatedData = null;
+            checkAndDisplayAlerts(allRecords, 0, 0, 0, true); 
+            return;
+        }
+
+        const costPerKm = dailyKm > 0 ? totalDailyCost / dailyKm : 0;
+        const profitPerKm = dailyKm > 0 ? netProfit / dailyKm : 0;
+        
+        updateSummary(totalGains, totalDailyCost, netProfit);
+        updateResultDisplay(netProfit, totalDailyCost, costPerKm, profitPerKm);
+        
+        currentCalculatedData = {
+            id: recordIdToUpdate.value || generateUniqueId(), 
+            dateInfo: elements.dailyInfo.value || new Date().toISOString().slice(0, 10),
+            dailyKm,
+            totalGains,
+            totalVariableExpenses,
+            totalDailyCost,
+            netProfit,
+            profitPerKm,
+            gainUber: getFloatValue(elements.gainUber),
+            gain99: getFloatValue(elements.gain99),
+            gainIndriver: getFloatValue(elements.gainIndriver),
+            gainPrivate: getFloatValue(elements.gainPrivate),
+            gainProducts: getFloatValue(elements.gainProducts),
+            hoursUber: getFloatValue(elements.hoursUber),
+            tripsUber: getFloatValue(elements.tripsUber),
+            hours99: getFloatValue(elements.hours99),
+            trips99: getFloatValue(elements.trips99),
+            hoursIndriver: getFloatValue(elements.hoursIndriver),
+            tripsIndriver: getFloatValue(elements.tripsIndriver),
+            hoursPrivate: getFloatValue(elements.hoursPrivate),
+            tripsPrivate: getFloatValue(elements.tripsPrivate),
+            expenseFuel: getFloatValue(elements.expenseFuel),
+            expenseFood: getFloatValue(elements.expenseFood),
+            expenseParking: getFloatValue(elements.expenseParking),
+            expenseEmergency: getFloatValue(elements.expenseEmergency),
+            expenseOthers: getFloatValue(elements.expenseOthers),
+        };
+        
+        elements.saveButton.disabled = false;
+        elements.saveButton.textContent = recordIdToUpdate.value !== '' ? "ATUALIZAR LANÇAMENTO" : "SALVAR LANÇAMENTO";
+
+        if (totalGains > 0) {
+            callGeminiAnalysis(currentCalculatedData);
+        } else {
+            // Este é o bloco que falhava se geminiAnalysisContent fosse undefined
+            if (elements.geminiAnalysisContent && elements.geminiCitations) {
+                elements.geminiAnalysisContent.innerHTML = 'Insira seus ganhos e despesas para gerar a análise de performance diária.';
+                elements.geminiCitations.innerHTML = '';
+            }
+        }
+
+        checkAndDisplayAlerts(allRecords, 0, 0, 0, false, profitPerKm, fixedCostPerKm);
+    }
+    
+    function checkAndDisplayAlerts(records, monthlyTotalProfit, monthlyTotalGains, weeklyTotalProfit, dailyKmMissing = false, currentProfitPerKm = 0, fixedCostPerKm = 0) {
+        
+        let alertMessage = '';
+        const todayProfitPerKm = currentProfitPerKm;
+
+        if (dailyKmMissing) {
+            alertMessage = "🚨 **ALERTA:** KM PERCORRIDO está ausente. O cálculo do custo fixo diário está comprometido!";
+        } else if (todayProfitPerKm < 0 && getFloatValue(elements.dailyKmInput) > 0) {
+            alertMessage = "📉 **RISCO ALTO:** O saldo líquido do dia está NEGATIVO. Revise despesas ou aumente os ganhos!";
+        } else if (fixedCostPerKm > 0.80) {
+             alertMessage = `⚠️ **ALERTA DE CUSTO FIXO:** Seu Custo Fixo/KM (${formatCurrency(fixedCostPerKm, 3)}) está acima de R$ 0,80! Avalie seus gastos fixos.`;
+        } else if (todayProfitPerKm < 0.80 && getFloatValue(elements.dailyKmInput) > 0) {
+            alertMessage = `🟡 **ATENÇÃO:** Seu Lucro/KM (${formatCurrency(todayProfitPerKm, 3)}) está baixo. O ideal é acima de R$ 0,80 (pós-custos).`;
+        }
+
+        if (alertMessage) {
+            elements.riskAlertBanner.innerHTML = alertMessage.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            elements.riskAlertBanner.classList.remove('hidden');
+        } else {
+            elements.riskAlertBanner.classList.add('hidden');
+        }
+    }
+
+
+    function loadRecordToInputs(data) {
+        elements.dailyInfo.value = data.dateInfo;
+        elements.dailyKmInput.value = data.dailyKm;
+        
+        elements.gainUber.value = data.gainUber;
+        elements.gain99.value = data.gain99;
+        elements.gainIndriver.value = data.gainIndriver;
+        elements.gainPrivate.value = data.gainPrivate;
+        elements.gainProducts.value = data.gainProducts;
+        
+        elements.hoursUber.value = data.hoursUber || '';
+        elements.tripsUber.value = data.tripsUber || '';
+        elements.hours99.value = data.hours99 || '';
+        elements.trips99.value = data.trips99 || '';
+        elements.hoursIndriver.value = data.hoursIndriver || '';
+        elements.tripsIndriver.value = data.tripsIndriver || '';
+        elements.hoursPrivate.value = data.hoursPrivate || '';
+        elements.tripsPrivate.value = data.tripsPrivate || '';
+
+        elements.expenseFuel.value = data.expenseFuel;
+        elements.expenseFood.value = data.expenseFood;
+        elements.expenseParking.value = data.expenseParking;
+        elements.expenseEmergency.value = data.expenseEmergency;
+        elements.expenseOthers.value = data.expenseOthers;
+
+        recordIdToUpdate.value = data.id; 
+        elements.saveButton.textContent = "ATUALIZAR LANÇAMENTO";
+
+        calculateDailyProfit();
+    }
+
+    function populateFilterOptions() {
+        const years = new Set();
+        const months = new Set();
+        
+        allRecords.forEach(record => {
+            if (record.dateInfo) {
+                const year = record.dateInfo.slice(0, 4);
+                const month = record.dateInfo.slice(5, 7);
+                years.add(year);
+                months.add(month);
+            }
+        });
+        
+        const currentYear = new Date().getFullYear().toString();
+        
+        elements.filterYear.innerHTML = '<option value="">Todos os Anos</option>';
+        Array.from(years).sort((a, b) => b - a).forEach(year => {
+            const selected = year === currentYear ? 'selected' : '';
+            elements.filterYear.innerHTML += `<option value="${year}" ${selected}>${year}</option>`;
+        });
+
+        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        elements.filterMonth.innerHTML = '<option value="">Todos os Meses</option>';
+        Array.from(months).sort().forEach(month => {
+            const monthIndex = parseInt(month, 10) - 1;
+            elements.filterMonth.innerHTML += `<option value="${month}">${monthNames[monthIndex]}</option>`;
+        });
+
+        const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
+        elements.filterMonth.value = currentMonth;
+        elements.filterYear.value = currentYear;
+    }
+    
+    function renderHistory(records) {
+        const selectedMonth = elements.filterMonth.value;
+        const selectedYear = elements.filterYear.value;
+        
+        let filteredRecords = records;
+
+        if (selectedYear) {
+            filteredRecords = filteredRecords.filter(r => r.dateInfo && r.dateInfo.startsWith(selectedYear));
+        }
+        if (selectedMonth) {
+            filteredRecords = filteredRecords.filter(r => r.dateInfo && r.dateInfo.slice(5, 7) === selectedMonth);
+        }
+
+        elements.historyList.innerHTML = '';
+        elements.loadingHistory.style.display = filteredRecords.length > 0 ? 'none' : 'block';
+
+        if (filteredRecords.length === 0) {
+            elements.loadingHistory.textContent = `Nenhum lançamento encontrado para o filtro selecionado.`;
+            return;
+        }
+        
+        filteredRecords.forEach(data => {
+            const dateDisplay = formatDateDisplay(data.dateInfo);
+            const profit = data.netProfit;
+            const profitKm = data.profitPerKm;
+            const dailyKm = data.dailyKm; 
+            const totalGains = data.totalGains; 
+            
+            const profitClass = profit < 0 ? 'text-red-400' : 'text-green-400';
+            const profitKmClass = profitKm < 0 ? 'text-red-400' : 'text-green-400';
+
+            const listItem = document.createElement('li');
+            listItem.className = 'history-item bg-gray-800 p-3 rounded-lg flex justify-between items-center transition duration-200 hover:bg-gray-700 cursor-pointer';
+            
+            listItem.onclick = () => loadRecordToInputs(data); 
+
+            listItem.innerHTML = `
+                <div class="flex flex-col flex-grow">
+                    <span class="text-sm font-semibold text-white">${dateDisplay}</span>
+                    <span class="text-xs ${profitClass}">Líq.: ${formatCurrency(profit)} | Lucro/KM: ${formatCurrency(profitKm, 3)}</span>
+                    <span class="history-details text-xs">KM: ${dailyKm} | Bruto: ${formatCurrency(totalGains)}</span>
+                </div>
+                <button class="delete-btn text-lg text-red-500 hover:text-red-400 ml-2" title="Excluir Lançamento" 
+                    onclick="event.stopPropagation(); deleteRecord('${data.id}');">
+                    &times;
+                </button>
+            `;
+
+            elements.historyList.appendChild(listItem);
+        });
+    }
+
+    async function deleteRecord(recordId) {
+        if (!isAuthReady || userId === 'Deslogado') {
+             console.warn("Tentativa de excluir registro no Modo Anônimo.");
+            return;
+        }
+
+        if (!window.confirm("Tem certeza que deseja EXCLUIR este lançamento? Esta ação é irreversível e será sincronizada com a nuvem.")) {
+             return;
+        }
+        
+        try {
+            const docRef = doc(getRecordCollectionRef(), recordId);
+            await deleteDoc(docRef);
+            console.log('Lançamento excluído do Firestore!');
+        } catch (e) {
+            console.error("Erro ao excluir lançamento no Firestore:", e);
+        }
+    }
+
+    function setTodayDate() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        elements.dailyInfo.value = `${yyyy}-${mm}-${dd}`;
+    }
+    
+    // --- FUNÇÕES DE AUTENTICAÇÃO FIREBASE ---
+    
+    // setAuthMessage removido
+
+    // Removendo handleSignOut pois o botão SAIR foi removido, dependemos da expiração do cache do navegador.
+    /*
+    async function handleSignOut() {
+        try {
+            await signOut(auth); 
+            await signInAnonymously(auth);
+            elements.loggedInUserDisplay.textContent = 'Sessão Limpa. Novo UID...';
+            console.log("Sessão limpa. Novo login anônimo iniciado.");
+        } catch (error) {
+            console.error("Erro ao sair:", error);
+            elements.loggedInUserDisplay.textContent = 'Erro ao Sair.';
+        }
+    }
+    */
+    
+    
+    async function initializeFirebaseAndAuth() {
+        try {
+            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+            if (Object.keys(firebaseConfig).length === 0) {
+                elements.loggedInUserDisplay.textContent = 'Configuração do Firebase ausente.';
+                return;
+            }
+
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+            
+            elements.loggedInUserDisplay.textContent = 'Verificando acesso...';
+
+            // 1. Initial Auth Check (using the Canvas token for initial sign-in)
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                 await signInWithCustomToken(auth, __initial_auth_token).catch(() => {
+                      // Se falhar, tentará o login anônimo abaixo
+                 });
+            }
+
+            // 2. Set up Auth State Listener (THE CORE LOGIC)
+            onAuthStateChanged(auth, (user) => {
+                
+                // CRUCIAL: Se houver qualquer usuário (incluindo anônimo), mostre o app
+                if (user) { 
+                    userId = user.uid;
+                    isAuthReady = true;
+                    
+                    elements.loggedInUserDisplay.textContent = user.uid;
+                    
+                    // Mostra a UI e o botão SAIR (agora removido)
+                    elements.appContentContainer.classList.remove('hidden'); 
+                    // elements.signOutButton.classList.remove('hidden'); // Botão removido do HTML
+
+                    if (user.isAnonymous) {
+                        console.log("Modo Anônimo Ativo. Dados salvos com o ID atual.");
+                    } else {
+                        console.log(`Logado com método persistente. ID: ${user.uid}`);
+                    }
+                    
+                    // 3. Load data
+                    loadFixedCostInputs(); 
+                    loadRecords(); 
+                    
+                } else {
+                    // --- ESTADO DESLOGADO ---
+                    userId = 'Deslogado';
+                    isAuthReady = false;
+                    
+                    elements.loggedInUserDisplay.textContent = 'Iniciando Sessão...';
+                    elements.appContentContainer.classList.add('hidden'); // ESCONDE O CONTEÚDO PRINCIPAL
+                    
+                    // Tenta forçar o login anônimo
+                    signInAnonymously(auth).then((userCredential) => {
+                         console.log("Sessão anônima iniciada com sucesso. Novo UID:", userCredential.user.uid);
+                    }).catch(err => {
+                         console.error("Falha ao iniciar a sessão anônima:", err);
+                         elements.loggedInUserDisplay.textContent = 'ERRO CRÍTICO DE ACESSO';
+                    });
+                    
+                    // Limpa displays (já tratado no calculateSummaries para records vazios)
+                    allRecords = [];
+                    calculateSummaries(allRecords); 
+                    elements.historyList.innerHTML = '';
+                }
+            });
+
+        } catch (e) {
+            console.error("Erro FATAL ao inicializar Firebase:", e);
+            elements.loggedInUserDisplay.textContent = 'Erro de Init do Firebase.';
+            isAuthReady = false;
+        }
+        
+        // Update the private fare constant displays (always run)
+        elements.timeRateDisplay.textContent = `R$ ${PRIVATE_FARE_CONSTANTS.DEFAULT_TIME_RATE.toFixed(2)}/min`;
+        const waitRatePerMinute = PRIVATE_FARE_CONSTANTS.DEFAULT_WAIT_RATE;
+        const waitRatePerHour = waitRatePerMinute * 60;
+        elements.waitRateDisplay.textContent = `R$ ${waitRatePerMinute.toFixed(2)}/min`;
+        elements.waitPerHourDisplay.textContent = `R$ ${waitRatePerHour.toFixed(0)}/h`;
+    }
+    
+    // --- EVENT LISTENERS ---
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        if (elements.dailyInfo) {
+            setTodayDate();
+        }
+        initializeFirebaseAndAuth();
+        
+        // Auth Listeners
+        // elements.signOutButton.addEventListener('click', handleSignOut); // Listener removido
+        
+        // Application Listeners
+        elements.calculateButton.addEventListener('click', calculateDailyProfit);
+        elements.saveButton.addEventListener('click', saveRecord);
+        elements.clearButton.addEventListener('click', clearInputFields);
+        elements.saveGoalsButton.addEventListener('click', saveGoals); 
+        elements.exportButton.addEventListener('click', exportData);
+        elements.importButton.addEventListener('click', importData);
+        elements.importFile.addEventListener('change', handleImportFile);
+        
+        // FILTROS DE HISTÓRICO 
+        elements.filterMonth.addEventListener('change', () => renderHistory(allRecords));
+        elements.filterYear.addEventListener('change', () => renderHistory(allRecords));
+        
+        // Liga o botão de Custo Fixo para calcular E salvar o resultado
+        elements.calculateFixedCostButton.addEventListener('click', () => {
+            calculateAndSetFixedCost(true); 
+        });
+
+        const inputElements = document.querySelectorAll('input[type="number"], input[type="date"]');
+        inputElements.forEach(input => {
+            input.addEventListener('input', calculateDailyProfit);
+            input.addEventListener('keydown', (e) => { 
+                if (e.key === 'Enter') calculateDailyProfit(); 
+            });
+        });
+        
+        // --- LISTENERS DA CALCULADORA PARTICULAR ---
+        elements.startWaitButton.addEventListener('click', startTimer);
+        elements.resetWaitButton.addEventListener('click', resetTimer);
+
+        const privateFareInputs = [
+            elements.rideKm, elements.rideTimeMinutes, elements.rideKmRate, 
+            elements.tollCost, elements.profitMarginPercent 
+        ];
+        privateFareInputs.forEach(input => {
+            // Removendo a chamada inline do oninput
+            // input.addEventListener('input', calculatePrivateFare);
+            input.addEventListener('input', () => saveFixedCostInputs(false)); 
+        });
+
+        // Adiciona listeners para os campos do cálculo fixo para recalcular ao alterar
+        const fixedCostInputs = document.querySelectorAll('#monthlyKmEstimate, #costProLabore, #costVehiclePayment, #costMobileInternet, #costAesthetics, #costOilChange, #costTireChange, #costAnnualInsurance, #costAnnualDocumentation, #costAnnualDepreciation');
+        fixedCostInputs.forEach(input => {
+             input.addEventListener('input', () => saveFixedCostInputs(false)); 
+             input.addEventListener('input', () => {
+                const total = getFloatValue(elements.costProLabore) + getFloatValue(elements.costVehiclePayment) + getFloatValue(elements.costMobileInternet) + getFloatValue(elements.costAesthetics) + 
+                              getFloatValue(elements.costOilChange) / 2 + getFloatValue(elements.costTireChange) / 3 + 
+                              getFloatValue(elements.costAnnualInsurance) + getFloatValue(elements.costAnnualDocumentation) / 12 + getFloatValue(elements.costAnnualDepreciation) / 12; 
+                 elements.totalMonthlyFixedCostDisplay.textContent = `Total Fixo Mensal: ${formatCurrency(total)}`;
+             });
+        });
+        
+        elements.fixedCostPerKm.addEventListener('input', calculateDailyProfit);
+    });
+</script>
+</body>
+</html>
