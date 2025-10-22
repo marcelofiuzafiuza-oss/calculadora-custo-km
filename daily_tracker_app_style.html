@@ -947,8 +947,9 @@
 
             console.log(`Local Storage: ${allRecords.length} registros carregados.`);
         } catch (e) {
+            // CORREÇÃO: Registrando o erro no console de forma mais simples e não impedindo o carregamento da UI
             console.error("Erro ao carregar registros do Local Storage:", e);
-            elements.loadingHistory.textContent = "ERRO ao carregar dados do Local Storage. Verifique se o formato está correto.";
+            elements.loadingHistory.textContent = "ERRO ao carregar dados do Local Storage. O gráfico pode não aparecer corretamente.";
         }
     }
     
@@ -1012,8 +1013,7 @@
         calculateDailyProfit();
     }
 
-    // --- FUNÇÕES DE GRÁFICO (mantidas, sem alterações na lógica) ---
-    // (createChart, createChartOptions, createBarGradient, calculateEfficiencyMetrics, updateGainChart, updateExpenseChart, updateEfficiencyCharts, updateTrendChart)
+    // --- FUNÇÕES DE GRÁFICO ---
     
     function createChart(chartId, type, data, options) {
         const ctx = document.getElementById(chartId).getContext('2d');
@@ -1049,7 +1049,10 @@
     }
     
     function createBarGradient(ctx, chartArea, colorHex) {
-        if (!chartArea || !colorHex) return colorHex; 
+        // CORREÇÃO: Verifica se chartArea e suas propriedades essenciais estão definidas
+        if (!chartArea || !colorHex || chartArea.bottom === undefined || chartArea.top === undefined) { 
+            return colorHex; 
+        }
         
         const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
         
@@ -1271,7 +1274,11 @@
                 backgroundColor: function(context) {
                     const chart = context.chart;
                     const { ctx, chartArea } = chart;
-                    if (!chartArea) return null;
+                    
+                    // CORREÇÃO: Adicionando checagem robusta para chartArea e suas propriedades.
+                    if (!chartArea || chartArea.top === undefined || chartArea.bottom === undefined) {
+                         return VIBRANT_COLORS.INDRIVER; // Fallback color
+                    }
 
                     const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
                     gradient.addColorStop(0, trendLineColor + '77'); 
@@ -1653,6 +1660,36 @@
     }
     
     // --- FUNÇÃO DE LIMPEZA ---
+    
+    function resetDailyDisplay() {
+        // Zera os displays de Resumo Diário
+        elements.summaryGains.textContent = formatCurrency(0);
+        elements.summaryCosts.textContent = formatCurrency(0);
+        elements.summaryNetProfit.textContent = formatCurrency(0);
+        elements.summaryNetProfit.classList.remove('text-green-400', 'text-red-400', 'text-white');
+        elements.summaryNetProfit.classList.add('text-white');
+
+        // Zera os displays de Resultados Detalhados
+        elements.resultNetProfit.textContent = formatCurrency(0);
+        elements.resultTotalCost.textContent = formatCurrency(0);
+        elements.resultCostPerKm.textContent = formatCurrency(0, 3);
+        elements.resultProfitPerKm.textContent = formatCurrency(0, 3);
+        
+        // Aplica classes padrão para lucro/km zerado
+        elements.resultProfitPerKm.classList.remove('text-green-400', 'text-red-400', 'text-yellow-400');
+        elements.resultProfitPerKm.classList.add('text-white');
+        
+        // Limpa a análise da IA diária (Problema 1 resolvido)
+        if (elements.geminiAnalysisContent && elements.geminiCitations) {
+            elements.geminiAnalysisContent.innerHTML = 'Calcule o seu lucro do dia para receber um feedback e dicas do Coach Financeiro Gemini!';
+            elements.geminiCitations.innerHTML = '';
+            elements.geminiLoading.classList.add('hidden');
+        }
+        
+        // Esconde o alerta de risco (se houver)
+        elements.riskAlertBanner.classList.add('hidden');
+    }
+
     function clearInputFields() {
         // Clear value of all input fields
         elements.gainUber.value = ''; elements.hoursUber.value = ''; elements.tripsUber.value = '';
@@ -1668,7 +1705,7 @@
         elements.saveButton.textContent = "SALVAR LANÇAMENTO";
 
         setTodayDate();
-        calculateDailyProfit();
+        resetDailyDisplay(); // <--- SUBSTITUÍDO: Apenas reseta o display do dia para refletir campos limpos.
     }
     
     // --- FUNÇÕES DE TOTALIZAÇÃO E UI ---
@@ -1976,7 +2013,7 @@
         if (totalGains > 0) {
             callGeminiAnalysis(currentCalculatedData);
         } else {
-            // Este é o bloco que falhava se geminiAnalysisContent fosse undefined
+            // Este é o bloco que limpava a IA se os inputs fossem zerados por engano
             if (elements.geminiAnalysisContent && elements.geminiCitations) {
                 elements.geminiAnalysisContent.innerHTML = 'Insira seus ganhos e despesas para gerar a análise de performance diária.';
                 elements.geminiCitations.innerHTML = '';
@@ -2164,11 +2201,14 @@
         loadFixedCostInputsLocal(); 
         loadRecordsLocal(); 
         
-        // 3. Define o display de status
+        // 3. Define o display de status (USER ID)
         elements.loggedInUserDisplay.textContent = localUserId;
         elements.appContentContainer.classList.remove('hidden'); 
         
-        // 4. Update the private fare constant displays (always run)
+        // 4. Define a data atual (DATE) <--- MUDANÇA AQUI
+        setTodayDate();
+        
+        // 5. Update the private fare constant displays (always run)
         elements.timeRateDisplay.textContent = `R$ ${PRIVATE_FARE_CONSTANTS.DEFAULT_TIME_RATE.toFixed(2)}/min`;
         const waitRatePerMinute = PRIVATE_FARE_CONSTANTS.DEFAULT_WAIT_RATE;
         const waitRatePerHour = waitRatePerMinute * 60;
@@ -2179,9 +2219,7 @@
     // --- EVENT LISTENERS ---
     
     document.addEventListener('DOMContentLoaded', () => {
-        if (elements.dailyInfo) {
-            setTodayDate();
-        }
+        // O código removido daqui para setar a data foi movido para initializeAppLocal()
         initializeAppLocal(); // Chamada da nova função de inicialização local
         
         // Application Listeners
