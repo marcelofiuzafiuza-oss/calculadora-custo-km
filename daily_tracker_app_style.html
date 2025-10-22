@@ -188,7 +188,7 @@
                     
                     <!-- Display principal que será atualizado no JS -->
                     <div id="loggedInUserDisplay" class="w-full text-xs-custom py-1 px-1 bg-gray-800 rounded-lg text-yellow-400 overflow-hidden break-all text-center" title="ID Completo do Usuário">
-                        Carregando...
+                        Modo Local
                     </div>
                     
                     <!-- BOTÃO SAIR REMOVIDO: O ID será mantido até o cache ser limpo. -->
@@ -198,7 +198,7 @@
         </div>
         
         <!-- APLICATIVO CONTEÚDO PRINCIPAL (HIDDEN UNTIL LOGGED IN) -->
-        <div id="appContentContainer" class="hidden space-y-6">
+        <div id="appContentContainer" class="space-y-6">
 
             <!-- BANNER DE ALERTAS DE RISCO (NOVO - FEATURE 4) -->
             <div id="riskAlertBanner" class="hidden bg-red-800/50 p-3 rounded-lg border border-red-700 text-sm font-semibold text-red-300">
@@ -536,25 +536,12 @@
     </div>
 
 <script type="module">
-    // FIREBASE IMPORTS
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    // IMPORTAÇÕES SEM GoogleAuthProvider e signInWithPopup
-    import { getAuth, signOut, onAuthStateChanged, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, collection, query, orderBy, addDoc, collectionGroup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     
-    // FIREBASE GLOBAL VARIABLES
-    let db;
-    let auth;
-    let userId = 'Deslogado'; // Agora inicializa como deslogado
-    let appId;
-    let isAuthReady = false; 
-    setLogLevel('debug'); 
-
-    // Adicionado para lidar com o modo de demonstração (configuração ausente)
-    const DEMO_MODE_USER_ID = 'DEMO_MODE_NO_PERSISTENCE'; 
-
-    // Variáveis Globais para Metas (Carregadas do Firestore)
+    // VARIÁVEIS DE PERSISTÊNCIA LOCAL
+    const LOCAL_RECORDS_KEY = 'MAX_ROTA_RECORDS';
+    const LOCAL_CONFIG_KEY = 'MAX_ROTA_CONFIG';
+    
+    // Variáveis Globais para Metas (Carregadas do LocalStorage)
     let weeklyGoal = 0;
     let monthlyGoal = 0;
     let fixedCostPerKmValue = 0; 
@@ -573,6 +560,7 @@
     let timerStartTime = 0;
     
     // --- Configuração Gemini API ---
+    // A chave API é mantida vazia para uso no ambiente Canvas
     const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=";
     const apiKey = ""; 
 
@@ -605,7 +593,7 @@
     const lossColor = '#ff5252'; // Tailwind red-500
     const goalMetColor = '#00bcd4'; // Tailwind cyan-500
 
-    // Elementos do DOM (ATUALIZADO PARA REMOVER OS ITENS EXCLUÍDOS DO HTML)
+    // Elementos do DOM (mantidos)
     const elements = {
         dailyKmInput: document.getElementById('dailyKmInput'),
         fixedCostPerKm: document.getElementById('fixedCostPerKm'),
@@ -613,12 +601,12 @@
         calculateButton: document.getElementById('calculateButton'),
         saveButton: document.getElementById('saveButton'),
         clearButton: document.getElementById('clearButton'),
-        loggedInUserDisplay: document.getElementById('loggedInUserDisplay'), // Mantido
+        loggedInUserDisplay: document.getElementById('loggedInUserDisplay'), 
         weeklyGoalInput: document.getElementById('weeklyGoalInput'),
         monthlyGoalInput: document.getElementById('monthlyGoalInput'),
         saveGoalsButton: document.getElementById('saveGoalsButton'),
         
-        // Elementos de Resumo e Resultado (CORRIGIDOS)
+        // Elementos de Resumo e Resultado
         summaryGains: document.getElementById('summaryGains'),
         summaryCosts: document.getElementById('summaryCosts'),
         summaryNetProfit: document.getElementById('summaryNetProfit'),
@@ -627,7 +615,7 @@
         resultCostPerKm: document.getElementById('resultCostPerKm'),
         resultProfitPerKm: document.getElementById('resultProfitPerKm'),
         
-        // Elementos de Metas/Progresso/Totalizadores (CORRIGIDOS)
+        // Elementos de Metas/Progresso/Totalizadores
         weeklyGoalDisplay: document.getElementById('weeklyGoalDisplay'), 
         monthlyGoalDisplay: document.getElementById('monthlyGoalDisplay'), 
         weeklyTotalNetProfit: document.getElementById('weeklyTotalNetProfit'),
@@ -686,8 +674,6 @@
         geminiLoading: document.getElementById('geminiLoading'),
 
         // Elementos de Autenticação
-        // authLoading, authStatusBlock, authMessage, loggedInUserEmail removidos
-        // signOutButton: document.getElementById('signOutButton'), // REMOVIDO DO HTML AGORA
         appContentContainer: document.getElementById('appContentContainer'), 
         
         // Elementos de Ganho e Despesa
@@ -751,42 +737,20 @@
     }
     
     function generateUniqueId() {
-        return crypto.randomUUID(); 
+        // Usando Date.now() para simular um ID único simples e fácil de ordenar.
+        return Date.now().toString() + '-' + Math.random().toString(36).substring(2, 9);
     }
     
-    // --- FUNÇÕES DE PERSISTÊNCIA FIREBASE ---
+    // --- FUNÇÕES DE PERSISTÊNCIA LOCAL (NOVO) ---
     
-    function getRecordCollectionRef() {
-        if (userId === DEMO_MODE_USER_ID) return null; // Novo: Evita chamadas ao Firestore em Modo Demo
-        if (!userId || userId === 'Deslogado') {
-             console.warn("Tentativa de acessar coleção sem userId.");
-             return null;
-        }
-        return collection(db, `artifacts/${appId}/users/${userId}/profit_tracker_data`);
-    }
-
-    function getFixedCostDocRef() {
-        if (userId === DEMO_MODE_USER_ID) return null; // Novo: Evita chamadas ao Firestore em Modo Demo
-        if (!userId || userId === 'Deslogado') {
-             console.warn("Tentativa de acessar doc de preferências sem userId.");
-             return null;
-        }
-        return doc(db, `artifacts/${appId}/users/${userId}/preferences/fixed_costs_and_goals`);
-    }
-
-    async function loadFixedCostInputs() {
-        if (!isAuthReady || userId === 'Deslogado' || userId === DEMO_MODE_USER_ID) return;
-
-        // É ESSENCIAL que os elementos abaixo estejam definidos no objeto 'elements'
+    // Carrega configurações (custo fixo e metas) do LocalStorage
+    function loadFixedCostInputsLocal() {
         elements.weeklyGoalDisplay.textContent = 'Carregando...';
         elements.monthlyGoalDisplay.textContent = 'Carregando...';
 
         try {
-            const docRef = getFixedCostDocRef();
-            // A verificação de docRef nulo é coberta pelo retorno no início da função devido ao DEMO_MODE_USER_ID
-            
-            const docSnap = await getDoc(docRef);
-            const data = docSnap.exists() ? docSnap.data() : {};
+            const storedData = localStorage.getItem(LOCAL_CONFIG_KEY);
+            const data = storedData ? JSON.parse(storedData) : {};
             
             // Load data into global scope and UI inputs
             weeklyGoal = data.weeklyGoal || 0;
@@ -825,25 +789,13 @@
             calculatePrivateFare(); 
 
         } catch (e) {
-            console.error("Erro ao carregar configurações (Fixed Costs/Goals):", e);
+            console.error("Erro ao carregar configurações (Local Storage):", e);
         }
     }
 
-    async function saveFixedCostInputs(showSuccessLog = false) {
-        if (!isAuthReady || userId === 'Deslogado' || userId === DEMO_MODE_USER_ID) {
-            console.warn("Tentativa de salvar configurações. Em modo anônimo/demo, os dados persistem apenas na sessão atual.");
-            // Atualiza os globais mesmo em modo demo para manter a UI consistente
-            weeklyGoal = getFloatValue(elements.weeklyGoalInput);
-            monthlyGoal = getFloatValue(elements.monthlyGoalInput);
-            fixedCostPerKmValue = getFloatValue(elements.fixedCostPerKm);
-            
-            elements.weeklyGoalDisplay.textContent = formatCurrency(weeklyGoal);
-            elements.monthlyGoalDisplay.textContent = formatCurrency(monthlyGoal);
-            return;
-        }
-
+    // Salva configurações (custo fixo e metas) no LocalStorage
+    function saveFixedCostInputsLocal(showSuccessLog = false) {
         try {
-            const docRef = getFixedCostDocRef();
             const data = {
                 // Fixed Cost Inputs
                 monthlyKmEstimate: getFloatValue(elements.monthlyKmEstimate),
@@ -866,7 +818,7 @@
                 fixedCostPerKmValue: getFloatValue(elements.fixedCostPerKm)
             };
             
-            await setDoc(docRef, data, { merge: true });
+            localStorage.setItem(LOCAL_CONFIG_KEY, JSON.stringify(data));
             
             // Update global state after saving
             weeklyGoal = data.weeklyGoal;
@@ -877,77 +829,67 @@
             elements.monthlyGoalDisplay.textContent = formatCurrency(monthlyGoal);
             
             if (showSuccessLog) {
-                 console.log("Configurações salvas no Firestore.");
+                 console.log("Configurações salvas no Local Storage.");
             }
         } catch (e) {
-            console.error("Erro ao salvar configurações (Fixed Costs/Goals) no Firestore:", e);
+            console.error("Erro ao salvar configurações (Local Storage):", e);
         }
     }
     
     // Função para salvar Metas e Configurações (CHAMADA PELO BOTÃO)
-    async function saveGoals() {
-        if (!isAuthReady || userId === 'Deslogado' || userId === DEMO_MODE_USER_ID) {
-             console.warn("Tentativa de salvar metas. Em modo anônimo/demo, os dados persistem apenas na sessão atual.");
-        }
-        await saveFixedCostInputs(true); 
-        calculateSummaries(allRecords); 
+    function saveGoals() {
+        saveFixedCostInputsLocal(true); 
+        loadRecordsLocal(); // Isso forçará o recálculo dos totais
         calculateDailyProfit(); 
     }
 
 
-    function loadRecords() {
-        if (!isAuthReady || userId === 'Deslogado' || userId === DEMO_MODE_USER_ID) {
-            elements.loadingHistory.textContent = 'Modo Demonstração: Persistência de dados desabilitada.';
-            elements.loadingHistory.style.display = 'block';
-            return;
-        }
-
-        // Apenas a lista de histórico deve mostrar "Sincronizando"
-        elements.loadingHistory.textContent = "Sincronizando dados com o Firestore...";
+    // Carrega registros do LocalStorage
+    function loadRecordsLocal() {
+        elements.loadingHistory.textContent = "Carregando dados do Local Storage...";
         elements.loadingHistory.style.display = 'block';
         
-        const recordCollectionRef = getRecordCollectionRef();
-        if (!recordCollectionRef) return; 
-
         try {
-            // REMOVIDO: orderBy("dateInfo", "desc") para contornar o erro de permissão/índice faltante.
-            const q = query(recordCollectionRef);
-
-            onSnapshot(q, (snapshot) => {
-                allRecords = [];
-                snapshot.forEach((doc) => {
-                    allRecords.push({ id: doc.id, ...doc.data() });
-                });
-
-                // NOVO: Ordenar os registros localmente por 'dateInfo' decrescente (mais recentes primeiro).
-                allRecords.sort((a, b) => {
-                    // Assume formato 'YYYY-MM-DD' para comparação de strings
-                    if (a.dateInfo < b.dateInfo) return 1;
-                    if (a.dateInfo > b.dateInfo) return -1;
-                    return 0;
-                });
-
-                // Chamadas de atualização da UI
-                populateFilterOptions();
-                renderHistory(allRecords);
-                calculateSummaries(allRecords); 
-                calculateDailyProfit();
-                
-                elements.loadingHistory.style.display = allRecords.length > 0 ? 'none' : 'block';
-                if (allRecords.length === 0) {
-                     elements.loadingHistory.textContent = "Nenhum lançamento encontrado. Comece a adicionar um registro diário!";
-                }
-
-                console.log(`Firestore: ${allRecords.length} registros carregados e atualizados em tempo real.`);
-            }, (error) => {
-                console.error("Erro ao obter snapshot dos registros:", error);
-                elements.loadingHistory.textContent = "ERRO ao carregar dados do Firestore. Tente sair e entrar novamente.";
+            const storedRecords = localStorage.getItem(LOCAL_RECORDS_KEY);
+            allRecords = storedRecords ? JSON.parse(storedRecords) : [];
+            
+            // Ordenar os registros localmente por 'dateInfo' decrescente (mais recentes primeiro).
+            allRecords.sort((a, b) => {
+                // Assume formato 'YYYY-MM-DD' para comparação de strings
+                if (a.dateInfo < b.dateInfo) return 1;
+                if (a.dateInfo > b.dateInfo) return -1;
+                return 0;
             });
 
+            // Chamadas de atualização da UI
+            populateFilterOptions();
+            renderHistory(allRecords);
+            calculateSummaries(allRecords); 
+            calculateDailyProfit();
+            
+            elements.loadingHistory.style.display = allRecords.length > 0 ? 'none' : 'block';
+            if (allRecords.length === 0) {
+                 elements.loadingHistory.textContent = "Nenhum lançamento encontrado. Comece a adicionar um registro diário!";
+            }
+
+            console.log(`Local Storage: ${allRecords.length} registros carregados.`);
         } catch (e) {
-            console.error("Erro ao configurar onSnapshot para registros:", e);
+            console.error("Erro ao carregar registros do Local Storage:", e);
+            elements.loadingHistory.textContent = "ERRO ao carregar dados do Local Storage. Verifique se o formato está correto.";
         }
     }
+    
+    // Salva/Atualiza registros no LocalStorage
+    function saveRecordsToLocal() {
+        try {
+            localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(allRecords));
+            loadRecordsLocal(); // Recarrega para atualizar a UI
+        } catch (e) {
+            console.error("Erro ao salvar registros no Local Storage:", e);
+        }
+    }
+
+    // --- FIM FUNÇÕES DE PERSISTÊNCIA LOCAL ---
     
     // --- FUNÇÕES DE CÁLCULO DE CUSTO FIXO ---
 
@@ -971,7 +913,7 @@
                insuranceMonthly + documentationMonthly + depreciationMonthly;
     }
     
-    // Calcula o custo/km localmente e, opcionalmente, salva o resultado no Firestore.
+    // Calcula o custo/km localmente e, opcionalmente, salva o resultado no LocalStorage.
     function calculateAndSetFixedCost(saveGoalsFlag = false) { 
         const kmEstimate = getFloatValue(elements.monthlyKmEstimate);
         const totalFixedCostMonthly = calculateAndDisplayMonthlyCostTotal();
@@ -991,7 +933,7 @@
         fixedCostPerKmValue = fixedCostPerKmResult; // Update global value
 
         if (saveGoalsFlag) {
-            saveFixedCostInputs(true); 
+            saveFixedCostInputsLocal(true); 
         }
         
         calculateDailyProfit();
@@ -1371,7 +1313,7 @@
     }
     
     // --- FUNÇÃO GEMINI (LLM) ---
-    // (callGeminiAnalysis, callGeminiPrediction - kept in place)
+    // (callGeminiAnalysis, callGeminiPrediction - mantidas)
 
     async function callGeminiAnalysis(dailyData) {
         // Correção de segurança: verificar se os elementos existem antes de usá-los.
@@ -1522,7 +1464,7 @@
     }
     
     // --- FUNÇÃO DE BACKUP (EXPORTAÇÃO/IMPORTAÇÃO) ---
-    // (exportData, importData, handleImportFile - kept in place)
+    // (mantidas, mas atualizadas para lidar com local storage)
 
     function exportData() {
         const data = {
@@ -1540,7 +1482,7 @@
         const a = document.createElement('a');
         
         const date = new Date().toISOString().slice(0, 10);
-        a.download = `maxrota_dados_${date}.json`;
+        a.download = `maxrota_dados_local_${date}.json`;
         a.href = url;
         
         document.body.appendChild(a); 
@@ -1548,6 +1490,8 @@
         
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        
+        console.log('Dados exportados para arquivo JSON localmente.');
     }
     
     function importData() {
@@ -1557,12 +1501,6 @@
     function handleImportFile(event) {
         const file = event.target.files[0];
         if (!file) return;
-        
-        if (userId === DEMO_MODE_USER_ID) {
-            console.error("Operação de Importação não permitida em Modo Demo (Sem persistência).");
-            // No alert(), usando console.error.
-            return;
-        }
 
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -1574,25 +1512,26 @@
                     return;
                 }
                 
-                if (window.confirm(`Tem certeza que deseja importar ${importedData.records.length} lançamentos? Eles serão adicionados ao seu histórico atual.`)) {
+                if (window.confirm(`Tem certeza que deseja importar ${importedData.records.length} lançamentos? Eles substituirão seu histórico atual no Local Storage.`)) {
                     
-                    const recordsCollection = getRecordCollectionRef();
-                    for (const record of importedData.records) {
-                        const { id, ...dataToSave } = record; 
-                        await addDoc(recordsCollection, dataToSave);
-                    }
+                    // 1. Substituir histórico
+                    allRecords = importedData.records;
+                    localStorage.setItem(LOCAL_RECORDS_KEY, JSON.stringify(allRecords));
 
+                    // 2. Substituir metas/configurações
                     if (importedData.goals) {
-                        const configDoc = getFixedCostDocRef();
-                        await setDoc(configDoc, importedData.goals, { merge: true });
+                        localStorage.setItem(LOCAL_CONFIG_KEY, JSON.stringify(importedData.goals));
                     }
                     
-                    console.log('Dados importados com sucesso para o Firestore! A interface será atualizada em breve.');
+                    // 3. Recarregar tudo
+                    loadFixedCostInputsLocal();
+                    loadRecordsLocal();
+                    
+                    console.log('Dados importados com sucesso para o Local Storage! A interface foi atualizada.');
                 }
 
             } catch (error) {
                 console.error('Erro ao ler ou parsear arquivo de importação:', error);
-                console.error('Erro ao importar. Certifique-se de que o arquivo é um JSON válido e não foi modificado.');
             }
         };
         reader.readAsText(file);
@@ -1605,31 +1544,29 @@
             return;
         }
         
-        if (!isAuthReady || userId === 'Deslogado' || userId === DEMO_MODE_USER_ID) {
-             console.warn("Tentativa de salvar registro. Em modo anônimo/demo, o registro não será persistido na nuvem.");
-             clearInputFields(); 
-             return;
-        }
-
         const isUpdate = recordIdToUpdate.value !== '';
         
         try {
             const dataToSave = { ...currentCalculatedData };
-            delete dataToSave.id;
             
             if (isUpdate) {
-                const docRef = doc(getRecordCollectionRef(), recordIdToUpdate.value);
-                await updateDoc(docRef, dataToSave);
-                console.log('Lançamento atualizado no Firestore!');
+                // Atualiza o registro existente no array
+                const index = allRecords.findIndex(r => r.id === recordIdToUpdate.value);
+                if (index !== -1) {
+                    allRecords[index] = dataToSave;
+                }
+                console.log('Lançamento atualizado no Local Storage!');
             } else {
-                await addDoc(getRecordCollectionRef(), dataToSave);
-                console.log('Lançamento salvo no Firestore!');
+                // Adiciona novo registro
+                allRecords.push(dataToSave);
+                console.log('Lançamento salvo no Local Storage!');
             }
             
+            saveRecordsToLocal(); // Salva o array atualizado no Local Storage
             clearInputFields(); 
             
         } catch (e) {
-            console.error("Erro ao salvar lançamento no Firestore:", e);
+            console.error("Erro ao salvar lançamento no Local Storage:", e);
         }
     }
     
@@ -1653,7 +1590,6 @@
     }
     
     // --- FUNÇÕES DE TOTALIZAÇÃO E UI (mantidas) ---
-    // ...
     
     function updateProgressDisplay(currentTotal, goal, displayLabelElement, displayValueElement, progressBarElement) {
         // CORREÇÃO: Adicionando verificação de nulidade para evitar TypeError
@@ -1722,12 +1658,8 @@
         elements.weeklyTotalGainsDisplay.textContent = formatCurrency(totalGains);
 
         updateProgressDisplay(totalGains, weeklyGoal, elements.weeklyProgressLabel, elements.weeklyProgressValue, elements.weeklyProgressBar);
-        // Não chama a IA em modo demo
-        if (userId !== DEMO_MODE_USER_ID) {
-            callGeminiPrediction(totalGains, weeklyGoal, 'weekly'); 
-        } else {
-            elements.weeklyPredictionText.textContent = 'Projeção indisponível (Modo Demo).';
-        }
+        // Chamada da IA mantida (não depende mais do modo demo/Firebase)
+        callGeminiPrediction(totalGains, weeklyGoal, 'weekly'); 
     }
 
     function updateMonthlyDisplay(totalProfit, totalGains) {
@@ -1741,12 +1673,8 @@
         elements.monthlyTotalGainsDisplay.textContent = formatCurrency(totalGains);
 
         updateProgressDisplay(totalGains, monthlyGoal, elements.monthlyProgressLabel, elements.monthlyProgressValue, elements.monthlyProgressBar);
-        // Não chama a IA em modo demo
-        if (userId !== DEMO_MODE_USER_ID) {
-            callGeminiPrediction(totalGains, monthlyGoal, 'monthly');
-        } else {
-            elements.monthlyPredictionText.textContent = 'Projeção indisponível (Modo Demo).';
-        }
+        // Chamada da IA mantida (não depende mais do modo demo/Firebase)
+        callGeminiPrediction(totalGains, monthlyGoal, 'monthly');
     }
     
 
@@ -1906,15 +1834,7 @@
         elements.saveButton.textContent = recordIdToUpdate.value !== '' ? "ATUALIZAR LANÇAMENTO" : "SALVAR LANÇAMENTO";
 
         if (totalGains > 0) {
-            // Não chama a IA em modo demo
-            if (userId !== DEMO_MODE_USER_ID) {
-                callGeminiAnalysis(currentCalculatedData);
-            } else {
-                if (elements.geminiAnalysisContent && elements.geminiCitations) {
-                    elements.geminiAnalysisContent.innerHTML = 'Análise de IA desabilitada no Modo Demo (Sem conexão com a nuvem).';
-                    elements.geminiCitations.innerHTML = '';
-                }
-            }
+            callGeminiAnalysis(currentCalculatedData);
         } else {
             // Este é o bloco que falhava se geminiAnalysisContent fosse undefined
             if (elements.geminiAnalysisContent && elements.geminiCitations) {
@@ -2057,7 +1977,7 @@
                     <span class="history-details text-xs">KM: ${dailyKm} | Bruto: ${formatCurrency(totalGains)}</span>
                 </div>
                 <button class="delete-btn text-lg text-red-500 hover:text-red-400 ml-2" title="Excluir Lançamento" 
-                    onclick="event.stopPropagation(); deleteRecord('${data.id}');">
+                    onclick="event.stopPropagation(); deleteRecordLocal('${data.id}');">
                     &times;
                 </button>
             `;
@@ -2066,22 +1986,18 @@
         });
     }
 
-    async function deleteRecord(recordId) {
-        if (!isAuthReady || userId === 'Deslogado' || userId === DEMO_MODE_USER_ID) {
-             console.warn("Tentativa de excluir registro. Em modo anônimo/demo, a exclusão não será persistida na nuvem.");
-            return;
-        }
-
-        if (!window.confirm("Tem certeza que deseja EXCLUIR este lançamento? Esta ação é irreversível e será sincronizada com a nuvem.")) {
+    // Função local para exclusão
+    function deleteRecordLocal(recordId) {
+        if (!window.confirm("Tem certeza que deseja EXCLUIR este lançamento? Esta ação é irreversível e afetará apenas seus dados locais.")) {
              return;
         }
         
         try {
-            const docRef = doc(getRecordCollectionRef(), recordId);
-            await deleteDoc(docRef);
-            console.log('Lançamento excluído do Firestore!');
+            allRecords = allRecords.filter(r => r.id !== recordId);
+            saveRecordsToLocal();
+            console.log('Lançamento excluído do Local Storage!');
         } catch (e) {
-            console.error("Erro ao excluir lançamento no Firestore:", e);
+            console.error("Erro ao excluir lançamento no Local Storage:", e);
         }
     }
 
@@ -2093,133 +2009,18 @@
         elements.dailyInfo.value = `${yyyy}-${mm}-${dd}`;
     }
     
-    // --- FUNÇÕES DE AUTENTICAÇÃO FIREBASE ---
+    // --- FUNÇÃO DE INICIALIZAÇÃO LOCAL (Substitui Firebase Init) ---
     
-    // setAuthMessage removido
-
-    // Removendo handleSignOut pois o botão SAIR foi removido, dependemos da expiração do cache do navegador.
-    /*
-    async function handleSignOut() {
-        try {
-            await signOut(auth); 
-            await signInAnonymously(auth);
-            elements.loggedInUserDisplay.textContent = 'Sessão Limpa. Novo UID...';
-            console.log("Sessão limpa. Novo login anônimo iniciado.");
-        } catch (error) {
-            console.error("Erro ao sair:", error);
-            elements.loggedInUserDisplay.textContent = 'Erro ao Sair.';
-        }
-    }
-    */
-    
-    
-    async function initializeFirebaseAndAuth() {
-        try {
-            appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-            const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-            
-            // CHECK FOR MISSING FIREBASE CONFIG (The core of the fix for running on static hosts)
-            if (Object.keys(firebaseConfig).length === 0) {
-                // --- MODO DEMO (CONFIG AUSENTE) ---
-                userId = DEMO_MODE_USER_ID; // Define um ID claro para Modo Demo
-                isAuthReady = true;
-                
-                elements.loggedInUserDisplay.textContent = 'Configuração do Firebase ausente. Modo Somente-UI.';
-                elements.appContentContainer.classList.remove('hidden');
-
-                // 1. Define valores padrão razoáveis no escopo global e na UI para evitar erros
-                weeklyGoal = 1200.00;
-                monthlyGoal = 5000.00;
-                fixedCostPerKmValue = 0.600; // Valor razoável para demo
-
-                elements.weeklyGoalDisplay.textContent = formatCurrency(weeklyGoal);
-                elements.monthlyGoalDisplay.textContent = formatCurrency(monthlyGoal);
-                elements.fixedCostPerKm.value = fixedCostPerKmValue.toFixed(3);
-                elements.weeklyGoalInput.value = weeklyGoal.toFixed(2);
-                elements.monthlyGoalInput.value = monthlyGoal.toFixed(2);
-                
-                // 2. Limpa o histórico (será preenchido pela função loadRecords em modo demo)
-                allRecords = [];
-                elements.historyList.innerHTML = '';
-                elements.loadingHistory.style.display = 'block';
-                elements.loadingHistory.textContent = 'Modo Demonstração: Persistência de dados desabilitada.';
-
-                calculateSummaries(allRecords); // Recalcula totais com dados vazios
-                calculateDailyProfit(); // Atualiza cálculos atuais
-                
-                console.warn("Firebase config absent. Running in UI-Only/Demo Mode. Persistence disabled.");
-
-                return; // CRUCIAL: Interrompe a execução antes de tentar chamar initializeApp sem config.
-            }
-            
-            // --- CÓDIGO NORMAL (DENTRO DO CANVAS COM CONFIG) ---
-
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-            
-            elements.loggedInUserDisplay.textContent = 'Verificando acesso...';
-
-            // 1. Initial Auth Check (using the Canvas token for initial sign-in)
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                 await signInWithCustomToken(auth, __initial_auth_token).catch(() => {
-                      // Se falhar, tentará o login anônimo abaixo
-                 });
-            }
-
-            // 2. Set up Auth State Listener (THE CORE LOGIC)
-            onAuthStateChanged(auth, (user) => {
-                
-                // CRUCIAL: Se houver qualquer usuário (incluindo anônimo), mostre o app
-                if (user) { 
-                    userId = user.uid;
-                    isAuthReady = true;
-                    
-                    elements.loggedInUserDisplay.textContent = user.uid;
-                    
-                    // Mostra a UI
-                    elements.appContentContainer.classList.remove('hidden'); 
-
-                    if (user.isAnonymous) {
-                        console.log("Modo Anônimo Ativo. Dados salvos com o ID atual.");
-                    } else {
-                        console.log(`Logado com método persistente. ID: ${user.uid}`);
-                    }
-                    
-                    // 3. Load data
-                    loadFixedCostInputs(); 
-                    loadRecords(); 
-                    
-                } else {
-                    // --- ESTADO DESLOGADO ---
-                    userId = 'Deslogado';
-                    isAuthReady = false;
-                    
-                    elements.loggedInUserDisplay.textContent = 'Iniciando Sessão...';
-                    elements.appContentContainer.classList.add('hidden'); // ESCONDE O CONTEÚDO PRINCIPAL
-                    
-                    // Tenta forçar o login anônimo
-                    signInAnonymously(auth).then((userCredential) => {
-                         console.log("Sessão anônima iniciada com sucesso. Novo UID:", userCredential.user.uid);
-                    }).catch(err => {
-                         console.error("Falha ao iniciar a sessão anônima:", err);
-                         elements.loggedInUserDisplay.textContent = 'ERRO CRÍTICO DE ACESSO';
-                    });
-                    
-                    // Limpa displays (já tratado no calculateSummaries para records vazios)
-                    allRecords = [];
-                    calculateSummaries(allRecords); 
-                    elements.historyList.innerHTML = '';
-                }
-            });
-
-        } catch (e) {
-            console.error("Erro FATAL ao inicializar Firebase:", e);
-            elements.loggedInUserDisplay.textContent = 'Erro de Init do Firebase.';
-            isAuthReady = false;
-        }
+    function initializeAppLocal() {
+        // 1. Carrega dados e configurações iniciais do Local Storage
+        loadFixedCostInputsLocal(); 
+        loadRecordsLocal(); 
         
-        // Update the private fare constant displays (always run)
+        // 2. Define o display de status
+        elements.loggedInUserDisplay.textContent = 'Modo Local (Não sincronizado)';
+        elements.appContentContainer.classList.remove('hidden'); 
+        
+        // 3. Update the private fare constant displays (always run)
         elements.timeRateDisplay.textContent = `R$ ${PRIVATE_FARE_CONSTANTS.DEFAULT_TIME_RATE.toFixed(2)}/min`;
         const waitRatePerMinute = PRIVATE_FARE_CONSTANTS.DEFAULT_WAIT_RATE;
         const waitRatePerHour = waitRatePerMinute * 60;
@@ -2233,10 +2034,7 @@
         if (elements.dailyInfo) {
             setTodayDate();
         }
-        initializeFirebaseAndAuth();
-        
-        // Auth Listeners
-        // elements.signOutButton.addEventListener('click', handleSignOut); // Listener removido
+        initializeAppLocal(); // Chamada da nova função de inicialização local
         
         // Application Listeners
         elements.calculateButton.addEventListener('click', calculateDailyProfit);
@@ -2275,13 +2073,13 @@
         privateFareInputs.forEach(input => {
             // Removendo a chamada inline do oninput
             // input.addEventListener('input', calculatePrivateFare);
-            input.addEventListener('input', () => saveFixedCostInputs(false)); 
+            input.addEventListener('input', () => saveFixedCostInputsLocal(false)); 
         });
 
         // Adiciona listeners para os campos do cálculo fixo para recalcular ao alterar
         const fixedCostInputs = document.querySelectorAll('#monthlyKmEstimate, #costProLabore, #costVehiclePayment, #costMobileInternet, #costAesthetics, #costOilChange, #costTireChange, #costAnnualInsurance, #costAnnualDocumentation, #costAnnualDepreciation');
         fixedCostInputs.forEach(input => {
-             input.addEventListener('input', () => saveFixedCostInputs(false)); 
+             input.addEventListener('input', () => saveFixedCostInputsLocal(false)); 
              input.addEventListener('input', () => {
                 const total = getFloatValue(elements.costProLabore) + getFloatValue(elements.costVehiclePayment) + getFloatValue(elements.costMobileInternet) + getFloatValue(elements.costAesthetics) + 
                               getFloatValue(elements.costOilChange) / 2 + getFloatValue(elements.costTireChange) / 3 + 
