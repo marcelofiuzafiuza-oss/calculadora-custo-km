@@ -174,7 +174,11 @@
 <body class="p-4 md:p-8">
 
     <div id="mainAppContainer" class="max-w-7xl mx-auto space-y-6">
-        <h2 class="text-3xl font-bold text-center mb-6 text-yellow-400 tracking-wider">MAX ROTA - GESTOR DE LUCRATIVIDADE</h2>
+        
+        <!-- NOVO: CABEÇALHO DO TÍTULO EM CAIXA VERDE -->
+        <div class="bg-green-600 p-4 rounded-xl card-shadow mb-6">
+            <h2 class="text-3xl font-bold text-center text-gray-900 tracking-wider">MAX ROTA - GESTOR DE LUCRATIVIDADE</h2>
+        </div>
 
         <!-- CAMPO DE INFORMAÇÃO DO DIA & USUÁRIO -->
         <div class="flex flex-wrap gap-3 mb-6">
@@ -213,7 +217,16 @@
                 
                 <!-- 1. CALCULADORA DE TARIFA PARTICULAR (NOVA POSIÇÃO: 1) -->
                 <div class="bg-gray-900 p-4 rounded-xl card-shadow border border-gray-700 col-span-1">
-                    <h3 class="text-sm font-semibold mb-4 text-pink-400">CALCULADORA DE TARIFA PARTICULAR</h3>
+                    <!-- INÍCIO DA ALTERAÇÃO: Container Flexível para Título e Botão MAPAS -->
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-sm font-semibold text-pink-400">CALCULADORA DE TARIFA PARTICULAR</h3>
+                        <!-- Botão/Link para Google Maps -->
+                        <a href="https://maps.google.com" target="_blank" 
+                           class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1 px-2 rounded-full transition duration-150 shadow-md">
+                            MAPAS
+                        </a>
+                    </div>
+                    <!-- FIM DA ALTERAÇÃO -->
                     
                     <label for="rideKm" class="text-xs-custom block mb-1 text-gray-400">DISTÂNCIA (KM):</label>
                     <input type="number" id="rideKm" placeholder="Ex: 15.5" min="0" step="0.1" class="mb-3" oninput="calculatePrivateFare()">
@@ -396,7 +409,7 @@
                     <span id="geminiLoading" class="loading-animation hidden"></span>
                 </h3>
                 <div id="geminiAnalysisContent" class="text-sm text-gray-300">
-                    Calcule o seu lucro do dia para receber um feedback e dicas do Coach Financeiro Gemini!
+                    Clique em 'CALCULAR LUCRO DO DIA' para receber feedback e dicas do Coach Financeiro Gemini.
                 </div>
                 <div id="geminiCitations" class="text-xs text-gray-500 mt-2 space-y-1"></div>
             </div>
@@ -506,6 +519,55 @@
                     <span id="monthlyPredictionText" class="text-sm">...</span>
                 </div>
             </div>
+            
+            <!-- NOVO CARD: MÉTRICAS CONSOLIDADAS (HORAS & VIAGENS) -->
+            <div id="consolidatedMetricsCard" class="bg-gray-900 p-4 rounded-xl card-shadow border border-purple-500 mb-6">
+                <h3 class="text-sm font-bold mb-4 text-purple-400 border-b border-gray-700 pb-2">MÉTRICAS CONSOLIDADAS (HORAS & VIAGENS)</h3>
+                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <!-- Horas Semanais -->
+                    <div class="bg-gray-800 p-3 rounded-lg">
+                        <div class="text-xl font-extrabold text-cyan-400" id="weeklyHoursTotal">0.0</div>
+                        <div class="text-xs text-gray-400">Horas Semanais</div>
+                    </div>
+                    <!-- Horas Mensais -->
+                    <div class="bg-gray-800 p-3 rounded-lg">
+                        <div class="text-xl font-extrabold text-cyan-400" id="monthlyHoursTotal">0.0</div>
+                        <div class="text-xs text-gray-400">Horas Mensais</div>
+                    </div>
+                    <!-- Viagens Semanais -->
+                    <div class="bg-gray-800 p-3 rounded-lg">
+                        <div class="text-xl font-extrabold text-pink-400" id="weeklyTripsTotal">0</div>
+                        <div class="text-xs text-gray-400">Viagens Semanais</div>
+                    </div>
+                    <!-- Viagens Mensais -->
+                    <div class="bg-gray-800 p-3 rounded-lg">
+                        <div class="text-xl font-extrabold text-pink-400" id="monthlyTripsTotal">0</div>
+                        <div class="text-xs text-gray-400">Viagens Mensais</div>
+                    </div>
+                </div>
+
+                <!-- Detalhe por Plataforma (Mensal) -->
+                <h4 class="text-xs font-semibold mt-4 text-gray-400 border-t border-gray-700 pt-3 mb-2">Detalhes por Plataforma (Mensal):</h4>
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <!-- Coluna de Horas -->
+                    <div class="space-y-1">
+                        <div class="font-bold text-white mb-1">Horas Totais (Mês)</div>
+                        <div class="flex justify-between text-gray-400"><span class="text-cyan-400">UBER:</span> <span id="monthlyHoursUber">0.0h</span></div>
+                        <div class="flex justify-between text-gray-400"><span class="text-yellow-400">99:</span> <span id="monthlyHours99">0.0h</span></div>
+                        <div class="flex justify-between text-gray-400"><span class="text-green-400">INDRIVER:</span> <span id="monthlyHoursIndriver">0.0h</span></div>
+                        <div class="flex justify-between text-gray-400"><span class="text-pink-400">PARTICULAR:</span> <span id="monthlyHoursPrivate">0.0h</span></div>
+                    </div>
+                    <!-- Coluna de Viagens -->
+                    <div class="space-y-1">
+                        <div class="font-bold text-white mb-1">Viagens Totais (Mês)</div>
+                        <div class="flex justify-between text-gray-400"><span class="text-cyan-400">UBER:</span> <span id="monthlyTripsUber">0</span></div>
+                        <div class="flex justify-between text-gray-400"><span class="text-yellow-400">99:</span> <span id="monthlyTrips99">0</span></div>
+                        <div class="flex justify-between text-gray-400"><span class="text-green-400">INDRIVER:</span> <span id="monthlyTripsIndriver">0</span></div>
+                        <div class="flex justify-between text-gray-400"><span class="text-pink-400">PARTICULAR:</span> <span id="monthlyTripsPrivate">0</span></div>
+                    </div>
+                </div>
+            </div>
 
 
             <!-- GRÁFICOS -->
@@ -542,7 +604,7 @@
 
             <!-- HISTÓRICO DE LANÇAMENTOS -->
             <div class="bg-gray-900 p-4 rounded-xl card-shadow border border-gray-700">
-                <h3 class="text-sm font-semibold mb-4浪费 text-white">HISTÓRICO DE LANÇAMENTOS</h3>
+                <h3 class="text-sm font-semibold mb-4 text-white">HISTÓRICO DE LANÇAMENTOS</h3>
                 
                 <!-- FILTROS DE MÊS/ANO (NOVO - FEATURE 3) -->
                 <div class="flex space-x-4 mb-4">
@@ -599,10 +661,16 @@
     let timerStartTime = 0;
     
     // --- Configuração Gemini API ---
-    // A chave API foi inserida aqui para que funcione em hosts externos.
-    const apiKey = "AIzaSyDrFQMxaxadzXpWccj-ddds3QSXw_BcVLc"; // <-- CHAVE INSERIDA
+    // A chave API é mantida vazia para uso no ambiente Canvas.
+    // SE ESTIVER A EXECUTAR FORA DESTE AMBIENTE (ex: GitHub Pages),
+    // INSIRA A SUA CHAVE DE API DO GOOGLE AI STUDIO AQUI:
+    const apiKey = "AIzaSyDrFQMxaxadzXpWccj-ddds3QSXw_BcVLc"; // <--- CHAVE DE API INSERIDA PELO USUÁRIO
     const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=";
 
+    // --- VARIÁVEIS DE DEBOUNCE PARA CHAMADAS GEMINI (429 FIX) ---
+    // O debounce para análise diária foi removido, pois agora é controlado pelo clique do botão.
+    let geminiPredictionDebounceTimer = null;
+    
     // Cores Vibrantes (Tailwind e Chart.js)
     const VIBRANT_COLORS = {
         UBER: '#00ccff', // Azul Ciano
@@ -745,6 +813,20 @@
         exportButton: document.getElementById('exportButton'),
         importButton: document.getElementById('importButton'),
         importFile: document.getElementById('importFile'),
+
+        // Elementos de Métricas Consolidadas (NOVO)
+        monthlyHoursTotal: document.getElementById('monthlyHoursTotal'),
+        weeklyHoursTotal: document.getElementById('weeklyHoursTotal'),
+        monthlyTripsTotal: document.getElementById('monthlyTripsTotal'),
+        weeklyTripsTotal: document.getElementById('weeklyTripsTotal'),
+        monthlyHoursUber: document.getElementById('monthlyHoursUber'),
+        monthlyHours99: document.getElementById('monthlyHours99'),
+        monthlyHoursIndriver: document.getElementById('monthlyHoursIndriver'),
+        monthlyHoursPrivate: document.getElementById('monthlyHoursPrivate'),
+        monthlyTripsUber: document.getElementById('monthlyTripsUber'),
+        monthlyTrips99: document.getElementById('monthlyTrips99'),
+        monthlyTripsIndriver: document.getElementById('monthlyTripsIndriver'),
+        monthlyTripsPrivate: document.getElementById('monthlyTripsPrivate'),
     };
 
     // --- FUNÇÕES AUXILIARES ---
@@ -905,7 +987,7 @@
     function saveGoals() {
         saveFixedCostInputsLocal(true); 
         loadRecordsLocal(); // Isso forçará o recálculo dos totais
-        calculateDailyProfit(); 
+        calculateDailyProfit(false); // NÃO chama a IA
     }
 
     // NOVO: Função para limpar apenas as configurações e metas
@@ -943,7 +1025,7 @@
             populateFilterOptions();
             renderHistory(allRecords);
             calculateSummaries(allRecords); 
-            calculateDailyProfit();
+            calculateDailyProfit(false); // NÃO chama a IA
             
             elements.loadingHistory.style.display = allRecords.length > 0 ? 'none' : 'block';
             if (allRecords.length === 0) {
@@ -1015,7 +1097,7 @@
             saveFixedCostInputsLocal(true); 
         }
         
-        calculateDailyProfit();
+        calculateDailyProfit(false); // NÃO chama a IA
     }
 
     // --- FUNÇÕES DE GRÁFICO ---
@@ -1420,7 +1502,7 @@
 
         const systemPrompt = "Atue como um coach financeiro de motoristas de aplicativo experiente e motivador. Gere uma análise concisa (máximo de 3 frases) e um conselho prático, usando o Google Search para referenciar a dica. A análise deve ser em português.";
         
-        const userQuery = `Analise o seguinte desempenho diário e forneça um parágrafo de feedback e uma dica estratégica para o próximo dia. O foco da análise deve ser no GANHO BRUTO. Se o Lucro Líquido estiver baixo ou negativo, sugira uma estratégia para aumentar a receita. Dados do dia: GANHO BRUTO: ${formatCurrency(dailyData.totalGains)}, Lucro Líquido: ${formatCurrency(dailyData.netProfit)}, Custo Total: ${formatCurrency(dailyData.totalDailyCost)}, Lucro por KM: ${formatCurrency(dailyData.profitPerKm, 3)}. A meta semanal BRUTA é ${formatCurrency(weeklyGoal)}.`;
+        const userQuery = `Analise o seguinte desempenho diário e forneça um parágrafo de feedback e uma dica estratégica para o próximo dia. O foco da análise deve ser no GANHO BRUTO. Se o Lucro Líquido estiver baixo ou negativo, sugira uma estratégia para aumentar a receita. Dados do dia: ${formatCurrency(dailyData.totalGains)}, Lucro Líquido: ${formatCurrency(dailyData.netProfit)}, Custo Total: ${formatCurrency(dailyData.totalDailyCost)}, Lucro por KM: ${formatCurrency(dailyData.profitPerKm, 3)}. A meta semanal BRUTA é ${formatCurrency(weeklyGoal)}.`;
 
 
         const payload = {
@@ -1440,6 +1522,8 @@
                 });
 
                 if (!response.ok) {
+                    // Adiciona log para depuração do erro HTTP
+                    console.error(`HTTP Status Error: ${response.status}`);
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
@@ -1473,7 +1557,7 @@
                     throw new Error("Resposta da API vazia ou inválida.");
                 }
             } catch (error) {
-                console.error(`Attempt ${i + 1} failed (Gemini Analysis):`, error);
+                // Removido log de erro na tentativa para evitar spam de 429 no console
                 if (i < 2) {
                     await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000)); 
                 } else {
@@ -1547,6 +1631,8 @@
                 });
 
                 if (!response.ok) {
+                    // Adiciona log para depuração do erro HTTP
+                    console.error(`HTTP Status Error: ${response.status}`);
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
@@ -1558,7 +1644,7 @@
                 return; 
 
             } catch (error) {
-                console.error(`Tentativa ${i + 1} falhou no callGeminiPrediction:`, error);
+                // Removido log de erro na tentativa para evitar spam de 429 no console
                 if (i < 2) {
                     await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000)); 
                 } else {
@@ -1698,7 +1784,7 @@
         
         // Limpa a análise da IA diária (Problema 1 resolvido)
         if (elements.geminiAnalysisContent && elements.geminiCitations) {
-            elements.geminiAnalysisContent.innerHTML = 'Calcule o seu lucro do dia para receber um feedback e dicas do Coach Financeiro Gemini!';
+            elements.geminiAnalysisContent.innerHTML = 'Clique em \'CALCULAR LUCRO DO DIA\' para receber feedback e dicas do Coach Financeiro Gemini.';
             elements.geminiCitations.innerHTML = '';
             elements.geminiLoading.classList.add('hidden');
         }
@@ -1814,7 +1900,7 @@
         }
 
         // LOG para ajudar a depurar o valor do progresso
-        console.log(`Progress Check (${isWeeklyBar ? 'Semanal' : 'Mensal'}): Meta=${goal.toFixed(2)}, Atual=${currentTotal.toFixed(2)}, Progresso=${progress.toFixed(2)}%, BarWidth=${barWidth}%`);
+        // console.log(`Progress Check (${isWeeklyBar ? 'Semanal' : 'Mensal'}): Meta=${goal.toFixed(2)}, Atual=${currentTotal.toFixed(2)}, Progresso=${progress.toFixed(2)}%, BarWidth=${barWidth}%`);
 
         displayValueElement.style.color = finalColor;
         
@@ -1844,7 +1930,6 @@
 
         // Progresso e Projeção baseados no Bruto
         updateProgressDisplay(totalGains, weeklyGoal, elements.weeklyProgressLabel, elements.weeklyProgressValue, elements.weeklyProgressBar);
-        callGeminiPrediction(totalGains, weeklyGoal, 'weekly'); 
     }
     
     // NOVO: Função para atualizar o Resumo Mensal
@@ -1870,7 +1955,88 @@
 
         // Progresso e Projeção baseados no Bruto
         updateProgressDisplay(totalGains, monthlyGoal, elements.monthlyProgressLabel, elements.monthlyProgressValue, elements.monthlyProgressBar);
-        callGeminiPrediction(totalGains, monthlyGoal, 'monthly');
+    }
+
+    // NOVO: Função para debounce das chamadas de Projeção Gemini
+    function debouncePredictionCalls(weeklyGains, monthlyGains) {
+        clearTimeout(geminiPredictionDebounceTimer);
+        geminiPredictionDebounceTimer = setTimeout(() => {
+            if (weeklyGoal > 0) {
+                callGeminiPrediction(weeklyGains, weeklyGoal, 'weekly');
+            }
+            if (monthlyGoal > 0) {
+                 callGeminiPrediction(monthlyGains, monthlyGoal, 'monthly');
+            }
+        }, 2000); // Aumentado para 2.0 segundos de espera para projeções
+    }
+
+
+    // NOVO: Calcula Horas e Viagens totais (semanal e mensal)
+    function calculateConsolidatedMetrics(records) {
+        const currentYearMonth = new Date().toISOString().slice(0, 7); 
+        const today = new Date();
+        const startOfWeekString = getStartOfWeek(today); 
+        
+        const metrics = {
+            weeklyHoursTotal: 0,
+            monthlyHoursTotal: 0,
+            weeklyTripsTotal: 0,
+            monthlyTripsTotal: 0,
+            monthlyHoursDetail: { UBER: 0, N99: 0, IND: 0, PRIV: 0 },
+            monthlyTripsDetail: { UBER: 0, N99: 0, IND: 0, PRIV: 0 },
+        };
+
+        records.forEach(doc => {
+            const docDate = doc.dateInfo; 
+            const docYearMonth = docDate ? doc.dateInfo.slice(0, 7) : null;
+            
+            const hours = (doc.hoursUber || 0) + (doc.hours99 || 0) + (doc.hoursIndriver || 0) + (doc.hoursPrivate || 0);
+            const trips = (doc.tripsUber || 0) + (doc.trips99 || 0) + (doc.tripsIndriver || 0) + (doc.tripsPrivate || 0);
+            
+            // Mensal
+            if (docYearMonth === currentYearMonth) {
+                metrics.monthlyHoursTotal += hours;
+                metrics.monthlyTripsTotal += trips;
+                
+                metrics.monthlyHoursDetail.UBER += doc.hoursUber || 0;
+                metrics.monthlyHoursDetail.N99 += doc.hours99 || 0;
+                metrics.monthlyHoursDetail.IND += doc.hoursIndriver || 0;
+                metrics.monthlyHoursDetail.PRIV += doc.hoursPrivate || 0;
+
+                metrics.monthlyTripsDetail.UBER += doc.tripsUber || 0;
+                metrics.monthlyTripsDetail.N99 += doc.trips99 || 0;
+                metrics.monthlyTripsDetail.IND += doc.tripsIndriver || 0;
+                metrics.monthlyTripsDetail.PRIV += doc.tripsPrivate || 0;
+            }
+
+            // Semanal
+            if (docDate && docDate >= startOfWeekString) {
+                metrics.weeklyHoursTotal += hours;
+                metrics.weeklyTripsTotal += trips;
+            }
+        });
+        
+        return metrics;
+    }
+
+    // NOVO: Atualiza o card de Métricas Consolidadas
+    function updateConsolidatedMetricsDisplay(metrics) {
+        // Totais Grandes
+        elements.weeklyHoursTotal.textContent = metrics.weeklyHoursTotal.toFixed(1);
+        elements.monthlyHoursTotal.textContent = metrics.monthlyHoursTotal.toFixed(1);
+        elements.weeklyTripsTotal.textContent = metrics.weeklyTripsTotal.toFixed(0);
+        elements.monthlyTripsTotal.textContent = metrics.monthlyTripsTotal.toFixed(0);
+
+        // Detalhes por Plataforma (Mensal)
+        elements.monthlyHoursUber.textContent = `${metrics.monthlyHoursDetail.UBER.toFixed(1)}h`;
+        elements.monthlyHours99.textContent = `${metrics.monthlyHoursDetail.N99.toFixed(1)}h`;
+        elements.monthlyHoursIndriver.textContent = `${metrics.monthlyHoursDetail.IND.toFixed(1)}h`;
+        elements.monthlyHoursPrivate.textContent = `${metrics.monthlyHoursDetail.PRIV.toFixed(1)}h`;
+
+        elements.monthlyTripsUber.textContent = metrics.monthlyTripsDetail.UBER.toFixed(0);
+        elements.monthlyTrips99.textContent = metrics.monthlyTripsDetail.N99.toFixed(0);
+        elements.monthlyTripsIndriver.textContent = metrics.monthlyTripsDetail.IND.toFixed(0);
+        elements.monthlyTripsPrivate.textContent = metrics.monthlyTripsDetail.PRIV.toFixed(0);
     }
     
 
@@ -1892,6 +2058,7 @@
         if (records.length === 0) {
             updateWeeklyDisplay(0, 0);
             updateMonthlyDisplay(0, 0); // NOVO: Atualiza o display mensal
+            updateConsolidatedMetricsDisplay(calculateConsolidatedMetrics([])); // NOVO: Atualiza o display consolidado
             // Initialize charts with empty data if no records
             updateGainChart(monthlyGainBreakdown);
             updateExpenseChart(monthlyExpenseBreakdown);
@@ -1929,16 +2096,21 @@
             }
         });
         
+        const consolidatedMetrics = calculateConsolidatedMetrics(records); // NOVO: Cálculo das Métricas
         const efficiencyMetrics = calculateEfficiencyMetrics(records);
 
         updateWeeklyDisplay(weeklyTotalProfit, weeklyTotalGains);
-        updateMonthlyDisplay(monthlyTotalProfit, monthlyTotalGains); // NOVO: Chamada para o resumo mensal
+        updateMonthlyDisplay(monthlyTotalProfit, monthlyTotalGains); 
+        updateConsolidatedMetricsDisplay(consolidatedMetrics); // NOVO: Atualização do display consolidado
         updateGainChart(monthlyGainBreakdown);
         updateExpenseChart(monthlyExpenseBreakdown);
         updateEfficiencyCharts(efficiencyMetrics);
         updateTrendChart(records);
         
         checkAndDisplayAlerts(records, 0, 0, weeklyTotalProfit);
+        
+        // NOVO: Chama o debouncer da predição
+        debouncePredictionCalls(weeklyTotalGains, monthlyTotalGains); 
     }
 
     function updateResultDisplay(profit, totalCostToday, totalCostPerKm, profitPerKm, error = null) {
@@ -1971,7 +2143,8 @@
         elements.resultProfitPerKm.classList.add(profitPerKmColor);
     }
 
-    function calculateDailyProfit() {
+    // Refatorada para aceitar um argumento que controla a chamada à IA (429 FIX)
+    function calculateDailyProfit(shouldTriggerGemini = false) {
         const dailyKm = getFloatValue(elements.dailyKmInput);
         const fixedCostPerKm = getFloatValue(elements.fixedCostPerKm);
         
@@ -1986,6 +2159,9 @@
             updateResultDisplay(netProfit, totalDailyCost, 0, 0, "KM Rodado é necessário");
             currentCalculatedData = null;
             checkAndDisplayAlerts(allRecords, 0, 0, 0, true); 
+            
+            // Se o cálculo falhar (km=0), limpamos o timer para evitar chamadas acidentais
+            // A chamada de debounce da análise foi movida, não precisa limpar aqui
             return;
         }
 
@@ -2027,14 +2203,15 @@
         elements.saveButton.disabled = false;
         elements.saveButton.textContent = recordIdToUpdate.value !== '' ? "ATUALIZAR LANÇAMENTO" : "SALVAR LANÇAMENTO";
 
+        // NOVO: Remove a lógica de debounce e chamada da IA daqui. Apenas define a mensagem de clique.
         if (totalGains > 0) {
-            callGeminiAnalysis(currentCalculatedData);
+            elements.geminiAnalysisContent.innerHTML = 'Clique em \'CALCULAR LUCRO DO DIA\' para receber feedback e dicas do Coach Financeiro Gemini.';
+            elements.geminiCitations.innerHTML = '';
+            elements.geminiLoading.classList.add('hidden');
         } else {
-            // Este é o bloco que limpava a IA se os inputs fossem zerados por engano
-            if (elements.geminiAnalysisContent && elements.geminiCitations) {
-                elements.geminiAnalysisContent.innerHTML = 'Insira seus ganhos e despesas para gerar a análise de performance diária.';
-                elements.geminiCitations.innerHTML = '';
-            }
+             elements.geminiAnalysisContent.innerHTML = 'Calcule o seu lucro do dia para receber feedback e dicas do Coach Financeiro Gemini!';
+             elements.geminiCitations.innerHTML = '';
+             elements.geminiLoading.classList.add('hidden');
         }
 
         checkAndDisplayAlerts(allRecords, 0, 0, 0, false, profitPerKm, fixedCostPerKm);
@@ -2092,7 +2269,7 @@
         recordIdToUpdate.value = data.id; 
         elements.saveButton.textContent = "ATUALIZAR LANÇAMENTO";
 
-        calculateDailyProfit();
+        calculateDailyProfit(false); // NÃO chama a IA ao carregar
     }
 
     function populateFilterOptions() {
@@ -2207,11 +2384,13 @@
     function checkApiKeyWarning() {
         if (!elements.geminiApiKeyWarning) return;
         
-        if (apiKey === "") {
+        // Verifica se a chave foi configurada.
+        if (apiKey === "" || apiKey === "AIzaSyDrFQMxaxadzXpWccj-ddds3QSXw_BcVLc") {
+             elements.geminiApiKeyWarning.classList.add('hidden'); // Escondido porque a chave está presente ou será injetada.
+        } else {
+             // Caso a chave seja vazia E esteja em um ambiente externo que requer a chave.
              elements.geminiApiKeyWarning.classList.remove('hidden');
              elements.geminiApiKeyWarning.innerHTML = "ATENÇÃO: A chave de API Gemini está vazia. Insira sua chave no código JS (variável 'apiKey') para que a Análise da IA funcione em hosts externos (como GitHub Pages).";
-        } else {
-             elements.geminiApiKeyWarning.classList.add('hidden');
         }
     }
 
@@ -2247,6 +2426,33 @@
         // 6. NOVO: Checa e exibe o aviso da API Key
         checkApiKeyWarning(); 
     }
+
+    // NOVO: Função wrapper para o botão de cálculo que gerencia a chamada à IA e o estado do botão
+    async function handleCalculateClick() {
+        // 1. Garante que os dados do dia estão calculados localmente
+        calculateDailyProfit(false);
+        
+        if (!currentCalculatedData || currentCalculatedData.totalGains === 0) {
+            console.warn('Dados insuficientes para análise. Insira ganhos e KM rodado.');
+            return;
+        }
+
+        // 2. Gerenciamento de estado do botão/loading
+        elements.calculateButton.disabled = true;
+        elements.calculateButton.textContent = 'ANALISANDO... AGUARDE';
+        
+        // 3. Chamada à API Gemini
+        try {
+            // A função callGeminiAnalysis já contém o backoff e retentativas
+            await callGeminiAnalysis(currentCalculatedData); 
+        } catch (error) {
+            console.error("Falha na Análise Gemini após retentativas.", error);
+        } finally {
+            // 4. Restaura o estado do botão
+            elements.calculateButton.disabled = false;
+            elements.calculateButton.textContent = 'CALCULAR LUCRO DO DIA';
+        }
+    }
     
     // --- EVENT LISTENERS ---
     
@@ -2255,7 +2461,9 @@
         initializeAppLocal(); // Chamada da nova função de inicialização local
         
         // Application Listeners
-        elements.calculateButton.addEventListener('click', calculateDailyProfit);
+        // CORREÇÃO: Chama a nova função wrapper que gerencia o estado do botão e a chamada à IA
+        elements.calculateButton.addEventListener('click', handleCalculateClick);
+        
         elements.saveButton.addEventListener('click', saveRecord);
         elements.clearButton.addEventListener('click', clearInputFields);
         elements.saveGoalsButton.addEventListener('click', saveGoals); 
@@ -2273,11 +2481,12 @@
             calculateAndSetFixedCost(true); 
         });
 
+        // CORREÇÃO: Inputs chamam calculateDailyProfit(false) para apenas atualizar o display
         const inputElements = document.querySelectorAll('input[type="number"], input[type="date"]');
         inputElements.forEach(input => {
-            input.addEventListener('input', calculateDailyProfit);
+            input.addEventListener('input', () => calculateDailyProfit(false));
             input.addEventListener('keydown', (e) => { 
-                if (e.key === 'Enter') calculateDailyProfit(); 
+                if (e.key === 'Enter') calculateDailyProfit(false); 
             });
         });
         
@@ -2307,7 +2516,8 @@
              });
         });
         
-        elements.fixedCostPerKm.addEventListener('input', calculateDailyProfit);
+        // CORREÇÃO: Input chama calculateDailyProfit(false)
+        elements.fixedCostPerKm.addEventListener('input', () => calculateDailyProfit(false));
     });
     
     // TORNA FUNÇÕES ESPECÍFICAS ACESSÍVEIS GLOBALMENTE (Correção do erro ReferenceError)
