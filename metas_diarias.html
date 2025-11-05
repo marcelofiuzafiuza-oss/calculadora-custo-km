@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle Diário Avançado</title>
+    <!-- Carrega o Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carrega a fonte Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        /* Melhora a aparência dos inputs number */
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        /* Estilo para a barra de progresso */
+        .progress-bar-fill {
+            transition: width 0.5s ease-in-out;
+        }
+        /* Botão de Privacidade */
+        #togglePrivacyBtn.oculto {
+            background-color: #ef4444; /* red-600 */
+        }
+        #togglePrivacyBtn.oculto:hover {
+            background-color: #dc2626; /* red-700 */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen">
+
+    <div class="bg-gray-800 p-6 w-full min-h-screen">
+
+        <!-- Título e Modo Privacidade -->
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold text-cyan-400">Controle Diário</h1>
+            <!-- Botão de Privacidade -->
+            <button id="togglePrivacyBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 text-sm">
+                Ocultar
+            </button>
+        </div>
+
+        <!-- Seção 1: Controle de Tempo -->
+        <div class="bg-gray-700 p-4 rounded-lg mb-6">
+            <h2 class="text-lg font-semibold mb-3 text-center text-gray-300">Controle de Jornada</h2>
+            <div class="grid grid-cols-2 gap-3">
+                <!-- Botões que se alternam -->
+                <button id="iniciarDiaBtn" class_Original="w-full col-span-2 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">Iniciar Dia</button>
+                <button id="pausarDiaBtn" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 hidden">Pausar</button>
+                <button id="retomarDiaBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 hidden">Retomar</button>
+                <button id="encerrarDiaBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 hidden">Encerrar Dia</button>
+            </div>
+        </div>
+
+        <!-- Seção 2: Resumo Financeiro -->
+        <div class="bg-gray-700 p-5 rounded-lg mb-6">
+            <!-- Lucro Líquido -->
+            <div class="text-center mb-6">
+                <p class="text-sm text-gray-400 uppercase tracking-wider">Lucro Líquido</p>
+                <p class="text-4xl font-bold text-cyan-400" id="lucroLiquido">R$ 0,00</p>
+            </div>
+            <!-- Ganhos Brutos vs Gastos -->
+            <div class="flex justify-between text-center">
+                <div>
+                    <p class="text-sm text-gray-400">Ganhos Brutos</p>
+                    <p class="text-2xl font-semibold text-green-400" id="totalGanhos">R$ 0,00</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-400">Gastos Hoje</p>
+                    <p class="text-2xl font-semibold text-red-400" id="totalGastos">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Seção 3: Meta de Ganhos -->
+        <div class="mb-6">
+            <label for="metaDiaria" class="block text-sm font-medium text-gray-300 mb-2">Sua Meta de Ganhos Brutos (R$)</label>
+            <div class="flex space-x-2 mb-3">
+                <input type="number" id="metaDiaria" step="10" placeholder="Ex: 300" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500">
+                <button id="salvarMetaBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg transition duration-300">
+                    Definir
+                </button>
+            </div>
+            <!-- Barra de Progresso (Meta de Ganhos Brutos) -->
+            <div class="w-full bg-gray-600 rounded-full h-4 mb-2 overflow-hidden mt-1">
+                <div id="progressBar" class="bg-green-500 h-4 rounded-full progress-bar-fill" style="width: 0%"></div>
+            </div>
+            <p class="text-center text-sm text-gray-300" id="resumoFaltando">Defina uma meta para começar.</p>
+        </div>
+
+        <!-- Seção 4: Estatísticas -->
+        <div class="bg-gray-700 p-5 rounded-lg mb-6">
+            <div class="grid grid-cols-2 gap-4 text-center">
+                <div>
+                    <p class="text-sm text-gray-400">Tempo Trabalhado</p>
+                    <p class="text-2xl font-semibold" id="tempoTrabalhado">00:00:00</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-400">Média / Hora (Líquido)</p>
+                    <p class="text-2xl font-semibold" id="mediaPorHora">R$ 0,00</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-400">Corridas</p>
+                    <p class="text-2xl font-semibold" id="totalCorridas">0</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-400">Média / Corrida</p>
+                    <p class="text-2xl font-semibold" id="mediaPorCorrida">R$ 0,00</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção 5: Lançamentos -->
+        <div class="grid grid-cols-2 gap-3 mb-6">
+            <!-- Adicionar Corrida -->
+            <div>
+                <label for="valorCorrida" class="block text-sm font-medium text-gray-300 mb-2">Valor da Corrida (R$)</label>
+                <div class="flex">
+                    <input type="number" id="valorCorrida" step="0.5" placeholder="12.50" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-l-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <button id="addCorridaBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-3 rounded-r-lg transition duration-300">
+                        +
+                    </button>
+                </div>
+                <p id="erroInput" class="text-red-400 text-center mt-2 hidden"></p>
+            </div>
+            <!-- Adicionar Gasto -->
+            <div>
+                <label for="valorGasto" class="block text-sm font-medium text-gray-300 mb-2">Valor do Gasto (R$)</label>
+                <div class="flex">
+                    <input type="number" id="valorGasto" step="0.5" placeholder="50.00" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-l-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    <button id="addGastoBtn" class="bg-red-600 hover:bg-red-700 text-white font-bold p-3 rounded-r-lg transition duration-300">
+                        -
+                    </button>
+                </div>
+                <p id="erroGasto" class="text-red-400 text-center mt-2 hidden"></p>
+            </div>
+        </div>
+
+        <!-- Seção 6: Histórico (NOVO) -->
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-3 text-gray-300">Últimos Lançamentos</h3>
+            <div id="historicoLista" class="bg-gray-700 p-4 rounded-lg h-32 overflow-y-auto space-y-2">
+                <p class="text-gray-400 text-center">Nenhum lançamento ainda.</p>
+            </div>
+        </div>
+
+        <!-- Seção 7: Controles -->
+        <button id="resetarDiaBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition duration-300 mt-4">
+            Resetar Dia (Zerar Tudo)
+        </button>
+
+    </div>
+
+    <script>
+        // --- Seleção de Elementos ---
+        const togglePrivacyBtn = document.getElementById('togglePrivacyBtn');
+        
+        const iniciarDiaBtn = document.getElementById('iniciarDiaBtn');
+        const pausarDiaBtn = document.getElementById('pausarDiaBtn');
+        const retomarDiaBtn = document.getElementById('retomarDiaBtn');
+        const encerrarDiaBtn = document.getElementById('encerrarDiaBtn');
+
+        const metaDiariaInput = document.getElementById('metaDiaria');
+        const salvarMetaBtn = document.getElementById('salvarMetaBtn');
+        
+        const valorCorridaInput = document.getElementById('valorCorrida');
+        const addCorridaBtn = document.getElementById('addCorridaBtn');
+        const erroInput = document.getElementById('erroInput');
+
+        const valorGastoInput = document.getElementById('valorGasto');
+        const addGastoBtn = document.getElementById('addGastoBtn');
+        const erroGasto = document.getElementById('erroGasto');
+        
+        const lucroLiquido = document.getElementById('lucroLiquido');
+        const totalGanhos = document.getElementById('totalGanhos');
+        const totalGastos = document.getElementById('totalGastos');
+
+        const progressBar = document.getElementById('progressBar');
+        const resumoFaltando = document.getElementById('resumoFaltando');
+        
+        const tempoTrabalhado = document.getElementById('tempoTrabalhado');
+        const mediaPorHora = document.getElementById('mediaPorHora');
+        const totalCorridas = document.getElementById('totalCorridas');
+        const mediaPorCorrida = document.getElementById('mediaPorCorrida');
+
+        const historicoLista = document.getElementById('historicoLista');
+        
+        const resetarDiaBtn = document.getElementById('resetarDiaBtn');
+
+        // --- Estado da Aplicação ---
+        let state = {
+            meta: 0,
+            ganhos: 0,
+            corridas: 0,
+            gastos: 0,
+            history: [], // NOVO
+            totalTimeWorked: 0, // NOVO (em ms)
+            lastStartTime: null, // NOVO (timestamp)
+            status: 'stopped', // NOVO ('stopped', 'running', 'paused')
+            privacyMode: false // NOVO
+        };
+
+        let timerInterval = null; // NOVO
+
+        // --- Funções Auxiliares ---
+
+        // Formata número para Real (com modo privacidade)
+        function formatarBRL(valor) {
+            if (state.privacyMode) {
+                return "R$ --,--";
+            }
+            return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        // Formata milissegundos para HH:MM:SS
+        function formatarTempo(ms) {
+            if (ms < 0) ms = 0;
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+
+            return [hours, minutes, seconds]
+                .map(v => v.toString().padStart(2, '0'))
+                .join(':');
+        }
+
+        // Calcula o tempo trabalhado (incluindo o tempo atual se estiver rodando)
+        function getTempoTrabalhadoAtual() {
+            let tempoTotal = state.totalTimeWorked;
+            if (state.status === 'running' && state.lastStartTime) {
+                tempoTotal += (Date.now() - state.lastStartTime);
+            }
+            return tempoTotal;
+        }
+
+        // --- Funções do Timer ---
+
+        function iniciarTimer() {
+            pararTimer(); // Garante que não haja timers duplicados
+            timerInterval = setInterval(() => {
+                const tempoTotalMs = getTempoTrabalhadoAtual();
+                tempoTrabalhado.textContent = formatarTempo(tempoTotalMs);
+                
+                // Atualiza Média/Hora (Líquido)
+                const lucro = state.ganhos - state.gastos;
+                const horasTrabalhadas = tempoTotalMs / (1000 * 60 * 60);
+                let mediaHoraValor = 0;
+                if (horasTrabalhadas > 0) {
+                    mediaHoraValor = lucro / horasTrabalhadas;
+                }
+                mediaPorHora.textContent = formatarBRL(mediaHoraValor);
+
+            }, 1000);
+        }
+
+        function pararTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        // --- Funções Principais ---
+
+        // Atualiza toda a interface
+        function atualizarInterface() {
+            const { meta, ganhos, corridas, gastos, history, status, privacyMode } = state;
+
+            const lucro = ganhos - gastos;
+            const mediaCorrida = (corridas > 0) ? (ganhos / corridas) : 0;
+            const faltando = meta - ganhos;
+            const tempoTotalMs = getTempoTrabalhadoAtual();
+            const horasTrabalhadas = tempoTotalMs / (1000 * 60 * 60);
+            let mediaHoraValor = 0;
+            if (horasTrabalhadas > 0) {
+                mediaHoraValor = lucro / horasTrabalhadas;
+            }
+
+            // Modo Privacidade
+            togglePrivacyBtn.textContent = privacyMode ? "Mostrar" : "Ocultar";
+            togglePrivacyBtn.classList.toggle('oculto', privacyMode);
+
+            // Resumo Financeiro
+            lucroLiquido.textContent = formatarBRL(lucro);
+            totalGanhos.textContent = formatarBRL(ganhos);
+            totalGastos.textContent = formatarBRL(gastos);
+
+            // Cor do Lucro
+            if (lucro > 0) {
+                lucroLiquido.className = "text-4xl font-bold text-cyan-400";
+            } else if (lucro < 0) {
+                lucroLiquido.className = "text-4xl font-bold text-red-400";
+            } else {
+                lucroLiquido.className = "text-4xl font-bold text-gray-400";
+            }
+
+            // Meta
+            if (meta > 0) {
+                metaDiariaInput.value = meta;
+            }
+            let pct = 0;
+            if (meta > 0) {
+                pct = (ganhos / meta) * 100;
+                if (pct > 100) pct = 100;
+            }
+            progressBar.style.width = `${pct}%`;
+
+            if (meta === 0) {
+                resumoFaltando.textContent = "Defina uma meta de ganhos brutos.";
+            } else if (faltando > 0) {
+                resumoFaltando.textContent = `Faltam ${formatarBRL(faltando)} para sua meta.`;
+            } else {
+                const extra = ganhos - meta;
+                resumoFaltando.textContent = `✅ Meta batida! (${formatarBRL(extra)} extra)`;
+            }
+            if (privacyMode && meta > 0) {
+                 resumoFaltando.textContent = `Progresso da Meta`;
+            }
+
+            // Estatísticas
+            tempoTrabalhado.textContent = formatarTempo(tempoTotalMs);
+            mediaPorHora.textContent = formatarBRL(mediaHoraValor);
+            totalCorridas.textContent = corridas;
+            mediaPorCorrida.textContent = formatarBRL(mediaCorrida);
+
+
+            // Histórico
+            if (history.length === 0) {
+                historicoLista.innerHTML = '<p class="text-gray-400 text-center">Nenhum lançamento ainda.</p>';
+            } else {
+                historicoLista.innerHTML = history.slice(0, 10) // Mostra os últimos 10
+                    .map(item => {
+                        const valorFormatado = formatarBRL(item.value);
+                        if (item.type === 'ganho') {
+                            return `<div class="text-green-400">+ ${valorFormatado}</div>`;
+                        } else {
+                            return `<div class="text-red-400">- ${valorFormatado}</div>`;
+                        }
+                    }).join('');
+            }
+            
+            // Controle de Botões de Tempo
+            iniciarDiaBtn.classList.toggle('hidden', status !== 'stopped');
+            pausarDiaBtn.classList.toggle('hidden', status !== 'running');
+            retomarDiaBtn.classList.toggle('hidden', status !== 'paused');
+            encerrarDiaBtn.classList.toggle('hidden', status === 'stopped');
+            
+            // Ajusta layout do Encerrar Dia
+            if (status === 'paused') {
+                encerrarDiaBtn.classList.remove('col-span-2');
+            } else {
+                encerrarDiaBtn.classList.add('col-span-2');
+            }
+            if (status === 'running') {
+                encerrarDiaBtn.classList.remove('col-span-2');
+                pausarDiaBtn.classList.remove('col-span-2');
+            } else {
+                pausarDiaBtn.classList.add('col-span-2');
+            }
+        }
+
+        // Salva o estado atual no localStorage
+        function salvarEstado() {
+            localStorage.setItem('estadoMotoristaAppAvancado', JSON.stringify(state));
+        }
+
+        // Carrega o estado do localStorage
+        function carregarEstado() {
+            const estadoSalvo = localStorage.getItem('estadoMotoristaAppAvancado');
+            if (estadoSalvo) {
+                state = JSON.parse(estadoSalvo);
+                // Garante que os novos campos existam
+                state.gastos = state.gastos || 0;
+                state.history = state.history || [];
+                state.totalTimeWorked = state.totalTimeWorked || 0;
+                state.lastStartTime = state.lastStartTime || null;
+                state.status = state.status || 'stopped';
+                state.privacyMode = state.privacyMode || false;
+
+                // Se o app foi fechado enquanto estava 'running', ele volta para 'paused'
+                if (state.status === 'running') {
+                    // TBD: Isso pode ser complexo. Por agora, vamos setar para paused.
+                    // state.status = 'paused'; 
+                    // Melhor: Reinicia o timer se estava rodando
+                    iniciarTimer();
+                }
+            }
+            atualizarInterface();
+        }
+
+        // --- Event Listeners ---
+
+        // Modo Privacidade
+        togglePrivacyBtn.addEventListener('click', () => {
+            state.privacyMode = !state.privacyMode;
+            atualizarInterface();
+            salvarEstado();
+        });
+
+        // Controles de Tempo
+        iniciarDiaBtn.addEventListener('click', () => {
+            state.status = 'running';
+            state.lastStartTime = Date.now();
+            // Reseta apenas o tempo, não os ganhos (caso queira continuar um dia)
+            // state.totalTimeWorked = 0; 
+            iniciarTimer();
+            atualizarInterface();
+            salvarEstado();
+        });
+
+        pausarDiaBtn.addEventListener('click', () => {
+            pararTimer();
+            // Adiciona o tempo trabalhado desde o último start/resume
+            state.totalTimeWorked += (Date.now() - state.lastStartTime);
+            state.lastStartTime = null;
+            state.status = 'paused';
+            atualizarInterface(); // Atualiza o tempo final
+            salvarEstado();
+        });
+
+        retomarDiaBtn.addEventListener('click', () => {
+            state.status = 'running';
+            state.lastStartTime = Date.now();
+            iniciarTimer();
+            atualizarInterface();
+            salvarEstado();
+        });
+
+        encerrarDiaBtn.addEventListener('click', () => {
+            pararTimer();
+            if (state.status === 'running') {
+                state.totalTimeWorked += (Date.now() - state.lastStartTime);
+            }
+            state.lastStartTime = null;
+            state.status = 'stopped';
+            atualizarInterface(); // Atualiza o tempo final
+            salvarEstado();
+        });
+
+        // Salvar Meta
+        salvarMetaBtn.addEventListener('click', () => {
+            const novaMeta = parseFloat(metaDiariaInput.value);
+            if (!isNaN(novaMeta) && novaMeta > 0) {
+                state.meta = novaMeta;
+                atualizarInterface();
+                salvarEstado();
+                metaDiariaInput.blur();
+            }
+        });
+
+        // Adicionar Corrida
+        addCorridaBtn.addEventListener('click', () => {
+            const valor = parseFloat(valorCorridaInput.value);
+            if (isNaN(valor) || valor <= 0) {
+                erroInput.textContent = "Valor inválido.";
+                erroInput.classList.remove('hidden');
+                return;
+            }
+            erroInput.classList.add('hidden');
+            valorCorridaInput.value = "";
+            
+            state.ganhos += valor;
+            state.corridas += 1;
+            state.history.unshift({ type: 'ganho', value: valor }); // Adiciona no início
+            
+            atualizarInterface();
+            salvarEstado();
+            valorCorridaInput.blur();
+        });
+
+        // Adicionar Gasto
+        addGastoBtn.addEventListener('click', () => {
+            const valor = parseFloat(valorGastoInput.value);
+            if (isNaN(valor) || valor <= 0) {
+                erroGasto.textContent = "Valor inválido.";
+                erroGasto.classList.remove('hidden');
+                return;
+            }
+            erroGasto.classList.add('hidden');
+            valorGastoInput.value = "";
+            
+            state.gastos += valor;
+            state.history.unshift({ type: 'gasto', value: valor }); // Adiciona no início
+            
+            atualizarInterface();
+            salvarEstado();
+            valorGastoInput.blur();
+        });
+
+        // Resetar o Dia
+        resetarDiaBtn.addEventListener('click', () => {
+            if (confirm("Você tem certeza que quer ZERAR TUDO? (Ganhos, Gastos, Histórico, Tempo e Meta)")) {
+                pararTimer();
+                state = {
+                    meta: 0,
+                    ganhos: 0,
+                    corridas: 0,
+                    gastos: 0,
+                    history: [],
+                    totalTimeWorked: 0,
+                    lastStartTime: null,
+                    status: 'stopped',
+                    privacyMode: state.privacyMode // Mantém a escolha de privacidade
+                };
+                metaDiariaInput.value = "";
+                
+                atualizarInterface();
+                salvarEstado();
+            }
+        });
+
+        // --- Inicialização ---
+        document.addEventListener('DOMContentLoaded', carregarEstado);
+
+    </script>
+</body>
+</html>
+
+
+
