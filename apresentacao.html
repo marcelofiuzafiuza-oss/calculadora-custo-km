@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apresentação - MAX ROTA</title>
+    
+    <!-- Carregamento do Tailwind CSS --><script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Carregamento do Font Awesome (Ícones) --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" xintegrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- Carregamento da Fonte Inter --><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+            overflow: hidden; /* Esconde barras de rolagem */
+        }
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            display: none; /* Começa escondido */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem; /* Menor padding para mobile */
+            text-align: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: opacity 0.5s ease-in-out;
+            opacity: 0;
+        }
+        .slide.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        /* Animação de entrada do conteúdo do slide */
+        .slide-content {
+            transition: transform 0.6s ease-out, opacity 0.6s ease-out;
+            transform: translateY(20px); /* Começa ligeiramente abaixo */
+            opacity: 0;
+            width: 100%;
+        }
+        .slide.active .slide-content {
+            transform: translateY(0);
+            opacity: 1;
+            transition-delay: 0.3s; 
+        }
+        /* Efeito de hover nos cards */
+        .info-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .info-card:hover {
+            transform: scale(1.03); /* Leve zoom */
+            box-shadow: 0 10px 15px rgba(76, 175, 80, 0.2); /* Sombra verde */
+        }
+
+        /* Estilos de Destaque */
+        .highlight {
+            color: #4caf50; /* Verde MAX ROTA */
+        }
+        .highlight-red {
+            color: #ff5252;
+        }
+        /* Botões de Navegação */
+        .nav-button {
+            position: fixed;
+            bottom: 2rem;
+            background-color: #4caf50;
+            color: #fff;
+            font-weight: 700;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        .nav-button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(76, 175, 80, 0.3);
+        }
+        #prevBtn {
+            left: 2rem;
+            background-color: #4a5568; /* Cinza */
+        }
+        #prevBtn:hover {
+            background-color: #2d3748;
+            transform: scale(1.05);
+            box-shadow: none;
+        }
+        #nextBtn {
+            right: 2rem;
+        }
+
+        /* Estilos da Mini-Calculadora (SLIDE 6) */
+        .demo-input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            color: #1a202c; /* Texto escuro no input */
+            background-color: #e2e8f0;
+            border: 2px solid transparent;
+        }
+        .demo-input:focus {
+            outline: none;
+            border-color: #4caf50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.5);
+        }
+        .demo-button {
+            margin-top: 1rem;
+            background-color: #4caf50;
+            color: #fff;
+            font-weight: 700;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+        }
+        .demo-button:hover {
+            background-color: #45a049;
+            transform: scale(1.02);
+        }
+        .demo-result {
+            margin-top: 1rem;
+            background-color: #1a202c;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px dashed #4caf50;
+        }
+
+        /* Indicador de Progresso */
+        #progress-indicator {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+            z-index: 90;
+        }
+        .progress-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #4a5568; /* Cinza escuro */
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+        .progress-dot.active {
+            background-color: #4caf50; /* Verde */
+        }
+
+        /* Logo SVG para Watermark */
+        .slide-logo {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            width: 120px; /* Tamanho fixo pequeno */
+            height: auto;
+            opacity: 0.3; /* Sutil */
+            z-index: 50;
+        }
+        /* Esconder no primeiro slide, pois já tem a logo grande */
+        .slide:first-child .slide-logo {
+            display: none;
+        }
+        /* Esconder no celular, pode poluir a tela */
+        @media (max-width: 767px) {
+            .slide-logo {
+                display: none;
+            }
+        }
+
+
+        /* Responsividade para títulos e textos grandes */
+        @media (min-width: 768px) { /* md breakpoint */
+            .slide {
+                padding: 4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Slide 1: Capa --><div class="slide active">
+        <div class="slide-content max-w-4xl mx-auto">
+            <!-- LOGO SVG Inserida -->
+            <svg class="w-auto h-24 md:h-32 mx-auto mb-6" viewBox="0 0 250 60">
+              <text x="0" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="800" fill="#4caf50">MAX</text>
+              <text x="100" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="600" fill="#e0e0e0">ROTA</text>
+              <path d="M 100 55 Q 150 55, 170 50 Q 190 45, 240 48" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/>
+              <path d="M 235 43 L 240 48 L 235 53" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round" />
+            </svg>
+            <h2 class="text-xl md:text-3xl font-semibold text-gray-300">O Gestor Financeiro Definitivo para Motoristas de Aplicativo</h2>
+            <p class="mt-8 text-base md:text-lg text-gray-400">Clique em "Próximo" para começar.</p>
+        </div>
+    </div>
+
+    <!-- Slide 2: A Pergunta de Ouro (A Dor) --><div class="slide">
+        <!-- Logo Watermark -->
+        <svg class="slide-logo" viewBox="0 0 250 60">
+          <text x="0" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="800" fill="#4caf50">MAX</text><text x="100" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="600" fill="#e0e0e0">ROTA</text><path d="M 100 55 Q 150 55, 170 50 Q 190 45, 240 48" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M 235 43 L 240 48 L 235 53" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round" />
+        </svg>
+        <div class="slide-content max-w-5xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8">A Pergunta de Ouro</h2>
+            <p class="text-4xl md:text-5xl font-extrabold mb-10 highlight-red">"Depois de 12 horas rodando, quanto <i class="highlight">realmente</i> sobrou no seu bolso?"</p>
+            <div class="text-lg md:text-2xl text-gray-300 space-y-4">
+                <p>Muitos confundem <span class="font-bold">Faturamento Bruto</span> com <span class="font-bold highlight">Lucro Líquido</span>.</p>
+                <ul class="list-disc list-inside text-left max-w-3xl mx-auto space-y-2 mt-6">
+                    <li>Você sabe qual é o seu <span class="highlight font-semibold">Ponto de Equilíbrio</span> diário?</li>
+                    <li>Você sabe se seu ganho por KM está pagando o <span class="highlight-red font-semibold">desgaste do carro</span>?</li>
+                    <li>Você sabe quanto cobrar por uma <span class="highlight font-semibold">corrida particular</span>?</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 3: A Solução: MAX ROTA --><div class="slide">
+        <!-- Logo Watermark -->
+        <svg class="slide-logo" viewBox="0 0 250 60">
+          <text x="0" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="800" fill="#4caf50">MAX</text><text x="100" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="600" fill="#e0e0e0">ROTA</text><path d="M 100 55 Q 150 55, 170 50 Q 190 45, 240 48" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M 235 43 L 240 48 L 235 53" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round" />
+        </svg>
+        <div class="slide-content max-w-5xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8">A Solução: <span class="highlight">MAX ROTA</span></h2>
+            <p class="text-xl md:text-3xl font-light mb-6 text-gray-300">Não é um app de anotações. É um <span class="font-bold highlight">Gestor de Negócios</span>.</p>
+            <p class="text-lg md:text-2xl max-w-4xl mx-auto text-gray-400">
+                Ele transforma seus dados diários em **inteligência financeira**, respondendo à pergunta mais importante:
+            </p>
+            <p class="text-3xl md:text-4xl font-bold mt-6 highlight">"Qual é o meu Lucro Líquido Real?"</p>
+            <p class="text-lg md:text-2xl mt-6 text-gray-400">
+                Como? Calculando seu custo "invisível": o <span class="font-semibold highlight-red">Custo Fixo por KM</span>.
+            </p>
+        </div>
+    </div>
+
+    <!-- Slide 4: O Cérebro do App: Custo Fixo por KM --><div class="slide">
+        <!-- Logo Watermark -->
+        <svg class="slide-logo" viewBox="0 0 250 60">
+          <text x="0" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="800" fill="#4caf50">MAX</text><text x="100" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="600" fill="#e0e0e0">ROTA</text><path d="M 100 55 Q 150 55, 170 50 Q 190 45, 240 48" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M 235 43 L 240 48 L 235 53" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round" />
+        </svg>
+        <div class="slide-content max-w-6xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8">O Cérebro do App: <span class="highlight">Custo Fixo por KM</span></h2>
+            <div class="flex flex-col md:flex-row gap-8">
+                <div class="flex-1 bg-gray-800 p-6 rounded-lg border border-gray-700 text-left info-card">
+                    <h3 class="text-xl md:text-2xl font-bold mb-4 highlight-red">1. O que é Custo Fixo?</h3>
+                    <p class="text-base md:text-lg mb-4">É tudo o que você paga, <span class="font-bold">mesmo se o carro ficar parado</span>:</p>
+                    <ul class="list-none text-base md:text-lg space-y-2">
+                        <li><i class="fas fa-car text-green-500 mr-2"></i> Aluguel ou Prestação do veículo</li>
+                        <li><i class="fas fa-shield-alt text-green-500 mr-2"></i> Seguro</li>
+                        <li><i class="fas fa-file-alt text-green-500 mr-2"></i> Documentação (IPVA, etc.)</li>
+                        <li><i class="fas fa-chart-line text-green-500 mr-2"></i> Depreciação (perda de valor)</li>
+                        <li><i class="fas fa-wrench text-green-500 mr-2"></i> Manutenção periódica (Óleo, Pneus)</li>
+                    </ul>
+                </div>
+                <div class="flex-1 bg-gray-800 p-6 rounded-lg border border-gray-700 text-left info-card">
+                    <h3 class="text-xl md:text-2xl font-bold mb-4 highlight">2. A Mágica do Custo/KM</h3>
+                    <p class="text-base md:text-lg mb-4">O MAX ROTA soma todos esses custos "invisíveis" e divide pela sua <span class="font-bold">média de KM mensais</span>.</p>
+                    <p class="text-xl md:text-2xl font-bold text-center mt-6">
+                        Seu Custo/KM: <span class="highlight">R$ 0,55</span>
+                    </p>
+                    <p class="text-base md:text-lg text-center mt-4">
+                        Isso significa que cada KM que você roda <span class="highlight-red font-bold">custa 55 centavos</span>, antes mesmo de pôr combustível.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 5: Funcionalidade 1: Lançamento Diário Inteligente --><div class="slide">
+        <!-- Logo Watermark -->
+        <svg class="slide-logo" viewBox="0 0 250 60">
+          <text x="0" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="800" fill="#4caf50">MAX</text><text x="100" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="600" fill="#e0e0e0">ROTA</text><path d="M 100 55 Q 150 55, 170 50 Q 190 45, 240 48" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M 235 43 L 240 48 L 235 53" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round" />
+        </svg>
+        <div class="slide-content max-w-6xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8"><span class="highlight">Funcionalidade 1:</span> Lançamento Diário Inteligente</h2>
+            <p class="text-xl md:text-2xl font-light mb-6 text-gray-300">Veja seu dia de trabalho com clareza total.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 info-card">
+                    <i class="fas fa-money-bill-wave text-5xl highlight mb-4"></i>
+                    <h3 class="text-xl md:text-2xl font-bold mb-3 highlight">1. Ganhos Brutos</h3>
+                    <p class="text-base md:text-lg">Anote o faturamento de cada app (Uber, 99, Particular) e as horas/viagens.</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 info-card">
+                    <i class="fas fa-hand-holding-usd text-5xl highlight-red mb-4"></i>
+                    <h3 class="text-xl md:text-2xl font-bold mb-3 highlight-red">2. Despesas Variáveis</h3>
+                    <p class="text-base md:text-lg">Anote o que saiu: combustível, alimentação, estacionamento, etc.</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 info-card">
+                    <i class="fas fa-chart-pie text-5xl highlight mb-4"></i>
+                    <h3 class="text-xl md:text-2xl font-bold mb-3 highlight">3. Resultado Imediato</h3>
+                    <p class="text-base md:text-lg">O app calcula seu **Ponto de Equilíbrio** e seu **Lucro Líquido** real do dia.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Slide 6: Funcionalidade 2: Calculadora de Tarifa Particular (INTERATIVO!) --><div class="slide">
+        <!-- Logo Watermark -->
+        <svg class="slide-logo" viewBox="0 0 250 60">
+          <text x="0" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="800" fill="#4caf50">MAX</text><text x="100" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="600" fill="#e0e0e0">ROTA</text><path d="M 100 55 Q 150 55, 170 50 Q 190 45, 240 48" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M 235 43 L 240 48 L 235 53" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round" />
+        </svg>
+        <div class="slide-content max-w-4xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8"><span class="highlight">Funcionalidade 2:</span> Calculadora de Tarifa Particular</h2>
+            <p class="text-xl md:text-2xl font-light mb-6 text-gray-300">Uma ferramenta profissional para parar de "chutar" o preço. <span class="font-bold highlight">Teste a demo abaixo!</span></p>
+            
+            <div class="text-left max-w-2xl mx-auto bg-gray-800 p-6 md:p-8 rounded-lg border border-gray-700 info-card">
+                <h3 class="text-xl md:text-2xl font-bold mb-4 highlight text-center">Demo Interativa</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label for="demoKm" class="block text-sm font-medium text-gray-300 mb-1">Distância (KM)</label>
+                        <input type="number" id="demoKm" class="demo-input" placeholder="Ex: 25.5">
+                    </div>
+                    <div>
+                        <label for="demoTime" class="block text-sm font-medium text-gray-300 mb-1">Tempo (Minutos)</label>
+                        <input type="number" id="demoTime" class="demo-input" placeholder="Ex: 40">
+                    </div>
+                    <div>
+                        <label for="demoMargin" class="block text-sm font-medium text-gray-300 mb-1">Sua Margem de Lucro (%)</label>
+                        <input type="number" id="demoMargin" class="demo-input" placeholder="Ex: 20" value="20">
+                    </div>
+                    <button id="demoCalcBtn" class="demo-button">Calcular Preço</button>
+                    <div id="demoResult" class="demo-result text-center">
+                        <span class="text-xl md:text-2xl font-bold text-gray-400">Preço Sugerido: R$ 0,00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 7: Funcionalidade 3: Dashboards e Análise de IA --><div class="slide">
+        <!-- Logo Watermark -->
+        <svg class="slide-logo" viewBox="0 0 250 60">
+          <text x="0" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="800" fill="#4caf50">MAX</text><text x="100" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="600" fill="#e0e0e0">ROTA</text><path d="M 100 55 Q 150 55, 170 50 Q 190 45, 240 48" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M 235 43 L 240 48 L 235 53" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round" />
+        </svg>
+        <div class="slide-content max-w-6xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8"><span class="highlight">Funcionalidade 3:</span> Dashboards e Análise de IA</h2>
+            <p class="text-xl md:text-2xl font-light mb-6 text-gray-300">Você não precisa ser um expert em finanças. O MAX ROTA traduz os números para você.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 info-card">
+                    <i class="fas fa-chart-bar text-5xl highlight mb-4"></i>
+                    <h3 class="text-xl md:text-2xl font-bold mb-3 highlight">Gráficos Visuais</h3>
+                    <ul class="list-none text-base md:text-lg text-left">
+                        <li><i class="fas fa-hand-holding-usd text-green-500 mr-2"></i> Distribuição de Ganhos</li>
+                        <li><i class="fas fa-receipt text-red-400 mr-2"></i> Distribuição de Despesas</li>
+                        <li><i class="fas fa-dollar-sign text-green-500 mr-2"></i> Ganho por Hora (R$/h)</li>
+                        <li><i class="fas fa-road text-green-500 mr-2"></i> Viagens por Hora</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 info-card">
+                    <i class="fas fa-bullseye text-5xl highlight mb-4"></i>
+                    <h3 class="text-xl md:text-2xl font-bold mb-3 highlight">Metas e Progresso</h3>
+                    <ul class="list-none text-base md:text-lg text-left">
+                        <li><i class="fas fa-calendar-alt text-green-500 mr-2"></i> Defina metas semanais e mensais.</li>
+                        <li><i class="fas fa-check-circle text-green-500 mr-2"></i> Acompanhe o progresso com barras (vermelho para verde).</li>
+                    </ul>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg border border-gray-700 info-card">
+                    <i class="fas fa-robot text-5xl highlight mb-4"></i>
+                    <h3 class="text-xl md:text-2xl font-bold mb-3 highlight">Análise de IA</h3>
+                    <ul class="list-none text-base md:text-lg text-left">
+                        <li><i class="fas fa-comment-dots text-green-500 mr-2"></i> "Coach Financeiro" digital.</li>
+                        <li><i class="fas fa-lightbulb text-green-500 mr-2"></i> Dicas práticas para melhorar o desempenho do seu dia.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 8: Seus Dados, Seu Controle (Segurança) --><div class="slide">
+        <!-- Logo Watermark -->
+        <svg class="slide-logo" viewBox="0 0 250 60">
+          <text x="0" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="800" fill="#4caf50">MAX</text><text x="100" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="600" fill="#e0e0e0">ROTA</text><path d="M 100 55 Q 150 55, 170 50 Q 190 45, 240 48" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M 235 43 L 240 48 L 235 53" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round" />
+        </svg>
+        <div class="slide-content max-w-5xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8"><span class="highlight">Seus Dados, Seu Controle</span> (Segurança)</h2>
+            <p class="text-xl md:text-2xl font-light mb-6 text-gray-300">Sua privacidade financeira é a maior prioridade.</p>
+            <div class="flex flex-col md:flex-row gap-8">
+                <div class="flex-1 bg-gray-800 p-8 rounded-lg border border-green-500 info-card">
+                    <i class="fas fa-lock text-5xl highlight mb-4"></i>
+                    <h3 class="text-2xl md:text-3xl font-bold mb-4">100% Local</h3>
+                    <p class="text-base md:text-xl">O MAX ROTA salva tudo no **LocalStorage** do seu próprio navegador. Nenhuma informação sua vai para a nuvem. <span class="font-bold highlight">Só você tem acesso.</span></p>
+                </div>
+                <div class="flex-1 bg-gray-800 p-8 rounded-lg border border-green-500 info-card">
+                    <i class="fas fa-save text-5xl highlight mb-4"></i>
+                    <h3 class="text-2xl md:text-3xl font-bold mb-4">Backup Total</h3>
+                    <p class="text-base md:text-xl">Você tem controle. Use os botões **Exportar (JSON)** para salvar um backup e **Importar** para restaurá-los a qualquer momento.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide 9: Resumo dos Benefícios (CTA) --><div class="slide">
+        <!-- Logo Watermark -->
+        <svg class="slide-logo" viewBox="0 0 250 60">
+          <text x="0" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="800" fill="#4caf50">MAX</text><text x="100" y="40" font-family="Inter, sans-serif" font-size="40" font-weight="600" fill="#e0e0e0">ROTA</text><path d="M 100 55 Q 150 55, 170 50 Q 190 45, 240 48" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M 235 43 L 240 48 L 235 53" stroke="#4caf50" stroke-width="4" fill="none" stroke-linecap="round" />
+        </svg>
+        <div class="slide-content max-w-4xl mx-auto">
+            <h2 class="text-3xl md:text-4xl font-bold mb-8">Por que usar o <span class="highlight">MAX ROTA</span>?</h2>
+            <div class="text-left mx-auto text-lg md:text-xl space-y-4">
+                <p><i class="fas fa-money-check-alt text-green-500 mr-3"></i><span class="highlight font-bold text-xl md:text-2xl">1. SABER O LUCRO LÍQUIDO:</span> Descubra seu lucro real por dia, semana e mês.</p>
+                <p><i class="fas fa-coins text-green-500 mr-3"></i><span class="highlight font-bold text-xl md:text-2xl">2. CONHECER SEU CUSTO REAL:</span> Saiba seu Custo/KM e seu Ponto de Equilíbrio diário.</p>
+                <p><i class="fas fa-calculator text-green-500 mr-3"></i><span class="highlight font-bold text-xl md:text-2xl">3. PRECIFICAR CORRETAMENTE:</span> Nunca mais perca dinheiro em corridas particulares.</p>
+                <p><i class="fas fa-trophy text-green-500 mr-3"></i><span class="highlight font-bold text-xl md:text-2xl">4. ATINGIR SUAS METAS:</span> Veja seu progresso visualmente e receba projeções da IA.</p>
+                <p><i class="fas fa-chart-line text-green-500 mr-3"></i><span class="highlight font-bold text-xl md:text-2xl">5. TOMAR DECISÕES INTELIGENTES:</span> Saiba qual app é mais rentável e onde cortar custos.</p>
+            </div>
+            <p class="text-4xl md:text-5xl font-extrabold mt-12 highlight">MAX ROTA: Sua Rota para o Sucesso Financeiro!</p>
+            <a href="https://api.whatsapp.com/send?phone=5544988039842&text=Olá!%20Vi%20a%20apresentação%20do%20MAX%20ROTA%20e%20tenho%20interesse%20no%20aplicativo." 
+               target="_blank" 
+               class="nav-button mt-10 !static !left-auto !right-auto bg-green-600 hover:bg-green-700">
+                <i class="fab fa-whatsapp mr-2"></i> Quero saber mais no WhatsApp!
+            </a>
+        </div>
+    </div>
+
+
+    <!-- Botões de Navegação --><button id="prevBtn" class="nav-button">Anterior</button>
+    <button id="nextBtn" class="nav-button">Próximo</button>
+
+    <!-- Indicador de Progresso (NOVO) --><div id="progress-indicator"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const progressIndicator = document.getElementById('progress-indicator');
+            let currentSlide = 0;
+
+            // Cria as bolinhas do indicador de progresso
+            slides.forEach((_, index) => {
+                const dot = document.createElement('div');
+                dot.classList.add('progress-dot');
+                dot.dataset.slideIndex = index;
+                dot.addEventListener('click', () => showSlide(index));
+                progressIndicator.appendChild(dot);
+            });
+            const progressDots = document.querySelectorAll('.progress-dot');
+
+
+            // --- LÓGICA DA MINI-CALCULADORA (SLIDE 6) ---
+            const demoKm = document.getElementById('demoKm');
+            const demoTime = document.getElementById('demoTime');
+            const demoMargin = document.getElementById('demoMargin');
+            const demoCalcBtn = document.getElementById('demoCalcBtn');
+            const demoResult = document.getElementById('demoResult');
+
+            if (demoCalcBtn) {
+                demoCalcBtn.addEventListener('click', calcularDemo);
+            }
+
+            function calcularDemo() {
+                // Constantes de exemplo (para a demo)
+                // Estes valores são simplificados para a demonstração
+                // No app real, seriam os custos calculados pelo usuário
+                const CUSTO_POR_KM_DEMO = 1.20; // Valor de exemplo por KM (inclui combustível + fixo estimado)
+                const CUSTO_POR_MINUTO_DEMO = 0.40; // Valor de exemplo por Minuto (tempo parado/rodando lento)
+
+                const km = parseFloat(demoKm.value) || 0;
+                const time = parseFloat(demoTime.value) || 0;
+                const margin = parseFloat(demoMargin.value) || 0;
+
+                if (km === 0 && time === 0) {
+                    demoResult.innerHTML = `<span class="text-xl md:text-2xl font-bold text-red-400">Insira KM ou Tempo</span>`;
+                    return;
+                }
+
+                const custoBase = (km * CUSTO_POR_KM_DEMO) + (time * CUSTO_POR_MINUTO_DEMO);
+                
+                let precoFinal = 0;
+                if (margin > 0) {
+                     // Fórmula para margem de lucro sobre o preço de venda
+                    precoFinal = custoBase / (1 - (margin / 100));
+                } else {
+                    precoFinal = custoBase;
+                }
+               
+
+                demoResult.innerHTML = `
+                    <span class="text-gray-400 text-sm">Custo Estimado (KM+Tempo): R$ ${custoBase.toFixed(2)}</span>
+                    <span class="block text-xl md:text-2xl font-bold highlight">Preço Sugerido (com ${margin}%): R$ ${precoFinal.toFixed(2)}</span>
+                `;
+            }
+            // --- FIM DA LÓGICA DA CALCULADORA ---
+
+
+            // --- LÓGICA DE NAVEGAÇÃO DE SLIDES ---
+            function showSlide(index) {
+                if (currentSlide >= 0 && currentSlide < slides.length) {
+                    slides[currentSlide].classList.remove('active');
+                    progressDots[currentSlide].classList.remove('active');
+                }
+                
+                currentSlide = index;
+
+                slides[currentSlide].classList.add('active');
+                progressDots[currentSlide].classList.add('active'); // Ativa a bolinha do slide atual
+
+                // Garante que o conteúdo também anime
+                const currentContent = slides[currentSlide].querySelector('.slide-content');
+                if (currentContent) {
+                    currentContent.style.transform = 'translateY(20px)';
+                    currentContent.style.opacity = '0';
+                    setTimeout(() => {
+                        currentContent.style.transform = 'translateY(0)';
+                        currentContent.style.opacity = '1';
+                    }, 100); // Pequeno delay para a animação do conteúdo
+                }
+
+
+                prevBtn.style.display = currentSlide === 0 ? 'none' : 'block';
+                nextBtn.style.display = currentSlide === slides.length - 1 ? 'none' : 'block';
+            }
+
+            nextBtn.addEventListener('click', () => {
+                if (currentSlide < slides.length - 1) {
+                    showSlide(currentSlide + 1);
+                }
+            });
+
+            prevBtn.addEventListener('click', () => {
+                if (currentSlide > 0) {
+                    showSlide(currentSlide - 1);
+                }
+            });
+            
+            document.addEventListener('keydown', (e) => {
+                // Impede a navegação se o usuário estiver digitando nos inputs da DEMO
+                if (document.activeElement === demoKm || document.activeElement === demoTime || document.activeElement === demoMargin) {
+                    return;
+                }
+                
+                if (e.key === 'ArrowRight' && currentSlide < slides.length - 1) {
+                    showSlide(currentSlide + 1);
+                } else if (e.key === 'ArrowLeft' && currentSlide > 0) {
+                    showSlide(currentSlide - 1); 
+                }
+            });
+
+            showSlide(0); // Mostra o primeiro slide (slide 0)
+        });
+    </script>
+</body>
+</html>
