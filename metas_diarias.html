@@ -50,19 +50,76 @@
             </button>
         </div>
 
-        <!-- Seção 1: Controle de Tempo -->
+        <!-- Seção 1: Meta de Ganhos (MOVIMENTADO) -->
+        <div class="mb-6">
+            <label for="metaDiaria" class="block text-sm font-medium text-gray-300 mb-2">Sua Meta de Ganhos Brutos (R$)</label>
+            <div class="flex space-x-2 mb-3">
+                <input type="number" id="metaDiaria" step="10" placeholder="Ex: 300" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500">
+                <button id="salvarMetaBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg transition duration-300">
+                    Definir
+                </button>
+            </div>
+            <!-- Barra de Progresso (Meta de Ganhos Brutos) -->
+            <div class="w-full bg-gray-600 rounded-full h-4 mb-2 overflow-hidden mt-1">
+                <div id="progressBar" class="bg-green-500 h-4 rounded-full progress-bar-fill" style="width: 0%"></div>
+            </div>
+            <p class="text-center text-sm text-gray-300" id="resumoFaltando">Defina uma meta para começar.</p>
+        </div>
+
+        <!-- Seção 2: Odômetro (REFEITO) -->
+        <div class="bg-gray-700 p-4 rounded-lg mb-6">
+            <h2 class="text-lg font-semibold mb-3 text-center text-gray-300">Odômetro</h2>
+            <div class="grid grid-cols-2 gap-3">
+                <!-- KM Inicial -->
+                <div class="space-y-2">
+                    <label for="kmInicial" class="block text-xs font-medium text-gray-300 mb-1">KM Inicial</label>
+                    <input type="number" id="kmInicial" placeholder="Ex: 150000" class="w-full p-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                    <button id="salvarKmInicialBtn" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Salvar Inicial</button>
+                </div>
+                <!-- KM Final -->
+                <div class="space-y-2">
+                    <label for="kmFinal" class="block text-xs font-medium text-gray-300 mb-1">KM Final</label>
+                    <input type="number" id="kmFinal" placeholder="Ex: 150250" class="w-full p-2 bg-gray-600 border border-gray-500 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                    <button id="salvarKmFinalBtn" class="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Salvar Final</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seção 3: Controle de Tempo (MOVIMENTADO) -->
         <div class="bg-gray-700 p-4 rounded-lg mb-6">
             <h2 class="text-lg font-semibold mb-3 text-center text-gray-300">Controle de Jornada</h2>
             <div class="grid grid-cols-2 gap-3">
                 <!-- Botões que se alternam -->
-                <button id="iniciarDiaBtn" class_Original="w-full col-span-2 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">Iniciar Dia</button>
+                <button id="iniciarDiaBtn" class="w-full col-span-2 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300">Iniciar Dia</button>
                 <button id="pausarDiaBtn" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 hidden">Pausar</button>
                 <button id="retomarDiaBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 hidden">Retomar</button>
                 <button id="encerrarDiaBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 hidden">Encerrar Dia</button>
             </div>
         </div>
 
-        <!-- Seção 2: Resumo Financeiro -->
+        <!-- Seção 4: Lançamentos (MOVIMENTADO E RE-ESTILIZADO) -->
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <!-- Adicionar Corrida -->
+            <div class="space-y-2">
+                <label for="valorCorrida" class="block text-sm font-medium text-gray-300">Valor da Corrida (R$)</label>
+                <input type="number" id="valorCorrida" step="0.5" placeholder="12.50" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <button id="addCorridaBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition duration-300 text-lg">
+                    + Adicionar Ganho
+                </button>
+                <p id="erroInput" class="text-red-400 text-center text-sm mt-1 hidden"></p>
+            </div>
+            <!-- Adicionar Gasto -->
+            <div class="space-y-2">
+                <label for="valorGasto" class="block text-sm font-medium text-gray-300">Valor do Gasto (R$)</label>
+                <input type="number" id="valorGasto" step="0.5" placeholder="50.00" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500">
+                <button id="addGastoBtn" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition duration-300 text-lg">
+                    - Adicionar Gasto
+                </button>
+                <p id="erroGasto" class="text-red-400 text-center text-sm mt-1 hidden"></p>
+            </div>
+        </div>
+
+        <!-- Seção 5: Resumo Financeiro (MOVIMENTADO) -->
         <div class="bg-gray-700 p-5 rounded-lg mb-6">
             <!-- Lucro Líquido -->
             <div class="text-center mb-6">
@@ -81,26 +138,16 @@
                 </div>
             </div>
         </div>
-        
-        <!-- Seção 3: Meta de Ganhos -->
-        <div class="mb-6">
-            <label for="metaDiaria" class="block text-sm font-medium text-gray-300 mb-2">Sua Meta de Ganhos Brutos (R$)</label>
-            <div class="flex space-x-2 mb-3">
-                <input type="number" id="metaDiaria" step="10" placeholder="Ex: 300" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500">
-                <button id="salvarMetaBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-5 rounded-lg transition duration-300">
-                    Definir
-                </button>
-            </div>
-            <!-- Barra de Progresso (Meta de Ganhos Brutos) -->
-            <div class="w-full bg-gray-600 rounded-full h-4 mb-2 overflow-hidden mt-1">
-                <div id="progressBar" class="bg-green-500 h-4 rounded-full progress-bar-fill" style="width: 0%"></div>
-            </div>
-            <p class="text-center text-sm text-gray-300" id="resumoFaltando">Defina uma meta para começar.</p>
-        </div>
 
-        <!-- Seção 4: Estatísticas -->
+        <!-- Seção 6: Estatísticas (MOVIMENTADO) -->
         <div class="bg-gray-700 p-5 rounded-lg mb-6">
             <div class="grid grid-cols-2 gap-4 text-center">
+                <!-- Lucro / KM (Líquido) - MOVIMENTADO PARA CIMA -->
+                <div class="col-span-2 text-center"> 
+                    <p class="text-sm text-gray-400">Lucro / KM (Líquido)</p>
+                    <p class="text-3xl font-semibold text-cyan-400" id="lucroPorKm">R$ 0,00</p>
+                </div>
+
                 <div>
                     <p class="text-sm text-gray-400">Tempo Trabalhado</p>
                     <p class="text-2xl font-semibold" id="tempoTrabalhado">00:00:00</p>
@@ -117,36 +164,18 @@
                     <p class="text-sm text-gray-400">Média / Corrida</p>
                     <p class="text-2xl font-semibold" id="mediaPorCorrida">R$ 0,00</p>
                 </div>
+                <div>
+                    <p class="text-sm text-gray-400">KM Rodados</p>
+                    <p class="text-2xl font-semibold" id="kmRodados">0.0 km</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-400">Ganho / KM (Bruto)</p>
+                    <p class="text-2xl font-semibold" id="ganhoPorKm">R$ 0,00</p>
+                </div>
             </div>
         </div>
 
-        <!-- Seção 5: Lançamentos -->
-        <div class="grid grid-cols-2 gap-3 mb-6">
-            <!-- Adicionar Corrida -->
-            <div>
-                <label for="valorCorrida" class="block text-sm font-medium text-gray-300 mb-2">Valor da Corrida (R$)</label>
-                <div class="flex">
-                    <input type="number" id="valorCorrida" step="0.5" placeholder="12.50" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-l-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    <button id="addCorridaBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold p-3 rounded-r-lg transition duration-300">
-                        +
-                    </button>
-                </div>
-                <p id="erroInput" class="text-red-400 text-center mt-2 hidden"></p>
-            </div>
-            <!-- Adicionar Gasto -->
-            <div>
-                <label for="valorGasto" class="block text-sm font-medium text-gray-300 mb-2">Valor do Gasto (R$)</label>
-                <div class="flex">
-                    <input type="number" id="valorGasto" step="0.5" placeholder="50.00" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-l-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500">
-                    <button id="addGastoBtn" class="bg-red-600 hover:bg-red-700 text-white font-bold p-3 rounded-r-lg transition duration-300">
-                        -
-                    </button>
-                </div>
-                <p id="erroGasto" class="text-red-400 text-center mt-2 hidden"></p>
-            </div>
-        </div>
-
-        <!-- Seção 6: Histórico (NOVO) -->
+        <!-- Seção 7: Histórico Lançamentos -->
         <div class="mb-6">
             <h3 class="text-lg font-semibold mb-3 text-gray-300">Últimos Lançamentos</h3>
             <div id="historicoLista" class="bg-gray-700 p-4 rounded-lg h-32 overflow-y-auto space-y-2">
@@ -154,12 +183,29 @@
             </div>
         </div>
 
-        <!-- Seção 7: Controles -->
+        <!-- Seção 8: Controles -->
         <button id="resetarDiaBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition duration-300 mt-4">
-            Resetar Dia (Zerar Tudo)
+            Salvar Resumo e Resetar Dia
         </button>
 
     </div>
+
+    <!-- Seção 9: Histórico de Dias Salvos -->
+    <div class="bg-gray-800 p-6 w-full">
+        <div class="bg-gray-700 p-5 rounded-lg">
+            <button id="verHistoricoBtn" class="w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg transition duration-300">
+                Ver Histórico de Dias Salvos
+            </button>
+            <div id="historicoDiasLista" class="mt-4 space-y-3 hidden">
+                <!-- Conteúdo do histórico será injetado aqui -->
+            </div>
+            <!-- BUG CORRIGIDO: class_Original -> class -->
+            <button id="limparHistoricoBtn" class="w-full bg-red-800 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 mt-3 hidden">
+                Limpar Histórico de Dias
+            </button>
+        </div>
+    </div>
+
 
     <script>
         // --- Seleção de Elementos ---
@@ -169,6 +215,11 @@
         const pausarDiaBtn = document.getElementById('pausarDiaBtn');
         const retomarDiaBtn = document.getElementById('retomarDiaBtn');
         const encerrarDiaBtn = document.getElementById('encerrarDiaBtn');
+
+        const kmInicialInput = document.getElementById('kmInicial');
+        const kmFinalInput = document.getElementById('kmFinal');
+        const salvarKmInicialBtn = document.getElementById('salvarKmInicialBtn');
+        const salvarKmFinalBtn = document.getElementById('salvarKmFinalBtn');
 
         const metaDiariaInput = document.getElementById('metaDiaria');
         const salvarMetaBtn = document.getElementById('salvarMetaBtn');
@@ -193,9 +244,17 @@
         const totalCorridas = document.getElementById('totalCorridas');
         const mediaPorCorrida = document.getElementById('mediaPorCorrida');
 
+        const kmRodados = document.getElementById('kmRodados');
+        const ganhoPorKm = document.getElementById('ganhoPorKm');
+        const lucroPorKm = document.getElementById('lucroPorKm');
+
         const historicoLista = document.getElementById('historicoLista');
         
         const resetarDiaBtn = document.getElementById('resetarDiaBtn');
+
+        const verHistoricoBtn = document.getElementById('verHistoricoBtn');
+        const historicoDiasLista = document.getElementById('historicoDiasLista');
+        const limparHistoricoBtn = document.getElementById('limparHistoricoBtn');
 
         // --- Estado da Aplicação ---
         let state = {
@@ -203,14 +262,16 @@
             ganhos: 0,
             corridas: 0,
             gastos: 0,
-            history: [], // NOVO
-            totalTimeWorked: 0, // NOVO (em ms)
-            lastStartTime: null, // NOVO (timestamp)
-            status: 'stopped', // NOVO ('stopped', 'running', 'paused')
-            privacyMode: false // NOVO
+            history: [], 
+            totalTimeWorked: 0, // em ms
+            lastStartTime: null, // timestamp
+            status: 'stopped', // 'stopped', 'running', 'paused'
+            privacyMode: false, 
+            kmInicial: 0,
+            kmFinal: 0
         };
 
-        let timerInterval = null; // NOVO
+        let timerInterval = null; 
 
         // --- Funções Auxiliares ---
 
@@ -220,6 +281,19 @@
                 return "R$ --,--";
             }
             return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+
+        // Formata KM
+        function formatarKM(km) {
+            if (state.privacyMode) {
+                return "--,-- km";
+            }
+            return km.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' km';
+        }
+        
+        // Formata BRL (sempre visível, para o histórico)
+        function formatarBRLVisivel(valor) {
+            return (valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
         }
 
         // Formata milissegundos para HH:MM:SS
@@ -242,6 +316,15 @@
                 tempoTotal += (Date.now() - state.lastStartTime);
             }
             return tempoTotal;
+        }
+
+        // Calcula KM Rodados
+        function getKMRodados() {
+            const { kmInicial, kmFinal } = state;
+            if (kmFinal > kmInicial) {
+                return kmFinal - kmInicial;
+            }
+            return 0;
         }
 
         // --- Funções do Timer ---
@@ -282,6 +365,15 @@
             const faltando = meta - ganhos;
             const tempoTotalMs = getTempoTrabalhadoAtual();
             const horasTrabalhadas = tempoTotalMs / (1000 * 60 * 60);
+            
+            const totalKMRodados = getKMRodados();
+            let ganhoPorKMValor = 0;
+            let lucroPorKMValor = 0;
+            if (totalKMRodados > 0) {
+                ganhoPorKMValor = ganhos / totalKMRodados;
+                lucroPorKMValor = lucro / totalKMRodados;
+            }
+
             let mediaHoraValor = 0;
             if (horasTrabalhadas > 0) {
                 mediaHoraValor = lucro / horasTrabalhadas;
@@ -306,7 +398,7 @@
             }
 
             // Meta
-            if (meta > 0) {
+            if (meta > 0 && document.activeElement !== metaDiariaInput) {
                 metaDiariaInput.value = meta;
             }
             let pct = 0;
@@ -333,6 +425,27 @@
             mediaPorHora.textContent = formatarBRL(mediaHoraValor);
             totalCorridas.textContent = corridas;
             mediaPorCorrida.textContent = formatarBRL(mediaCorrida);
+
+            kmRodados.textContent = formatarKM(totalKMRodados);
+            ganhoPorKm.textContent = formatarBRL(ganhoPorKMValor);
+            lucroPorKm.textContent = formatarBRL(lucroPorKMValor);
+            
+            // Cor do Lucro/KM
+            if (lucroPorKMValor > 0) {
+                lucroPorKm.className = "text-3xl font-semibold text-cyan-400";
+            } else if (lucroPorKMValor < 0) {
+                lucroPorKm.className = "text-3xl font-semibold text-red-400";
+            } else {
+                lucroPorKm.className = "text-3xl font-semibold text-gray-400";
+            }
+
+            // Inputs de KM
+            if (state.kmInicial > 0 && document.activeElement !== kmInicialInput) {
+                kmInicialInput.value = state.kmInicial;
+            }
+            if (state.kmFinal > 0 && document.activeElement !== kmFinalInput) { 
+                kmFinalInput.value = state.kmFinal;
+            }
 
 
             // Histórico
@@ -387,19 +500,55 @@
                 state.lastStartTime = state.lastStartTime || null;
                 state.status = state.status || 'stopped';
                 state.privacyMode = state.privacyMode || false;
+                state.kmInicial = state.kmInicial || 0;
+                state.kmFinal = state.kmFinal || 0;
 
-                // Se o app foi fechado enquanto estava 'running', ele volta para 'paused'
                 if (state.status === 'running') {
-                    // TBD: Isso pode ser complexo. Por agora, vamos setar para paused.
-                    // state.status = 'paused'; 
-                    // Melhor: Reinicia o timer se estava rodando
                     iniciarTimer();
                 }
             }
             atualizarInterface();
         }
 
-        // --- Event Listeners ---
+        // Função para salvar o dia atual no histórico geral
+        function salvarResumoDia() {
+            try {
+                const historicoGeral = JSON.parse(localStorage.getItem('historicoDiasMotorista')) || [];
+                
+                const lucro = state.ganhos - state.gastos;
+                const tempoTotalMs = getTempoTrabalhadoAtual();
+                const horasTrabalhadas = tempoTotalMs / (1000 * 60 * 60);
+                const totalKMRodados = getKMRodados();
+                
+                let lucroPorKMValor = 0;
+                if (totalKMRodados > 0) {
+                    lucroPorKMValor = lucro / totalKMRodados;
+                }
+                let mediaHoraValor = 0;
+                if (horasTrabalhadas > 0) {
+                    mediaHoraValor = lucro / horasTrabalhadas;
+                }
+
+                const resumoDia = {
+                    date: new Date().toISOString(), // Salva a data/hora completa
+                    ganhos: state.ganhos,
+                    gastos: state.gastos,
+                    lucro: lucro,
+                    corridas: state.corridas,
+                    tempoTrabalhado: tempoTotalMs,
+                    kmRodados: totalKMRodados,
+                    lucroPorKm: lucroPorKMValor,
+                    mediaPorHora: mediaHoraValor
+                };
+
+                historicoGeral.unshift(resumoDia); // Adiciona o mais recente no topo
+                localStorage.setItem('historicoDiasMotorista', JSON.stringify(historicoGeral.slice(0, 100))); // Salva os últimos 100 dias
+            } catch (e) {
+                console.error("Erro ao salvar histórico de dias:", e);
+            }
+        }
+
+        // --- Event Listeners (BLOCO ÚNICO E CORRIGIDO) ---
 
         // Modo Privacidade
         togglePrivacyBtn.addEventListener('click', () => {
@@ -408,24 +557,23 @@
             salvarEstado();
         });
 
-        // Controles de Tempo
+        // --- Controles de Tempo (Listeners Adicionados) ---
         iniciarDiaBtn.addEventListener('click', () => {
             state.status = 'running';
             state.lastStartTime = Date.now();
-            // Reseta apenas o tempo, não os ganhos (caso queira continuar um dia)
-            // state.totalTimeWorked = 0; 
             iniciarTimer();
             atualizarInterface();
             salvarEstado();
         });
-
+        
         pausarDiaBtn.addEventListener('click', () => {
             pararTimer();
-            // Adiciona o tempo trabalhado desde o último start/resume
-            state.totalTimeWorked += (Date.now() - state.lastStartTime);
+            if (state.status === 'running') {
+                state.totalTimeWorked += (Date.now() - state.lastStartTime);
+            }
             state.lastStartTime = null;
             state.status = 'paused';
-            atualizarInterface(); // Atualiza o tempo final
+            atualizarInterface();
             salvarEstado();
         });
 
@@ -446,13 +594,41 @@
             state.status = 'stopped';
             atualizarInterface(); // Atualiza o tempo final
             salvarEstado();
+        }); // <-- ESTA CHAVE ESTAVA FALTANDO
+
+        // --- Controles de KM (Listeners Adicionados e Separados) ---
+        salvarKmInicialBtn.addEventListener('click', () => {
+            const ki = parseFloat(kmInicialInput.value);
+            if (!isNaN(ki) && ki >= 0) {
+                state.kmInicial = ki;
+                atualizarInterface();
+                salvarEstado();
+                kmInicialInput.blur();
+            }
         });
+        
+        salvarKmFinalBtn.addEventListener('click', () => {
+            const kf = parseFloat(kmFinalInput.value);
+            if (!isNaN(kf) && kf >= 0) {
+                state.kmFinal = kf;
+                atualizarInterface();
+                salvarEstado();
+                kmFinalInput.blur();
+            }
+        });
+
 
         // Salvar Meta
         salvarMetaBtn.addEventListener('click', () => {
             const novaMeta = parseFloat(metaDiariaInput.value);
             if (!isNaN(novaMeta) && novaMeta > 0) {
                 state.meta = novaMeta;
+                atualizarInterface();
+                salvarEstado();
+                metaDiariaInput.blur();
+            } else if (novaMeta <= 0) {
+                 state.meta = 0;
+                metaDiariaInput.value = "";
                 atualizarInterface();
                 salvarEstado();
                 metaDiariaInput.blur();
@@ -500,8 +676,18 @@
 
         // Resetar o Dia
         resetarDiaBtn.addEventListener('click', () => {
-            if (confirm("Você tem certeza que quer ZERAR TUDO? (Ganhos, Gastos, Histórico, Tempo e Meta)")) {
-                pararTimer();
+            // REMOVIDO: if (confirm("...")) {
+            // A confirmação nativa (confirm) pode não funcionar em todos os ambientes
+            // e impede a execução do salvamento.
+            
+            // Salvar o dia no histórico antes de resetar - CONDIÇÃO CORRIGIDA
+            if (state.ganhos > 0 || state.gastos > 0 || state.totalTimeWorked > 0 || getKMRodados() > 0) {
+                salvarResumoDia();
+                // Adicionado log para depuração
+                console.log("Resumo do dia salvo com sucesso.");
+            }
+            
+            pararTimer();
                 state = {
                     meta: 0,
                     ganhos: 0,
@@ -512,11 +698,76 @@
                     lastStartTime: null,
                     status: 'stopped',
                     privacyMode: state.privacyMode // Mantém a escolha de privacidade
+                    ,
+                    kmInicial: 0,
+                    kmFinal: 0
                 };
                 metaDiariaInput.value = "";
+                kmInicialInput.value = ""; 
+            kmFinalInput.value = ""; 
+            
+            atualizarInterface();
+            salvarEstado();
+            // REMOVIDO: } (fechamento do 'if' removido)
+        });
+
+        // Ver/Ocultar Histórico de Dias
+        verHistoricoBtn.addEventListener('click', () => {
+            const estaVisivel = !historicoDiasLista.classList.contains('hidden');
+            
+            if (estaVisivel) {
+                historicoDiasLista.classList.add('hidden');
+                limparHistoricoBtn.classList.add('hidden');
+                verHistoricoBtn.textContent = "Ver Histórico de Dias Salvos";
+                return;
+            }
+
+            // Carregar e mostrar o histórico
+            historicoDiasLista.classList.remove('hidden');
+            verHistoricoBtn.textContent = "Ocultar Histórico";
+            
+            const historicoGeral = JSON.parse(localStorage.getItem('historicoDiasMotorista')) || [];
+            
+            if (historicoGeral.length === 0) {
+                historicoDiasLista.innerHTML = '<p class="text-gray-400 text-center">Nenhum dia salvo no histórico.</p>';
+                limparHistoricoBtn.classList.add('hidden');
+                return;
+            }
+
+            limparHistoricoBtn.classList.remove('hidden'); // Mostra o botão de limpar
+            historicoDiasLista.innerHTML = historicoGeral.map(dia => {
+                const data = new Date(dia.date);
+                const dataFormatada = data.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
                 
-                atualizarInterface();
-                salvarEstado();
+                const lucroFormatado = formatarBRLVisivel(dia.lucro);
+                const kmFormatado = (dia.kmRodados || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' km';
+                const lucroKmFormatado = formatarBRLVisivel(dia.lucroPorKm);
+                const tempoFormatado = formatarTempo(dia.tempoTrabalhado || 0);
+                const corridas = dia.corridas || 0;
+
+                return `
+                    <div class="bg-gray-600 p-4 rounded-lg shadow-md">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="font-bold text-lg text-cyan-300">${dataFormatada}</h4>
+                            <span class="text-sm text-gray-300">${corridas} corridas</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm mt-2">
+                            <div><span class="text-gray-400">Lucro:</span> <strong class="text-white">${lucroFormatado}</strong></div>
+                            <div><span class="text-gray-400">Tempo:</span> <strong class="text-white">${tempoFormatado}</strong></div>
+                            <div><span class="text-gray-400">KM Rodados:</span> <strong class="text-white">${kmFormatado}</strong></div>
+                            <div><span class="text-gray-400">Lucro/KM:</span> <strong class="text-white">${lucroKmFormatado}</strong></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        });
+
+        // Limpar Histórico de Dias
+        limparHistoricoBtn.addEventListener('click', () => {
+            if (confirm("Tem certeza que quer APAGAR TODO o histórico de dias salvos? Isso não pode ser desfeito.")) {
+                localStorage.removeItem('historicoDiasMotorista');
+                historicoDiasLista.innerHTML = '<p class="text-gray-400 text-center">Histórico limpo.</p>';
+                limparHistoricoBtn.classList.add('hidden');
             }
         });
 
@@ -526,6 +777,8 @@
     </script>
 </body>
 </html>
+
+
 
 
 
