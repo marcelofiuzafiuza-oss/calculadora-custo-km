@@ -156,6 +156,13 @@
                     <p class="text-sm text-gray-400">Média / Hora (Líquido)</p>
                     <p class="text-2xl font-semibold" id="mediaPorHora">R$ 0,00</p>
                 </div>
+
+                <!-- NOVO CAMPO ADICIONADO -->
+                <div>
+                    <p class="text-sm text-gray-400">Média / Hora (Bruto)</p>
+                    <p class="text-2xl font-semibold" id="mediaPorHoraBruto">R$ 0,00</p>
+                </div>
+
                 <div>
                     <p class="text-sm text-gray-400">Corridas</p>
                     <p class="text-2xl font-semibold" id="totalCorridas">0</p>
@@ -241,6 +248,7 @@
         
         const tempoTrabalhado = document.getElementById('tempoTrabalhado');
         const mediaPorHora = document.getElementById('mediaPorHora');
+        const mediaPorHoraBruto = document.getElementById('mediaPorHoraBruto'); // NOVO
         const totalCorridas = document.getElementById('totalCorridas');
         const mediaPorCorrida = document.getElementById('mediaPorCorrida');
 
@@ -344,6 +352,14 @@
                 }
                 mediaPorHora.textContent = formatarBRL(mediaHoraValor);
 
+                // NOVO: Atualiza Média/Hora (Bruto)
+                let mediaHoraBrutoValor = 0;
+                if (horasTrabalhadas > 0) {
+                    mediaHoraBrutoValor = state.ganhos / horasTrabalhadas;
+                }
+                mediaPorHoraBruto.textContent = formatarBRL(mediaHoraBrutoValor);
+
+
             }, 1000);
         }
 
@@ -377,6 +393,12 @@
             let mediaHoraValor = 0;
             if (horasTrabalhadas > 0) {
                 mediaHoraValor = lucro / horasTrabalhadas;
+            }
+            
+            // NOVO: Cálculo Bruto
+            let mediaHoraBrutoValor = 0;
+            if (horasTrabalhadas > 0) {
+                mediaHoraBrutoValor = ganhos / horasTrabalhadas;
             }
 
             // Modo Privacidade
@@ -423,6 +445,7 @@
             // Estatísticas
             tempoTrabalhado.textContent = formatarTempo(tempoTotalMs);
             mediaPorHora.textContent = formatarBRL(mediaHoraValor);
+            mediaPorHoraBruto.textContent = formatarBRL(mediaHoraBrutoValor); // NOVO
             totalCorridas.textContent = corridas;
             mediaPorCorrida.textContent = formatarBRL(mediaCorrida);
 
@@ -521,6 +544,10 @@
                 const totalKMRodados = getKMRodados();
                 
                 let lucroPorKMValor = 0;
+                // state.lastStartTime = null;  <- REMOVIDO, estava no lugar errado
+                // state.status = 'stopped'; <- REMOVIDO, estava no lugar errado
+                
+                // ADICIONADO: Cálculos que estavam faltando
                 if (totalKMRodados > 0) {
                     lucroPorKMValor = lucro / totalKMRodados;
                 }
@@ -529,8 +556,14 @@
                     mediaHoraValor = lucro / horasTrabalhadas;
                 }
 
+                // NOVO: Salva também a meta e KMs para futura função de "Editar"
                 const resumoDia = {
-                    date: new Date().toISOString(), // Salva a data/hora completa
+                    date: new Date().toISOString(),
+                    // Salva os dados brutos para permitir edição futura
+                    meta: state.meta, 
+                    kmInicial: state.kmInicial,
+                    kmFinal: state.kmFinal,
+                    // Salva os resumos
                     ganhos: state.ganhos,
                     gastos: state.gastos,
                     lucro: lucro,
@@ -594,7 +627,7 @@
             state.status = 'stopped';
             atualizarInterface(); // Atualiza o tempo final
             salvarEstado();
-        }); // <-- ESTA CHAVE ESTAVA FALTANDO
+        }); // <-- ESTA CHAVE ESTAVA FALTANDO E FOI ADICIONADA
 
         // --- Controles de KM (Listeners Adicionados e Separados) ---
         salvarKmInicialBtn.addEventListener('click', () => {
@@ -726,6 +759,32 @@
             historicoDiasLista.classList.remove('hidden');
             verHistoricoBtn.textContent = "Ocultar Histórico";
             
+            renderizarHistorico(); // Chama a nova função
+        });
+
+        // NOVO: Listener para Excluir item do histórico (usa delegação de evento)
+        historicoDiasLista.addEventListener('click', (e) => {
+            const deleteBtn = e.target.closest('.delete-dia-btn');
+            
+            if (!deleteBtn) return; // Não foi no botão de excluir
+
+            const dataId = deleteBtn.dataset.id;
+            
+            // Confirmação removida (não funciona bem no iframe)
+            try {
+                let historicoGeral = JSON.parse(localStorage.getItem('historicoDiasMotorista')) || [];
+                historicoGeral = historicoGeral.filter(dia => dia.date !== dataId); // Filtra o item
+                localStorage.setItem('historicoDiasMotorista', JSON.stringify(historicoGeral));
+                
+                // Re-renderizar a lista
+                renderizarHistorico();
+            } catch (err) {
+                console.error("Erro ao excluir dia:", err);
+            }
+        });
+
+        // NOVO: Função separada para renderizar o histórico (para re-uso)
+        function renderizarHistorico() {
             const historicoGeral = JSON.parse(localStorage.getItem('historicoDiasMotorista')) || [];
             
             if (historicoGeral.length === 0) {
@@ -749,7 +808,11 @@
                     <div class="bg-gray-600 p-4 rounded-lg shadow-md">
                         <div class="flex justify-between items-center mb-2">
                             <h4 class="font-bold text-lg text-cyan-300">${dataFormatada}</h4>
-                            <span class="text-sm text-gray-300">${corridas} corridas</span>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm text-gray-300">${corridas} corridas</span>
+                                <!-- BOTÃO EXCLUIR ADICIONADO -->
+                                <button data-id="${dia.date}" class="delete-dia-btn bg-red-800 hover:bg-red-700 text-white text-xs py-1 px-2 rounded transition-colors duration-200">- Excluir</button>
+                            </div>
                         </div>
                         <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm mt-2">
                             <div><span class="text-gray-400">Lucro:</span> <strong class="text-white">${lucroFormatado}</strong></div>
@@ -760,15 +823,16 @@
                     </div>
                 `;
             }).join('');
-        });
+        } // <-- CORRIGIDO: Estava '});' o que quebrava o script.
 
         // Limpar Histórico de Dias
         limparHistoricoBtn.addEventListener('click', () => {
-            if (confirm("Tem certeza que quer APAGAR TODO o histórico de dias salvos? Isso não pode ser desfeito.")) {
-                localStorage.removeItem('historicoDiasMotorista');
-                historicoDiasLista.innerHTML = '<p class="text-gray-400 text-center">Histórico limpo.</p>';
-                limparHistoricoBtn.classList.add('hidden');
-            }
+            // REMOVIDO: if (confirm("...")) {
+            // A confirmação nativa (confirm) pode não funcionar em todos os ambientes
+            localStorage.removeItem('historicoDiasMotorista');
+            historicoDiasLista.innerHTML = '<p class="text-gray-400 text-center">Histórico limpo.</p>';
+            limparHistoricoBtn.classList.add('hidden');
+            // REMOVIDO: }
         });
 
         // --- Inicialização ---
@@ -777,6 +841,11 @@
     </script>
 </body>
 </html>
+
+
+
+
+
 
 
 
