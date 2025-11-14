@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>MAX ROTA DIÁRIO</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <!-- Chart.js está incluído caso queira reabilitar gráficos no futuro -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
   <style>
@@ -103,34 +104,31 @@
         </div>
       </div>
     </header>
-
     <!-- RÁDIOS -->
     <section class="card radio-card" aria-label="Rádios">
       <h2 style="margin:0 0 8px 0;font-size:16px">🎧 Estações</h2>
 
       <div id="stationButtons" class="radio-grid" role="list" aria-label="Lista de rádios">
-        <!-- Existing ones that were working (kept) -->
+        <!-- Testadas e estáveis (Hunter + SomaFM + outros públicos) -->
         <button class="station-btn" data-src="https://live.hunter.fm/pop_high" data-name="Hunter Pop" style="background:#10b981">Hunter Pop</button>
         <button class="station-btn" data-src="https://live.hunter.fm/pop2k_high" data-name="Hunter Pop2K" style="background:#06b6d4">Pop2K</button>
         <button class="station-btn" data-src="https://ice1.somafm.com/u80s-128-mp3" data-name="Flashback 80s" style="background:#8b5cf6">80s</button>
         <button class="station-btn" data-src="http://listen.181fm.com/181-power_128k.mp3" data-name="Power 181" style="background:#f97316">Power181</button>
 
-        <!-- Earlier working ones from your app -->
         <button class="station-btn" data-src="https://live.hunter.fm/rock_high" data-name="Rock Classic" style="background:#ef4444">Rock</button>
         <button class="station-btn" data-src="https://live.hunter.fm/sertanejo_high" data-name="Sertanejo" style="background:#f59e0b">Sertanejo</button>
         <button class="station-btn" data-src="https://live.hunter.fm/hiphop_high" data-name="Hip Hop" style="background:#111827">HipHop</button>
         <button class="station-btn" data-src="https://live.hunter.fm/gospel_high" data-name="Cristã" style="background:#facc15;color:#111">Cristã</button>
-        <!-- Electronic / SomaFM additions -->
+
         <button class="station-btn" data-src="https://ice1.somafm.com/groovesalad-128-mp3" data-name="GrooveSalad" style="background:#2563eb">Eletrônica</button>
         <button class="station-btn" data-src="https://ice1.somafm.com/beatblender-128-mp3" data-name="BeatBlender" style="background:#7c3aed">House / Deep</button>
         <button class="station-btn" data-src="https://ice1.somafm.com/secretagent-128-mp3" data-name="Surf" style="background:#06b6d4">Surf</button>
         <button class="station-btn" data-src="https://ice1.somafm.com/dubstep-128-mp3" data-name="Reggae/Dub" style="background:#4ade80">Reggae</button>
 
-        <!-- MPB and other Brasil -->
         <button class="station-btn" data-src="https://live.hunter.fm/mpb_high" data-name="MPB Brasil" style="background:#1e3a8a">MPB</button>
-        <button class="station-btn" data-src="https://live.hunter.fm/pop_high" data-name="Hunter Pop (alt)" style="background:#10b981">Pop</button>
         <button class="station-btn" data-src="https://stream.radioparadise.com/mp3-192" data-name="Radio Paradise" style="background:#111827">RadioParadise</button>
         <button class="station-btn" data-src="http://listen.181fm.com/181-beat_128k.mp3" data-name="181 HipHop" style="background:#0ea5e9">181 HipHop</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/mpb_high" data-name="MPB (alt)" style="background:#8b5cf6">MPB alt</button>
       </div>
 
       <div class="radio-player mt-4" aria-label="Player de rádio">
@@ -237,6 +235,7 @@
         <div class="muted small text-center">Nenhum lançamento ainda.</div>
       </div>
     </section>
+
     <!-- Resumo por categoria -->
     <section class="card resumo-cat" aria-label="Resumo por categoria">
       <h3 style="margin:0 0 8px 0;font-size:15px">Resumo Rápido por Categoria</h3>
@@ -334,14 +333,13 @@
 
   <!-- confetti holder -->
   <div id="confettiRoot" class="confetti" aria-hidden="true"></div>
-
-<script>
+  <script>
 /* ===========================
-   MAX ROTA — SCRIPT COMPLETO (UNIFICADO)
-   Correções: meta e km salvos em localStorage
+   MAX ROTA — SCRIPT COMPLETO
+   Corrigido: meta e km (persistência + não sobrescrever enquanto digita)
    =========================== */
 
-/* ========== UTIL ========== */
+/* UTIL */
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const uid = () => Math.random().toString(36).slice(2,9);
@@ -350,7 +348,7 @@ function formatBRL(v){ return Number(v||0).toLocaleString('pt-BR',{style:'curren
 function formatKM(v){ return Number(v||0).toFixed(1) + ' km'; }
 function formatTime(ms){ if(!ms||ms<=0) return '00:00:00'; const s=Math.floor(ms/1000); const h=Math.floor(s/3600); const m=Math.floor((s%3600)/60); const sec=s%60; return [h,m,sec].map(n=>String(n).padStart(2,'0')).join(':'); }
 
-/* ========== STATE ========== */
+/* STATE */
 let state = {
   meta: 0,
   ganhosApps: 0,
@@ -373,9 +371,8 @@ function loadState(){
   try{
     const s = localStorage.getItem('maxrota_state');
     if(s){ Object.assign(state, JSON.parse(s)); }
-    // load saved meta and km if stored separately
     const savedMeta = localStorage.getItem('maxrota_meta');
-    if(savedMeta !== null){ state.meta = Number(savedMeta); }
+    if(savedMeta !== null) state.meta = Number(savedMeta);
     const savedKmIni = localStorage.getItem('maxrota_kmInicial');
     const savedKmFim = localStorage.getItem('maxrota_kmFinal');
     if(savedKmIni !== null) state.kmInicial = Number(savedKmIni);
@@ -384,27 +381,21 @@ function loadState(){
 }
 loadState();
 
-/* ========== REFS ========== */
-// Meta
+/* REFS */
 const metaInput = $('#metaInput'), setMetaBtn = $('#setMetaBtn'), progressBar = $('#progressBar'), progressText = $('#progressText'), metaMessage = $('#metaMessage'), progressBubbles = $('#progressBubbles');
-// KM & Timer
 const kmInicialEl = $('#kmInicial'), kmFinalEl = $('#kmFinal'), tempoTrabalhado = $('#tempoTrabalhado'), kmRodados = $('#kmRodados'), toggleStartBtn = $('#toggleStartBtn'), finalizeBtn = $('#finalizeBtn'), saveKmBtn = $('#saveKmBtn');
-// Lançamentos
 const valorEntrada = $('#valorEntrada'), valorSaida = $('#valorSaida'), lancamentosList = $('#lancamentosList');
-// Apps/Gastos buttons
 const appBtns = $$('.app-btn'), gastoBtns = $$('.gasto-btn');
-// Radios
 const stationButtons = $$('#stationButtons .station-btn'), radioPlayer = $('#radioPlayer'), nowPlaying = $('#nowPlaying'), stopRadioBtn = $('#stopRadioBtn');
-// Metrics / final
 const metricGanhosApps = $('#metricGanhosApps'), metricGanhosTotal = $('#metricGanhosTotal'), metricGastosTotal = $('#metricGastosTotal'), metricLucroTotal = $('#metricLucroTotal');
 const metricMediaHoraBrutoTotal = $('#metricMediaHoraBrutoTotal'), metricMediaHoraLiqTotal = $('#metricMediaHoraLiqTotal'), metricLucroKmTotal = $('#metricLucroKmTotal');
 const metricEntradasApps = $('#metricEntradasApps'), metricEntradasLoja = $('#metricEntradasLoja');
 const finalTotalApps = $('#finalTotalApps'), finalTotalLoja = $('#finalTotalLoja'), finalTotalDoacao = $('#finalTotalDoacao'), finalTotalGeral = $('#finalTotalGeral');
-// Others
 const confettiRoot = $('#confettiRoot'), saveAndResetBtn = $('#saveAndResetBtn'), exportBtn = $('#exportBtn'), viewHistoryBtn = $('#viewHistoryBtn'), historyPanel = $('#historyPanel');
 const autoThemeBtn = $('#autoThemeBtn'), themeDots = $$('.color-dot');
+const resumoCategorias = $('#resumoCategorias');
 
-/* ========== RADIO PLAYER ========== */
+/* RADIO */
 function setActiveStation(btn){ stationButtons.forEach(b=>b.classList.remove('active')); if(btn) btn.classList.add('active'); }
 stationButtons.forEach(btn=>btn.addEventListener('click', async ()=>{
   try{ radioPlayer.pause(); }catch{} radioPlayer.src='';
@@ -415,7 +406,7 @@ stationButtons.forEach(btn=>btn.addEventListener('click', async ()=>{
 stopRadioBtn.addEventListener('click', ()=>{ try{ radioPlayer.pause(); radioPlayer.removeAttribute('src'); radioPlayer.load(); }catch(e){} nowPlaying.textContent='Nenhuma rádio selecionada.'; setActiveStation(null); });
 radioPlayer.addEventListener('error', ()=>{ nowPlaying.textContent='Erro ao carregar a estação.'; setActiveStation(null); });
 
-/* ========== TIMER & KM ========== */
+/* TIMER & KM */
 let timerInterval = null;
 function getTempoTotal(){ let t = Number(state.totalTimeWorked || 0); if(state.status==='running' && state.lastStartTime) t += (Date.now() - state.lastStartTime); return t; }
 function getKMRodados(){ const ini=Number(state.kmInicial||0), fim=Number(state.kmFinal||0); return (fim>ini)?(fim-ini):0; }
@@ -434,26 +425,28 @@ finalizeBtn.addEventListener('click', ()=>{
   if(state.status==='running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); state.lastStartTime=null; }
   const tempoFinal = getTempoTotal(); const kmDia = getKMRodados();
   state.status='stopped'; stopTimer();
+  // remove previous resumo if exists
+  const existing = finalizeBtn.parentElement.querySelector('.day-resume-card'); if(existing) existing.remove();
   // small summary card
-  const resumoCard = document.createElement('div'); resumoCard.style.padding='10px'; resumoCard.style.marginTop='10px'; resumoCard.style.borderRadius='10px'; resumoCard.style.background='rgba(255,255,255,0.06)';
+  const resumoCard = document.createElement('div'); resumoCard.className='day-resume-card'; resumoCard.style.padding='10px'; resumoCard.style.marginTop='10px'; resumoCard.style.borderRadius='10px'; resumoCard.style.background='rgba(255,255,255,0.06)';
   resumoCard.innerHTML = `<b>Dia Finalizado</b><br>Tempo Trabalhado: ${formatTime(tempoFinal)}<br>KM Rodado: ${formatKM(kmDia)}`;
   finalizeBtn.parentElement.appendChild(resumoCard);
+  // zero timer totals (as requested)
   state.totalTimeWorked = 0;
+  state.lastStartTime = null;
   saveState(); updateUI();
 });
 
 saveKmBtn.addEventListener('click', ()=>{
+  // read user inputs (but avoid overwriting while typing - this is a user action, so ok)
   state.kmInicial = Number(kmInicialEl.value) || 0;
   state.kmFinal = Number(kmFinalEl.value) || 0;
-
-  // SAVE to localStorage (fix)
   localStorage.setItem("maxrota_kmInicial", state.kmInicial);
   localStorage.setItem("maxrota_kmFinal", state.kmFinal);
-
   saveState(); updateUI();
 });
 
-/* ========== LANÇAMENTOS ========== */
+/* LANÇAMENTOS */
 function addLancamento({type,value,category}){
   const item = { id: uid(), type, value: Number(value), category, date: new Date().toISOString() };
   if(type==='ganho'){
@@ -463,22 +456,31 @@ function addLancamento({type,value,category}){
   } else { state.gastos += item.value; }
   state.history.unshift(item);
   saveState(); updateUI();
+  // after adding, ensure input cleared for quick next entry
+  valorEntrada.value=''; valorSaida.value='';
 }
 
-$('#addEntradaBtn').addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'ganho',value:v,category:'Particular'}); valorEntrada.value=''; });
-$('#addSaidaBtn').addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'gasto',value:v,category:'Outros'}); valorSaida.value=''; });
+$('#addEntradaBtn').addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'ganho',value:v,category:'Particular'}); });
+$('#addSaidaBtn').addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'gasto',value:v,category:'Outros'}); });
 
-appBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } const cat=b.dataset.cat; addLancamento({type:'ganho',value:v,category:cat}); valorEntrada.value=''; }));
-gastoBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'gasto',value:v,category:b.dataset.cat}); valorSaida.value=''; }));
+appBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } const cat=b.dataset.cat; addLancamento({type:'ganho',value:v,category:cat}); }));
+gastoBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'gasto',value:v,category:b.dataset.cat}); }));
 
-/* ========== RENDER LANÇAMENTOS ========== */
+/* RENDER LANÇAMENTOS */
 function renderLancamentos(){
   if(!state.history || state.history.length===0){ lancamentosList.innerHTML = '<div class="muted small text-center">Nenhum lançamento ainda.</div>'; return; }
   lancamentosList.innerHTML = '';
   state.history.slice(0,200).forEach(it=>{
     const el = document.createElement('div'); el.className='launch-item';
-    el.innerHTML = `<div style="font-weight:800">${it.category}: ${it.type==='ganho'?'+':'-'} ${formatBRL(it.value)}</div><div><button class="btn-ghost edit" data-id="${it.id}">✏️</button> <button class="btn-ghost del" data-id="${it.id}">🗑️</button></div>`;
-    el.querySelector('.edit').addEventListener('click', ()=>{
+    const left = document.createElement('div'); left.style.fontWeight='800'; left.textContent = `${it.category}: ${it.type==='ganho'?'+':'-'} ${formatBRL(it.value)}`;
+    const right = document.createElement('div');
+    const edit = document.createElement('button'); edit.className='btn-ghost'; edit.textContent='✏️'; edit.style.marginRight='8px';
+    const del = document.createElement('button'); del.className='btn-ghost'; del.textContent='🗑️';
+    right.appendChild(edit); right.appendChild(del);
+    el.appendChild(left); el.appendChild(right);
+    lancamentosList.appendChild(el);
+
+    edit.addEventListener('click', ()=>{
       const novoStr = prompt('Novo valor (R$):', it.value.toFixed(2));
       if(novoStr===null) return;
       const novo = Number(novoStr);
@@ -498,18 +500,18 @@ function renderLancamentos(){
       } else state.gastos += it.value;
       saveState(); updateUI();
     });
-    el.querySelector('.del').addEventListener('click', ()=>{
+
+    del.addEventListener('click', ()=>{
       if(!confirm('Excluir lançamento?')) return;
       state.history = state.history.filter(x=>x.id !== it.id);
-      // rebuild totals from scratch to avoid drift
+      // rebuild totals cleanly
       recalcTotalsFromHistory();
       saveState(); updateUI();
     });
-    lancamentosList.appendChild(el);
   });
 }
 
-/* rebuild totals */
+/* rebuild totals from history to avoid drift */
 function recalcTotalsFromHistory(){
   state.ganhosApps=0; state.ganhosLoja=0; state.totalDoacao=0; state.gastos=0; state.entradasApps=0; state.entradasLoja=0;
   state.history.forEach(it=>{
@@ -521,7 +523,7 @@ function recalcTotalsFromHistory(){
   });
 }
 
-/* ========== RESUMOS ========== */
+/* RESUMO CATEGORIAS */
 function renderResumoCategorias(){
   const totals = {}; const counts = {};
   state.history.forEach(it => { if(it.type!=='ganho') return; const c = it.category || 'Outros'; totals[c] = (totals[c]||0) + it.value; counts[c] = (counts[c]||0) + 1; });
@@ -531,7 +533,7 @@ function renderResumoCategorias(){
   Object.keys(totals).forEach(cat=>{ if(order.includes(cat)) return; const node=document.createElement('div'); node.innerHTML=`<div style="font-weight:900;margin-bottom:6px">${cat}</div><div style="font-weight:800">${formatBRL(totals[cat])}</div><div class="small muted">${counts[cat]||0} entr.</div>`; resumoCategorias.appendChild(node); });
 }
 
-/* ========== METRICS & PROGRESS ========== */
+/* METRICS & PROGRESS */
 function updateDerivedMetrics(){
   const totalBruto = Number(state.ganhosApps||0) + Number(state.ganhosLoja||0) + Number(state.totalDoacao||0);
   const lucro = totalBruto - Number(state.gastos||0);
@@ -557,7 +559,7 @@ function updateDerivedMetrics(){
   updateProgressBar();
 }
 
-/* progress + celebration */
+/* progress */
 function updateProgressBar(){
   const meta = Number(state.meta||0);
   const atual = state.ganhosApps + state.ganhosLoja;
@@ -569,6 +571,7 @@ function updateProgressBar(){
   else { metaMessage.textContent = `Meta batida! (+${formatBRL(atual - meta)})`; celebrate(); }
 }
 
+/* celebration */
 function celebrate(){
   if(state.celebrated) return;
   state.celebrated = true;
@@ -577,7 +580,6 @@ function celebrate(){
   saveState();
 }
 
-/* simple audio celebration (trombeta+aplausos) */
 function playVictorySequence(){
   try{
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -585,7 +587,7 @@ function playVictorySequence(){
     const osc = ctx.createOscillator(); osc.type='sawtooth'; osc.frequency.value=480;
     const g = ctx.createGain(); g.gain.setValueAtTime(0.01, now); g.gain.exponentialRampToValueAtTime(0.9, now+0.05); g.gain.exponentialRampToValueAtTime(0.01, now+1.4);
     osc.connect(g); g.connect(ctx.destination); osc.start(now); osc.stop(now+1.45);
-    // applause (noise)
+    // applause
     const length = ctx.sampleRate * 4;
     const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
     const data = buffer.getChannelData(0);
@@ -607,7 +609,7 @@ function triggerConfetti(){
   }
 }
 
-/* ========== SAVE DAY / HISTORY ========== */
+/* SAVE DAY / HISTORY */
 function saveDaySummary(){
   try{
     const arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]');
@@ -636,9 +638,7 @@ exportBtn.addEventListener('click', ()=>{
   const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='maxrota_export.json'; a.click(); URL.revokeObjectURL(url);
 });
 
-viewHistoryBtn.addEventListener('click', ()=>{
-  historyPanel.classList.toggle('hidden'); if(!historyPanel.classList.contains('hidden')) renderHistory();
-});
+viewHistoryBtn.addEventListener('click', ()=>{ historyPanel.classList.toggle('hidden'); if(!historyPanel.classList.contains('hidden')) renderHistory(); });
 function renderHistory(){
   const arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]');
   if(!arr || arr.length===0){ historyPanel.innerHTML = '<div class="muted small">Nenhum dia salvo.</div>'; return; }
@@ -651,11 +651,12 @@ function renderHistory(){
     const id = b.dataset.id; let arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]'); arr = arr.filter(x=>x.id !== id); localStorage.setItem('maxrota_days', JSON.stringify(arr)); renderHistory();
   }));
   historyPanel.querySelectorAll('.open-day').forEach(b=>b.addEventListener('click', ()=>{
-    const id = b.dataset.id; const arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]'); const d = arr.find(x=>x.id===id); if(!d) return alert('Dia não encontrado.'); alert(`Resumo ${new Date(d.date).toLocaleString()}\nLucro: ${formatBRL(d.lucro)}\nKM: ${d.km}\nMédia/H: ${formatBRL(d.mediaHora||0)}\nEntradas App: ${d.entradasApps} · Loja: ${d.entradasLoja}`);
+    const id = b.dataset.id; const arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]'); const d = arr.find(x=>x.id===id); if(!d) return alert('Dia não encontrado.');
+    alert(`Resumo ${new Date(d.date).toLocaleString()}\nLucro: ${formatBRL(d.lucro)}\nKM: ${d.km}\nMédia/H: ${formatBRL(d.mediaHora||0)}\nEntradas App: ${d.entradasApps} · Loja: ${d.entradasLoja}`);
   }));
 }
 
-/* ========== THEMES ========== */
+/* THEMES */
 let autoMode = true;
 function applyAutoTheme(){ if(!autoMode) return; const hour = new Date().getHours(); const day = hour>=6 && hour<18; document.body.classList.toggle('light-mode', day); autoThemeBtn.textContent = day? 'Modo Dia ☀️' : 'Modo Noite 🌙'; }
 applyAutoTheme(); setInterval(()=>{ if(autoMode) applyAutoTheme(); },60*1000);
@@ -664,20 +665,19 @@ autoThemeBtn.addEventListener('click', ()=>{ autoMode = !autoMode; if(autoMode){
 themeDots.forEach(d=>d.addEventListener('click', ()=>{ const acc=d.dataset.accent; document.body.classList.remove('accent-green','accent-orange','accent-yellow','accent-red','accent-pink'); document.body.classList.add('accent-'+acc); localStorage.setItem('maxrota_accent', acc); }));
 const savedAccent = localStorage.getItem('maxrota_accent') || 'green'; document.body.classList.add('accent-'+savedAccent);
 
-/* ========== SET META (fix) ========== */
-setMetaBtn.addEventListener('click', ()=> {
+/* SET META (fix: safe save and persist) */
+setMetaBtn.addEventListener('click', () => {
   const v = Number(metaInput.value);
   if(!isNaN(v) && v > 0){
     state.meta = v;
-    localStorage.setItem("maxrota_meta", v); // <-- fix: save meta persistently
+    localStorage.setItem("maxrota_meta", v);
     saveState();
     updateUI();
-  } else {
-    alert('Meta inválida.');
-  }
+    metaInput.blur();
+  } else { alert('Meta inválida.'); }
 });
 
-/* ========== RENDER & INIT ========== */
+/* RENDER FINAL */
 function renderResumoFinal(){
   const totalApps = state.ganhosApps;
   const totalLoja = state.ganhosLoja;
@@ -689,19 +689,25 @@ function renderResumoFinal(){
   finalTotalGeral.textContent = formatBRL(totalGeral);
 }
 
+/* UPDATE UI (focus-safe: não sobrescreve campos enquanto usuário digita) */
 function updateUI(){
-  kmInicialEl.value = state.kmInicial || '';
-  kmFinalEl.value = state.kmFinal || '';
-  metaInput.value = state.meta || '';
-  if(state.status==='running') toggleStartBtn.textContent='Pausar'; else if(state.status==='paused') toggleStartBtn.textContent='Retomar'; else toggleStartBtn.textContent='Iniciar Expediente';
+  // don't overwrite inputs while user is focused on them
+  if(document.activeElement !== metaInput) metaInput.value = state.meta || '';
+  if(document.activeElement !== kmInicialEl) kmInicialEl.value = state.kmInicial || '';
+  if(document.activeElement !== kmFinalEl) kmFinalEl.value = state.kmFinal || '';
+
+  if(state.status==='running') toggleStartBtn.textContent='Pausar';
+  else if(state.status==='paused') toggleStartBtn.textContent='Retomar';
+  else toggleStartBtn.textContent='Iniciar Expediente';
+
   renderLancamentos(); renderResumoCategorias(); updateDerivedMetrics(); renderResumoFinal(); saveState();
 }
 
-// load saved meta if any (already loaded in loadState)
+/* LOAD initial */
 if(state.status==='running' && state.lastStartTime) startTimer();
 updateUI();
-setInterval(()=>updateUI(),2000);
 
+/* IMPORTANT: avoid global frequent UI overwrite - timer handles periodic updates only while running */
 </script>
 </body>
 </html>
