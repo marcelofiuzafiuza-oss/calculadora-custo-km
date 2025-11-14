@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MAX ROTA DIÁRIO — App (logado)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    /* minimal styling kept — você pode substituir pelo seu CSS completo */
+    body{font-family:Inter,system-ui;margin:0;background:linear-gradient(135deg,#041226,#2a1160);color:#e6eef6;padding:18px}
+    .wrap{max-width:1200px;margin:0 auto}
+    .card{background:rgba(255,255,255,0.03);padding:16px;border-radius:12px;margin-bottom:12px}
+    .btn{padding:10px 14px;border-radius:10px;border:0;background:linear-gradient(90deg,#10b981,#7c3aed);color:#012;font-weight:800;cursor:pointer}
+    input{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:inherit}
+    .small{font-size:13px;color:#9aa6b2}
+    .station-btn{padding:10px;border-radius:10px;border:0;color:#fff;font-weight:800;cursor:pointer}
+    .app-btn{padding:10px;border-radius:10px;border:0;color:#fff;font-weight:800;cursor:pointer;min-width:110px}
+    .launch-list{max-height:220px;overflow:auto}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <h1 style="margin:0">MAX ROTA DIÁRIO</h1>
+        <div class="small">Usuário: <span id="userEmail">—</span></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button id="btnLogout" class="btn" style="background:#ef4444">Sair</button>
+      </div>
+    </div>
+
+    <!-- Rádio reduzido -->
+    <section class="card">
+      <h3 style="margin:0 0 8px 0">🎧 Estações</h3>
+      <div id="stationButtons" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+        <button class="station-btn" data-src="https://live.hunter.fm/pop_high" data-name="Hunter Pop" style="background:#10b981">Hunter Pop</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/pop2k_high" data-name="Hunter Pop2K" style="background:#06b6d4">Pop2K</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/rock_high" data-name="Rock" style="background:#ef4444">Rock</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/groovesalad-128-mp3" data-name="GrooveSalad" style="background:#2563eb">Eletrônica</button>
+      </div>
+
+      <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
+        <audio id="radioPlayer" controls preload="none" style="flex:1"></audio>
+        <button id="stopRadioBtn" class="btn" style="background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff">Parar</button>
+      </div>
+      <div id="nowPlaying" class="small" style="margin-top:8px">Nenhuma rádio selecionada.</div>
+    </section>
+
+    <!-- Meta -->
+    <section class="card">
+      <h3 style="margin:0 0 8px 0">🎯 Meta diária</h3>
+      <div style="display:flex;gap:8px">
+        <input id="metaInput" type="number" placeholder="Ex: 300" />
+        <button id="setMetaBtn" class="btn">Salvar meta</button>
+      </div>
+      <div style="margin-top:10px;">
+        <div style="height:28px;background:rgba(255,255,255,0.03);border-radius:14px;overflow:hidden;position:relative">
+          <div id="progressBar" style="height:100%;width:0;background:linear-gradient(90deg,#10b981,#2563eb);transition:width .4s"></div>
+        </div>
+        <div id="metaMessage" class="small" style="margin-top:8px">Defina a meta.</div>
+      </div>
+    </section>
+
+    <!-- KM e timer -->
+    <section class="card">
+      <h3 style="margin:0 0 8px 0">🚗 Jornada e KM</h3>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div><div class="small">KM Inicial</div><input id="kmInicial" type="number" /></div>
+        <div><div class="small">KM Final</div><input id="kmFinal" type="number" /></div>
+        <div style="margin-left:12px"><div class="small">Tempo</div><div id="tempoTrabalhado">00:00:00</div></div>
+        <div style="margin-left:12px"><div class="small">KM Rodados</div><div id="kmRodados">0.0 km</div></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button id="toggleStartBtn" class="btn">Iniciar Expediente</button>
+        <button id="finalizeBtn" class="btn" style="background:#f59e0b">Finalizar Dia</button>
+        <button id="saveKmBtn" class="btn">Salvar KM</button>
+      </div>
+    </section>
+
+    <!-- Lancamentos -->
+    <section class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div>
+        <h4>Entradas (Apps)</h4>
+        <div style="display:flex;gap:8px">
+          <input id="valorEntrada" type="number" placeholder="Valor (R$)"/>
+          <button id="addEntradaBtn" class="btn">Lançar</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <button class="app-btn" data-cat="Uber" style="background:#000">Uber</button>
+          <button class="app-btn" data-cat="99" style="background:#facc15;color:#111">99</button>
+          <button class="app-btn" data-cat="inDriver" style="background:#10b981">inDriver</button>
+          <button class="app-btn" data-cat="Loja" style="background:#1e3a8a">Loja</button>
+        </div>
+      </div>
+
+      <div>
+        <h4>Saídas (Gastos)</h4>
+        <div style="display:flex;gap:8px">
+          <input id="valorSaida" type="number" placeholder="Valor (R$)"/>
+          <button id="addSaidaBtn" class="btn">Lançar</button>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+          <button class="gasto-btn" data-cat="Combustível" style="background:#ef4444">Combustível</button>
+          <button class="gasto-btn" data-cat="Alimentação" style="background:#8b5cf6">Alimentação</button>
+          <button class="gasto-btn" data-cat="Manutenção" style="background:#6b7280">Manutenção</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lançamentos recentes -->
+    <section class="card">
+      <h4>Lançamentos Recentes</h4>
+      <div id="lancamentosList" class="launch-list small muted">Nenhum lançamento</div>
+    </section>
+
+    <!-- Resumo final -->
+    <section class="card">
+      <h4>Resumo Final</h4>
+      <div style="display:flex;gap:12px">
+        <div style="flex:1"><div class="small">Total Apps</div><div id="finalTotalApps">R$ 0,00</div></div>
+        <div style="flex:1"><div class="small">Total Loja</div><div id="finalTotalLoja">R$ 0,00</div></div>
+        <div style="flex:1"><div class="small">Total Doação</div><div id="finalTotalDoacao">R$ 0,00</div></div>
+        <div style="flex:1"><div class="small">Total Geral</div><div id="finalTotalGeral">R$ 0,00</div></div>
+      </div>
+    </section>
+
+    <!-- Ações -->
+    <section style="display:flex;gap:8px">
+      <button id="saveAndResetBtn" class="btn">Salvar Resumo & Resetar Dia</button>
+      <button id="exportBtn" class="btn" style="background:transparent;border:1px solid rgba(255,255,255,0.06)">Exportar JSON</button>
+    </section>
+
+    <footer style="margin-top:12px" class="small muted">Dados salvos na nuvem (Firebase). Logout salva automaticamente.</footer>
+  </div>
+
+  <script type="module">
+    import {
+      auth, onAuthStateChanged, signOut,
+      saveStateToFirestore, loadStateFromFirestore
+    } from './firebase.js';
+
+    // Basic state (kept simple to show integration)
+    let state = {
+      meta: 0, ganhosApps:0, ganhosLoja:0, totalDoacao:0, entradasApps:0, entradasLoja:0, gastos:0,
+      history: [], kmInicial:0, kmFinal:0, totalTimeWorked:0, lastStartTime:null, status:'stopped', celebrated:false
+    };
+
+    // ELEMENTS
+    const userEmailEl = document.getElementById('userEmail');
+    const btnLogout = document.getElementById('btnLogout');
+    const stationButtons = document.querySelectorAll('#stationButtons .station-btn');
+    const radioPlayer = document.getElementById('radioPlayer');
+    const nowPlaying = document.getElementById('nowPlaying');
+    const stopRadioBtn = document.getElementById('stopRadioBtn');
+
+    const metaInput = document.getElementById('metaInput'), setMetaBtn = document.getElementById('setMetaBtn'), progressBar = document.getElementById('progressBar'), metaMessage = document.getElementById('metaMessage');
+    const kmInicialEl = document.getElementById('kmInicial'), kmFinalEl = document.getElementById('kmFinal'), tempoTrabalhado = document.getElementById('tempoTrabalhado'), kmRodados = document.getElementById('kmRodados');
+    const toggleStartBtn = document.getElementById('toggleStartBtn'), finalizeBtn = document.getElementById('finalizeBtn'), saveKmBtn = document.getElementById('saveKmBtn');
+    const valorEntrada = document.getElementById('valorEntrada'), addEntradaBtn = document.getElementById('addEntradaBtn'), valorSaida = document.getElementById('valorSaida'), addSaidaBtn = document.getElementById('addSaidaBtn');
+    const appBtns = document.querySelectorAll('.app-btn'), gastoBtns = document.querySelectorAll('.gasto-btn');
+
+    const lancamentosList = document.getElementById('lancamentosList');
+    const finalTotalApps = document.getElementById('finalTotalApps'), finalTotalLoja = document.getElementById('finalTotalLoja'), finalTotalDoacao = document.getElementById('finalTotalDoacao'), finalTotalGeral = document.getElementById('finalTotalGeral');
+
+    let uid = null;
+    let timerInterval = null;
+
+    // Auth guard: redirect to login if not logged
+    onAuthStateChanged(auth, async (user) => {
+      if(!user){ window.location.href = 'login.html'; return; }
+      uid = user.uid;
+      userEmailEl.textContent = user.email || user.displayName || 'Usuário';
+      // load state from Firestore (if exists)
+      const saved = await loadStateFromFirestore(uid);
+      if(saved){
+        // merge into local state
+        Object.assign(state, saved);
+      } else {
+        // try to load localStorage as fallback
+        const local = localStorage.getItem('maxrota_state');
+        if(local) Object.assign(state, JSON.parse(local));
+      }
+      updateUI();
+      // start timer if running
+      if(state.status === 'running' && state.lastStartTime) startTimer();
+    });
+
+    // LOGOUT
+    btnLogout.addEventListener('click', async ()=>{
+      // save before logout
+      if(uid) await saveStateToFirestore(uid, state);
+      await signOut(auth);
+      localStorage.setItem('maxrota_state', JSON.stringify(state));
+      window.location.href = 'login.html';
+    });
+
+    // RADIO
+    function setActiveStationBtn(btn){
+      document.querySelectorAll('#stationButtons .station-btn').forEach(b=>b.classList.remove('active'));
+      if(btn) btn.classList.add('active');
+    }
+    document.getElementById('stationButtons').addEventListener('click', async (e)=>{
+      const btn = e.target.closest('.station-btn'); if(!btn) return;
+      const src = btn.dataset.src, name = btn.dataset.name || 'Rádio';
+      try{ radioPlayer.pause(); }catch(e){}
+      setActiveStationBtn(btn);
+      nowPlaying.textContent = 'Carregando: ' + name;
+      radioPlayer.src = src;
+      try{ await radioPlayer.play(); nowPlaying.textContent = 'Tocando: ' + name; }catch(err){ console.warn(err); nowPlaying.textContent = 'Falha ao tocar ' + name; setActiveStationBtn(null); }
+    });
+    stopRadioBtn.addEventListener('click', ()=>{ try{ radioPlayer.pause(); radioPlayer.removeAttribute('src'); radioPlayer.load(); }catch(e){} nowPlaying.textContent='Nenhuma rádio selecionada.'; setActiveStationBtn(null); });
+
+    // METAS
+    setMetaBtn.addEventListener('click', async ()=>{
+      const v = Number(metaInput.value) || 0;
+      if(v <= 0){ alert('Meta inválida'); return; }
+      state.meta = v;
+      await localSaveAndRemoteSave();
+      updateUI();
+    });
+
+    // KM & TIMER
+    function getTempoTotal(){ let t = Number(state.totalTimeWorked || 0); if(state.status==='running' && state.lastStartTime) t += (Date.now() - state.lastStartTime); return t; }
+    function getKMRodados(){ const ini = Number(state.kmInicial||0), fim = Number(state.kmFinal||0); return (fim>ini)?(fim-ini):0; }
+
+    function startTimer(){ stopTimer(); if(!state.lastStartTime) state.lastStartTime = Date.now(); timerInterval = setInterval(()=>{ tempoTrabalhado.textContent = msToTime(getTempoTotal()); updateDerivedMetrics(); },1000); }
+    function stopTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval = null; } }
+
+    toggleStartBtn.addEventListener('click', ()=> {
+      if(state.status === 'stopped'){ state.status = 'running'; state.lastStartTime = Date.now(); toggleStartBtn.textContent='Pausar'; startTimer(); }
+      else if(state.status === 'running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); state.lastStartTime = null; state.status = 'paused'; toggleStartBtn.textContent='Retomar'; stopTimer(); }
+      else if(state.status === 'paused'){ state.status = 'running'; state.lastStartTime = Date.now(); toggleStartBtn.textContent='Pausar'; startTimer(); }
+      localSaveAndRemoteSave();
+      updateUI();
+    });
+
+    finalizeBtn.addEventListener('click', async ()=>{
+      if(state.status === 'running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); state.lastStartTime = null; }
+      state.status = 'stopped';
+      stopTimer();
+      // small inline card summary
+      alert('Dia finalizado! Tempo: ' + msToTime(getTempoTotal()) + '\nKM: ' + getKMRodados());
+      // save day to history (in-memory) and remote
+      await localSaveAndRemoteSave();
+      // reset running counters but keep history
+      state.totalTimeWorked = 0;
+      state.lastStartTime = null;
+      state.status = 'stopped';
+      updateUI();
+    });
+
+    saveKmBtn.addEventListener('click', async ()=>{
+      state.kmInicial = Number(kmInicialEl.value) || 0;
+      state.kmFinal = Number(kmFinalEl.value) || 0;
+      await localSaveAndRemoteSave();
+      updateUI();
+    });
+
+    // LANÇAMENTOS
+    function addLancamento({type,value,category}){
+      const it = { id: Math.random().toString(36).slice(2,9), type, value: Number(value), category, date: new Date().toISOString() };
+      state.history.unshift(it);
+      if(type === 'ganho'){
+        if(category === 'Loja'){ state.ganhosLoja += it.value; state.entradasLoja++; }
+        else if(category === 'Doação') state.totalDoacao += it.value;
+        else { state.ganhosApps += it.value; state.entradasApps++; }
+      } else state.gastos += it.value;
+      localSaveAndRemoteSave();
+      updateUI();
+    }
+
+    addEntradaBtn.addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'ganho', value:v, category:'Particular'}); valorEntrada.value=''; });
+    addSaidaBtn.addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'gasto', value:v, category:'Outros'}); valorSaida.value=''; });
+
+    appBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'ganho', value:v, category: b.dataset.cat}); valorEntrada.value=''; }));
+    gastoBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'gasto', value:v, category: b.dataset.cat}); valorSaida.value=''; }));
+
+    // RENDER / UTIL
+    function renderLancamentos(){
+      if(!state.history || state.history.length === 0){ lancamentosList.innerHTML = '<div class="small muted">Nenhum lançamento ainda.</div>'; return; }
+      lancamentosList.innerHTML = '';
+      state.history.slice(0,200).forEach(it=>{
+        const el = document.createElement('div'); el.style.display='flex'; el.style.justifyContent='space-between'; el.style.padding='6px 0'; el.style.borderBottom='1px dashed rgba(255,255,255,0.04)';
+        const left = document.createElement('div'); left.innerHTML = `<strong>${it.category}</strong> ${it.type==='ganho'?'+':'-'} ${formatBRL(it.value)}<div class="small muted">${new Date(it.date).toLocaleString()}</div>`;
+        const right = document.createElement('div'); right.innerHTML = `<button data-id="${it.id}" class="btn" style="background:transparent;border:1px solid rgba(255,255,255,0.04);margin-right:6px">✏️</button><button data-id="${it.id}" class="btn" style="background:transparent;border:1px solid rgba(255,255,255,0.04)">🗑️</button>`;
+        el.appendChild(left); el.appendChild(right);
+        lancamentosList.appendChild(el);
+        right.querySelectorAll('button')[0].addEventListener('click', ()=> editLancamento(it.id));
+        right.querySelectorAll('button')[1].addEventListener('click', ()=> deleteLancamento(it.id));
+      });
+    }
+
+    function editLancamento(id){
+      const it = state.history.find(h=>h.id===id); if(!it) return;
+      const novo = prompt('Novo valor (R$):', it.value.toFixed(2)); if(novo===null) return;
+      const val = Number(novo); if(isNaN(val) || val<0){ alert('Valor inválido'); return; }
+      // revert old totals
+      if(it.type==='ganho'){ if(it.category==='Loja') state.ganhosLoja -= it.value; else if(it.category==='Doação') state.totalDoacao -= it.value; else state.ganhosApps -= it.value; } else state.gastos -= it.value;
+      it.value = val;
+      // apply new
+      if(it.type==='ganho'){ if(it.category==='Loja') state.ganhosLoja += it.value; else if(it.category==='Doação') state.totalDoacao += it.value; else state.ganhosApps += it.value; } else state.gastos += it.value;
+      localSaveAndRemoteSave(); updateUI();
+    }
+
+    function deleteLancamento(id){
+      if(!confirm('Excluir lançamento?')) return;
+      state.history = state.history.filter(x=>x.id !== id);
+      recalcTotalsFromHistory();
+      localSaveAndRemoteSave(); updateUI();
+    }
+
+    function recalcTotalsFromHistory(){
+      state.ganhosApps = 0; state.ganhosLoja = 0; state.totalDoacao = 0; state.gastos = 0; state.entradasApps = 0; state.entradasLoja = 0;
+      state.history.forEach(it=>{
+        if(it.type==='ganho'){ if(it.category==='Loja'){ state.ganhosLoja += it.value; state.entradasLoja++; } else if(it.category==='Doação') state.totalDoacao += it.value; else { state.ganhosApps += it.value; state.entradasApps++; } } else state.gastos += it.value;
+      });
+    }
+
+    function updateDerivedMetrics(){
+      const totalBruto = state.ganhosApps + state.ganhosLoja + state.totalDoacao;
+      const lucro = totalBruto - state.gastos;
+      // tempo / km
+      tempoTrabalhado.textContent = msToTime(getTempoTotal());
+      kmRodados.textContent = getKMRodados().toFixed(1) + ' km';
+      // finals
+      finalTotalApps.textContent = formatBRL(state.ganhosApps);
+      finalTotalLoja.textContent = formatBRL(state.ganhosLoja);
+      finalTotalDoacao.textContent = formatBRL(state.totalDoacao);
+      finalTotalGeral.textContent = formatBRL(totalBruto - state.gastos);
+      // progress bar
+      if(state.meta && state.meta > 0){
+        const pct = Math.min(100, ((state.ganhosApps + state.ganhosLoja)/state.meta)*100);
+        progressBar.style.width = pct + '%';
+        metaMessage.textContent = pct < 100 ? `Faltam ${formatBRL(state.meta - (state.ganhosApps + state.ganhosLoja))}` : `Meta batida! (+${formatBRL((state.ganhosApps + state.ganhosLoja)-state.meta)})`;
+      } else {
+        progressBar.style.width = '0%';
+        metaMessage.textContent = 'Defina a meta.';
+      }
+    }
+
+    function updateUI(){
+      kmInicialEl.value = state.kmInicial || '';
+      kmFinalEl.value = state.kmFinal || '';
+      metaInput.value = state.meta || '';
+      renderLancamentos();
+      updateDerivedMetrics();
+    }
+
+    // small helpers
+    function formatBRL(v){ return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+    function msToTime(ms){ if(!ms||ms<=0) return '00:00:00'; const s = Math.floor(ms/1000), h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60; return [h,m,sec].map(n=>String(n).padStart(2,'0')).join(':'); }
+
+    // local save + remote
+    let remoteSaveTimeout = null;
+    async function localSaveAndRemoteSave(){
+      // save local
+      localStorage.setItem('maxrota_state', JSON.stringify(state));
+      // throttle remote writes
+      if(remoteSaveTimeout) clearTimeout(remoteSaveTimeout);
+      remoteSaveTimeout = setTimeout(async ()=>{
+        if(uid) await saveStateToFirestore(uid, state);
+      }, 800);
+    }
+
+    // utilities to call on unload
+    window.addEventListener('beforeunload', ()=> {
+      if(uid) saveStateToFirestore(uid, state);
+      localStorage.setItem('maxrota_state', JSON.stringify(state));
+    });
+
+    // init: bind stop radio, etc.
+    stopRadioBtn.addEventListener('click', ()=>{ try{ radioPlayer.pause(); radioPlayer.removeAttribute('src'); radioPlayer.load(); }catch(e){} nowPlaying.textContent = 'Nenhuma rádio selecionada.'; document.querySelectorAll('#stationButtons .station-btn').forEach(b=>b.classList.remove('active')); });
+
+    // initial update (in case auth already loaded state)
+    updateUI();
+
+  </script>
+</body>
+</html>
