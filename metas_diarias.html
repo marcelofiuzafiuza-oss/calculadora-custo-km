@@ -120,7 +120,6 @@
         <button class="station-btn" data-src="https://live.hunter.fm/sertanejo_high" data-name="Sertanejo" style="background:#f59e0b">Sertanejo</button>
         <button class="station-btn" data-src="https://live.hunter.fm/hiphop_high" data-name="Hip Hop" style="background:#111827">HipHop</button>
         <button class="station-btn" data-src="https://live.hunter.fm/gospel_high" data-name="Cristã" style="background:#facc15;color:#111">Cristã</button>
-
         <!-- Electronic / SomaFM additions -->
         <button class="station-btn" data-src="https://ice1.somafm.com/groovesalad-128-mp3" data-name="GrooveSalad" style="background:#2563eb">Eletrônica</button>
         <button class="station-btn" data-src="https://ice1.somafm.com/beatblender-128-mp3" data-name="BeatBlender" style="background:#7c3aed">House / Deep</button>
@@ -238,7 +237,6 @@
         <div class="muted small text-center">Nenhum lançamento ainda.</div>
       </div>
     </section>
-
     <!-- Resumo por categoria -->
     <section class="card resumo-cat" aria-label="Resumo por categoria">
       <h3 style="margin:0 0 8px 0;font-size:15px">Resumo Rápido por Categoria</h3>
@@ -297,9 +295,6 @@
       </div>
     </section>
 
-    <!-- GRÁFICOS (ocultos, opcional) -->
-    <!-- Removed charts per your instruction -->
-
     <!-- Actions -->
     <section class="card actions-card" aria-label="Ações">
       <div style="display:flex;gap:12px;flex-wrap:wrap">
@@ -343,6 +338,7 @@
 <script>
 /* ===========================
    MAX ROTA — SCRIPT COMPLETO (UNIFICADO)
+   Correções: meta e km salvos em localStorage
    =========================== */
 
 /* ========== UTIL ========== */
@@ -373,7 +369,19 @@ let state = {
 };
 
 function saveState(){ localStorage.setItem('maxrota_state', JSON.stringify(state)); }
-function loadState(){ try{ const s=localStorage.getItem('maxrota_state'); if(s){ Object.assign(state, JSON.parse(s)); } }catch(e){console.warn(e);} }
+function loadState(){
+  try{
+    const s = localStorage.getItem('maxrota_state');
+    if(s){ Object.assign(state, JSON.parse(s)); }
+    // load saved meta and km if stored separately
+    const savedMeta = localStorage.getItem('maxrota_meta');
+    if(savedMeta !== null){ state.meta = Number(savedMeta); }
+    const savedKmIni = localStorage.getItem('maxrota_kmInicial');
+    const savedKmFim = localStorage.getItem('maxrota_kmFinal');
+    if(savedKmIni !== null) state.kmInicial = Number(savedKmIni);
+    if(savedKmFim !== null) state.kmFinal = Number(savedKmFim);
+  }catch(e){ console.warn(e); }
+}
 loadState();
 
 /* ========== REFS ========== */
@@ -434,7 +442,16 @@ finalizeBtn.addEventListener('click', ()=>{
   saveState(); updateUI();
 });
 
-saveKmBtn.addEventListener('click', ()=>{ state.kmInicial = Number(kmInicialEl.value) || 0; state.kmFinal = Number(kmFinalEl.value) || 0; saveState(); updateUI(); });
+saveKmBtn.addEventListener('click', ()=>{
+  state.kmInicial = Number(kmInicialEl.value) || 0;
+  state.kmFinal = Number(kmFinalEl.value) || 0;
+
+  // SAVE to localStorage (fix)
+  localStorage.setItem("maxrota_kmInicial", state.kmInicial);
+  localStorage.setItem("maxrota_kmFinal", state.kmFinal);
+
+  saveState(); updateUI();
+});
 
 /* ========== LANÇAMENTOS ========== */
 function addLancamento({type,value,category}){
@@ -647,6 +664,19 @@ autoThemeBtn.addEventListener('click', ()=>{ autoMode = !autoMode; if(autoMode){
 themeDots.forEach(d=>d.addEventListener('click', ()=>{ const acc=d.dataset.accent; document.body.classList.remove('accent-green','accent-orange','accent-yellow','accent-red','accent-pink'); document.body.classList.add('accent-'+acc); localStorage.setItem('maxrota_accent', acc); }));
 const savedAccent = localStorage.getItem('maxrota_accent') || 'green'; document.body.classList.add('accent-'+savedAccent);
 
+/* ========== SET META (fix) ========== */
+setMetaBtn.addEventListener('click', ()=> {
+  const v = Number(metaInput.value);
+  if(!isNaN(v) && v > 0){
+    state.meta = v;
+    localStorage.setItem("maxrota_meta", v); // <-- fix: save meta persistently
+    saveState();
+    updateUI();
+  } else {
+    alert('Meta inválida.');
+  }
+});
+
 /* ========== RENDER & INIT ========== */
 function renderResumoFinal(){
   const totalApps = state.ganhosApps;
@@ -667,8 +697,7 @@ function updateUI(){
   renderLancamentos(); renderResumoCategorias(); updateDerivedMetrics(); renderResumoFinal(); saveState();
 }
 
-// load saved meta if any
-const metaSaved = Number(localStorage.getItem('maxrota_meta')||0); if(metaSaved){ state.meta = metaSaved; }
+// load saved meta if any (already loaded in loadState)
 if(state.status==='running' && state.lastStartTime) startTimer();
 updateUI();
 setInterval(()=>updateUI(),2000);
