@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Criar Conta – MAX ROTA</title>
 
 <style>
   body {
-    font-family: Arial;
     background: #0d1226;
-    color: #fff;
+    font-family: Arial;
+    color: white;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -17,82 +17,75 @@
   }
 
   .box {
-    background: rgba(255,255,255,0.06);
+    width: 330px;
     padding: 25px;
-    border-radius: 12px;
-    width: 320px;
-    text-align: center;
-    box-shadow: 0 0 15px rgba(0,0,0,0.4);
+    background: rgba(255,255,255,0.07);
+    border-radius: 14px;
   }
 
   input {
     width: 100%;
-    margin-top: 10px;
+    margin-top: 12px;
     padding: 12px;
     border-radius: 10px;
     border: none;
-    outline: none;
     background: rgba(255,255,255,0.12);
     color: #fff;
   }
 
   button {
     width: 100%;
-    margin-top: 15px;
     padding: 12px;
-    border-radius: 10px;
-    border: none;
+    margin-top: 16px;
     background: #3b82f6;
+    color: white;
     font-weight: bold;
+    border: none;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 16px;
-    color: #fff;
   }
 
-  a { color:#10b981; text-decoration:none; display:block; margin-top:10px; }
-
-  .msg { margin-top: 12px; font-size: 14px; opacity: 0.8; }
+  a {
+    color: #38bdf8;
+    display: block;
+    margin-top: 12px;
+    text-align: center;
+  }
 </style>
-</head>
 
+</head>
 <body>
 
 <div class="box">
-  <h2>Criar Conta</h2>
+  <h2 style="text-align:center;">Criar conta</h2>
 
-  <input id="email" type="email" placeholder="E-mail" />
-  <input id="senha" type="password" placeholder="Senha" />
+  <input type="email" id="email" placeholder="E-mail">
+  <input type="password" id="senha" placeholder="Senha (mín 6)">
+  <button id="registerBtn">Criar conta</button>
 
-  <button id="registerBtn">Criar Conta</button>
+  <a href="login.html">Já tenho conta</a>
 
-  <a href="login.html">Já tenho conta → Entrar</a>
-
-  <div id="msg" class="msg"></div>
+  <div id="msg" style="margin-top:10px;opacity:.8"></div>
 </div>
 
 <script type="module">
 import { auth } from "./firebase.js";
 import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-document.getElementById("registerBtn").addEventListener("click", async () => {
-  const email = document.getElementById("email").value;
-  const senha = document.getElementById("senha").value;
-  const msg = document.getElementById("msg");
+const email = document.getElementById("email");
+const senha = document.getElementById("senha");
+const msg = document.getElementById("msg");
 
+document.getElementById("registerBtn").onclick = async () => {
   msg.textContent = "Criando conta...";
-
   try {
-    await createUserWithEmailAndPassword(auth, email, senha);
-
-    msg.textContent = "Conta criada com sucesso! Redirecionando...";
-    setTimeout(() => {
-      window.location.href = "login.html";
-    }, 1200);
-  }
-  catch (e) {
+    await createUserWithEmailAndPassword(auth, email.value, senha.value);
+    msg.textContent = "Conta criada! Redirecionando...";
+    setTimeout(() => location.href = "metas_diarias.html", 800);
+  } catch (e) {
     msg.textContent = "Erro: " + e.message;
   }
-});
+};
 </script>
 
 </body>
