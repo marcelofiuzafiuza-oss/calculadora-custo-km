@@ -3,378 +3,811 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>MAX ROTA DIÁRIO — App (logado)</title>
+  <title>MAX ROTA DIÁRIO</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
   <style>
-    /* minimal styling kept — você pode substituir pelo seu CSS completo */
-    body{font-family:Inter,system-ui;margin:0;background:linear-gradient(135deg,#041226,#2a1160);color:#e6eef6;padding:18px}
-    .wrap{max-width:1200px;margin:0 auto}
-    .card{background:rgba(255,255,255,0.03);padding:16px;border-radius:12px;margin-bottom:12px}
-    .btn{padding:10px 14px;border-radius:10px;border:0;background:linear-gradient(90deg,#10b981,#7c3aed);color:#012;font-weight:800;cursor:pointer}
-    input{padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:rgba(255,255,255,0.02);color:inherit}
-    .small{font-size:13px;color:#9aa6b2}
-    .station-btn{padding:10px;border-radius:10px;border:0;color:#fff;font-weight:800;cursor:pointer}
-    .app-btn{padding:10px;border-radius:10px;border:0;color:#fff;font-weight:800;cursor:pointer;min-width:110px}
-    .launch-list{max-height:220px;overflow:auto}
+  /* ===========================
+     MAX ROTA – ESTILO GLOBAL
+     =========================== */
+  :root {
+    --accent: #10b981;
+    --bg1: #041226;
+    --bg2: #2a1160;
+    --text: #e6eef6;
+    --muted: #9aa6b2;
+    --card: rgba(255, 255, 255, 0.06);
+    --radius: 14px;
+    --scale: 1.02;
+  }
+  html,body{height:100%;margin:0;padding:0}
+  body{
+    font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    color:var(--text);padding:20px;transform:scale(var(--scale));transform-origin:top left;
+  }
+  .wrap{max-width:1200px;margin:0 auto}
+  .card{background:var(--card);backdrop-filter:blur(6px);border-radius:16px;padding:18px;margin-bottom:18px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 26px rgba(0,0,0,0.35)}
+  .header-card{display:flex;justify-content:space-between;align-items:center; flex-wrap: wrap; gap: 10px;} /* Ajustado para melhor responsividade e acomodar o botão */
+  .logo-img{height:74px;width:auto;border-radius:12px}
+  .theme-controls{display:flex;align-items:center;gap:12px}
+  .theme-btn{background:linear-gradient(120deg,var(--accent),#3b82f6);color:#fff;padding:10px 14px;border-radius:12px;border:none;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,0.3)}
+  .theme-dots{display:flex;gap:10px}
+  .color-dot{width:30px;height:30px;border-radius:999px;border:2px solid rgba(255,255,255,0.12);cursor:pointer;box-shadow:0 6px 14px rgba(0,0,0,0.3)}
+  .radio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .station-btn{padding:14px;border-radius:12px;color:#fff;font-weight:800;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:0.12s;font-size:16px;height:56px}
+  .station-btn.active{box-shadow:0 10px 26px rgba(0,0,0,0.5);transform:translateY(-3px)}
+  .radio-player{margin-top:12px;display:flex;align-items:center;gap:12px}
+  .meta-row{display:flex;gap:12px}
+  .meta-row input{flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);color:var(--text);font-weight:800;font-size:16px}
+  .progress-container{height:44px;border-radius:22px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);overflow:hidden;position:relative}
+  .progress-bar{position:absolute;left:0;top:0;height:100%;background:linear-gradient(120deg,var(--accent),#2563eb);width:0%;animation:waveMove 3.5s linear infinite;background-size:200% 200%}
+  @keyframes waveMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  .progress-text{position:absolute;width:100%;height:100%;line-height:44px;text-align:center;font-weight:900;font-size:15px}
+  .progress-bubbles{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:hidden}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .grid-4 input{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);color:var(--text);font-weight:700;font-size:15px}
+  .big-time{font-size:20px;font-weight:900}
+  .km-actions{margin-top:12px;display:flex;gap:12px;flex-wrap:wrap}
+  .btn{padding:12px 16px;border-radius:12px;background:linear-gradient(120deg,var(--accent),#7c3aed);border:none;font-weight:800;cursor:pointer;color:#fff;font-size:15px;box-shadow:0 8px 20px rgba(0,0,0,0.3)}
+  .btn-ghost{padding:12px 16px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);font-weight:700;cursor:pointer;color:var(--muted)}
+  .grid-2cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .input-row{display:flex;gap:12px}
+  .input-row input{flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);color:var(--text);font-weight:700;font-size:15px}
+  .apps-grid,.gastos-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+  .app-btn,.gasto-btn{padding:12px 14px;border:none;border-radius:12px;cursor:pointer;font-weight:900;color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;min-width:120px}
+  .launch-list{max-height:300px;overflow-y:auto;padding:6px}
+  .launch-item{display:flex;justify-content:space-between;border-bottom:1px dashed rgba(255,255,255,0.06);padding:10px 6px;border-radius:10px}
+  .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+  .metric-col{padding:12px;border-radius:12px;background:rgba(255,255,255,0.04)}
+  .metric-title{font-size:13px;color:var(--muted)}
+  .metric-value{margin-top:8px;font-size:18px;font-weight:900}
+  .resumo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+  .history-panel{background:rgba(255,255,255,0.03);padding:12px;border-radius:12px}
+  .confetti{pointer-events:none;position:fixed;inset:0;overflow:hidden;z-index:9999}
+  .confetti .c{position:absolute;width:10px;height:14px;opacity:0.95}
+  .accent-green{--accent:#10b981}
+  .accent-orange{--accent:#f97316}
+  .accent-yellow{--accent:#facc15}
+  .accent-red{--accent:#ef4444}
+  .accent-pink{--accent:#ec4899}
+  body.light-mode{--bg1:#f5f7fb;--bg2:#e8f0ff;--text:#0b1220;--muted:#566170;--card:rgba(255,255,255,0.9)}
+  .muted{color:var(--muted)}
+  .small{font-size:13px}
+  /* Estilo para valores escondidos, mantém o espaço */
+  .hidden-value-mask {
+    color: transparent;
+    text-shadow: 0 0 8px rgba(0,0,0,0.9); /* Adiciona uma sombra para criar o efeito de "escondido" */
+    font-size: 10px; /* Reduz o tamanho para a máscara ser menor, mas visível */
+  }
+  .hidden-value {
+    visibility: hidden;
+    position: relative;
+  }
+  .hidden-value::after {
+    content: '****';
+    visibility: visible;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    color: var(--text);
+    text-align: inherit;
+    line-height: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+  }
+  /* Estilo para o botão no header */
+  .header-actions-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px; /* Espaço entre o controle de tema e o botão de toggle */
+      align-items: flex-end; /* Alinha o botão de toggle à direita */
+  }
+  .toggle-btn {
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 13px;
+    white-space: nowrap; /* Não quebra a linha do texto do botão */
+    width: fit-content; /* Largura do conteúdo */
+  }
+
+  @media(max-width:1000px){body{transform:scale(1.00)}.grid-4{grid-template-columns:repeat(2,1fr)}.grid-2cols{grid-template-columns:1fr}.wrap{padding:8px}}
   </style>
 </head>
-<body>
-  <div class="wrap">
-    <div class="card" style="display:flex;justify-content:space-between;align-items:center">
-      <div>
-        <h1 style="margin:0">MAX ROTA DIÁRIO</h1>
-        <div class="small">Usuário: <span id="userEmail">—</span></div>
-      </div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <button id="btnLogout" class="btn" style="background:#ef4444">Sair</button>
-      </div>
-    </div>
 
-    <!-- Rádio reduzido -->
-    <section class="card">
-      <h3 style="margin:0 0 8px 0">🎧 Estações</h3>
-      <div id="stationButtons" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+<body class="accent-green">
+  <div class="wrap">
+
+    <header class="card header-card" role="banner" aria-label="Cabeçalho MAX ROTA">
+      <div style="display:flex;align-items:center;gap:12px">
+        <img id="logoImg" class="logo-img" src="https://i.postimg.cc/3RWn008g/Chat-GPT-Image-12-de-nov-de-2025-14-32-56.png" alt="MAX ROTA DIÁRIO">
+        <div>
+          <h1 style="margin:0;font-size:20px">MAX ROTA DIÁRIO</h1>
+          <div class="small muted">Painel do Motorista</div>
+        </div>
+      </div>
+
+      <div class="header-actions-container">
+        <div class="theme-controls" aria-hidden="false">
+          <button id="autoThemeBtn" class="theme-btn" title="Ativar modo automático dia/noite">Auto 🌗</button>
+          <div class="theme-dots" role="toolbar" aria-label="Temas" style="margin-left:8px">
+            <button class="color-dot" data-accent="green" style="background:#10b981" title="Verde"></button>
+            <button class="color-dot" data-accent="orange" style="background:#f97316" title="Laranja"></button>
+            <button class="color-dot" data-accent="yellow" style="background:#facc15" title="Amarelo"></button>
+            <button class="color-dot" data-accent="red" style="background:#ef4444" title="Vermelho"></button>
+            <button class="color-dot" data-accent="pink" style="background:#ec4899" title="Rosa"></button>
+          </div>
+        </div>
+        
+        <button id="toggleValuesBtn" class="toggle-btn" aria-pressed="false" title="Mostrar/Esconder valores monetários e de contagem">Esconder Valores</button>
+      </div>
+    </header>
+    <section class="card radio-card" aria-label="Rádios">
+      <h2 style="margin:0 0 8px 0;font-size:16px">🎧 Estações</h2>
+
+      <div id="stationButtons" class="radio-grid" role="list" aria-label="Lista de rádios">
         <button class="station-btn" data-src="https://live.hunter.fm/pop_high" data-name="Hunter Pop" style="background:#10b981">Hunter Pop</button>
         <button class="station-btn" data-src="https://live.hunter.fm/pop2k_high" data-name="Hunter Pop2K" style="background:#06b6d4">Pop2K</button>
-        <button class="station-btn" data-src="https://live.hunter.fm/rock_high" data-name="Rock" style="background:#ef4444">Rock</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/u80s-128-mp3" data-name="Flashback 80s" style="background:#8b5cf6">80s</button>
+        <button class="station-btn" data-src="http://listen.181fm.com/181-power_128k.mp3" data-name="Power 181" style="background:#f97316">Power181</button>
+
+        <button class="station-btn" data-src="https://live.hunter.fm/rock_high" data-name="Rock Classic" style="background:#ef4444">Rock</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/sertanejo_high" data-name="Sertanejo" style="background:#f59e0b">Sertanejo</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/hiphop_high" data-name="Hip Hop" style="background:#111827">HipHop</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/gospel_high" data-name="Cristã" style="background:#facc15;color:#111">Cristã</button>
+
         <button class="station-btn" data-src="https://ice1.somafm.com/groovesalad-128-mp3" data-name="GrooveSalad" style="background:#2563eb">Eletrônica</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/beatblender-128-mp3" data-name="BeatBlender" style="background:#7c3aed">House / Deep</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/secretagent-128-mp3" data-name="Surf" style="background:#06b6d4">Surf</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/dubstep-128-mp3" data-name="Reggae/Dub" style="background:#4ade80">Reggae</button>
+
+        <button class="station-btn" data-src="https://live.hunter.fm/mpb_high" data-name="MPB Brasil" style="background:#1e3a8a">MPB</button>
+        <button class="station-btn" data-src="https://stream.radioparadise.com/mp3-192" data-name="Radio Paradise" style="background:#111827">RadioParadise</button>
+        <button class="station-btn" data-src="http://listen.181fm.com/181-beat_128k.mp3" data-name="181 HipHop" style="background:#0ea5e9">181 HipHop</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/mpb_high" data-name="MPB (alt)" style="background:#8b5cf6">MPB alt</button>
       </div>
 
-      <div style="display:flex;gap:12px;margin-top:12px;align-items:center">
-        <audio id="radioPlayer" controls preload="none" style="flex:1"></audio>
-        <button id="stopRadioBtn" class="btn" style="background:transparent;border:1px solid rgba(255,255,255,0.06);color:#fff">Parar</button>
-      </div>
-      <div id="nowPlaying" class="small" style="margin-top:8px">Nenhuma rádio selecionada.</div>
-    </section>
-
-    <!-- Meta -->
-    <section class="card">
-      <h3 style="margin:0 0 8px 0">🎯 Meta diária</h3>
-      <div style="display:flex;gap:8px">
-        <input id="metaInput" type="number" placeholder="Ex: 300" />
-        <button id="setMetaBtn" class="btn">Salvar meta</button>
-      </div>
-      <div style="margin-top:10px;">
-        <div style="height:28px;background:rgba(255,255,255,0.03);border-radius:14px;overflow:hidden;position:relative">
-          <div id="progressBar" style="height:100%;width:0;background:linear-gradient(90deg,#10b981,#2563eb);transition:width .4s"></div>
+      <div class="radio-player mt-4" aria-label="Player de rádio">
+        <audio id="radioPlayer" controls preload="none" class="w-full" aria-label="Player de rádio"></audio>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-left:12px">
+          <button id="stopRadioBtn" class="btn-ghost w-36" aria-label="Parar rádio">Parar Rádio</button>
+          <div id="nowPlaying" class="small muted" aria-live="polite">Nenhuma rádio selecionada.</div>
         </div>
-        <div id="metaMessage" class="small" style="margin-top:8px">Defina a meta.</div>
       </div>
     </section>
 
-    <!-- KM e timer -->
-    <section class="card">
-      <h3 style="margin:0 0 8px 0">🚗 Jornada e KM</h3>
-      <div style="display:flex;gap:8px;align-items:center">
-        <div><div class="small">KM Inicial</div><input id="kmInicial" type="number" /></div>
-        <div><div class="small">KM Final</div><input id="kmFinal" type="number" /></div>
-        <div style="margin-left:12px"><div class="small">Tempo</div><div id="tempoTrabalhado">00:00:00</div></div>
-        <div style="margin-left:12px"><div class="small">KM Rodados</div><div id="kmRodados">0.0 km</div></div>
+    <section class="card meta-card" aria-label="Meta diária">
+      <h2 style="margin:0 0 8px 0;font-size:16px">🎯 Meta Diária</h2>
+
+      <div class="meta-row mt-3" role="form" aria-label="Definir meta diária">
+        <input id="metaInput" type="number" placeholder="Ex: 300" aria-label="Valor da meta" />
+        <button id="setMetaBtn" class="btn" aria-label="Salvar meta">Salvar Meta</button>
       </div>
-      <div style="margin-top:12px;display:flex;gap:8px">
-        <button id="toggleStartBtn" class="btn">Iniciar Expediente</button>
-        <button id="finalizeBtn" class="btn" style="background:#f59e0b">Finalizar Dia</button>
-        <button id="saveKmBtn" class="btn">Salvar KM</button>
+
+      <div class="progress-container mt-4" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div id="progressBar" class="progress-bar" style="width:0%"></div>
+        <div id="progressBubbles" class="progress-bubbles" aria-hidden="true"></div>
+        <div id="progressText" class="progress-text">0%</div>
+      </div>
+
+      <div id="metaMessage" class="small muted mt-2" aria-live="polite">Defina a meta para acompanhar o progresso.</div>
+    </section>
+
+    <section class="card km-card" aria-label="Jornada e quilometragem">
+      <h2 style="margin:0 0 8px 0;font-size:16px">🚗 Jornada e KM</h2>
+
+      <div class="grid-4 mt-3" role="group" aria-label="Campos de quilometragem e tempo">
+        <div>
+          <label class="small muted" for="kmInicial">KM Inicial</label>
+          <input id="kmInicial" type="number" placeholder="Ex: 150000" aria-label="KM inicial" />
+        </div>
+
+        <div>
+          <label class="small muted" for="kmFinal">KM Final</label>
+          <input id="kmFinal" type="number" placeholder="Ex: 150250" aria-label="KM final" />
+        </div>
+
+        <div>
+          <label class="small muted">Tempo Trabalhado</label>
+          <div id="tempoTrabalhado" class="big-time" aria-live="polite">00:00:00</div>
+        </div>
+
+        <div>
+          <label class="small muted">KM Rodados</label>
+          <div id="kmRodados" class="big-time" aria-live="polite">0.0 km</div>
+        </div>
+      </div>
+
+      <div class="km-actions">
+        <button id="toggleStartBtn" class="btn mt-4" aria-pressed="false">Iniciar Expediente</button>
+        <button id="finalizeBtn" class="btn-ghost mt-4">Finalizar Dia</button>
+        <button id="saveKmBtn" class="btn mt-4">Salvar KM</button>
       </div>
     </section>
 
-    <!-- Lancamentos -->
-    <section class="card" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <section class="card lancamentos-card grid-2cols" aria-label="Lançamentos">
       <div>
-        <h4>Entradas (Apps)</h4>
-        <div style="display:flex;gap:8px">
-          <input id="valorEntrada" type="number" placeholder="Valor (R$)"/>
-          <button id="addEntradaBtn" class="btn">Lançar</button>
+        <h3 style="margin:0 0 8px 0;font-size:15px">➕ Entradas (Apps)</h3>
+
+        <div class="input-row mt-2" role="form" aria-label="Lançar entrada">
+          <input id="valorEntrada" type="number" placeholder="Valor (R$)" aria-label="Valor de entrada" />
+          <button id="addEntradaBtn" class="btn" aria-label="Adicionar entrada">Lançar</button>
         </div>
-        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+
+        <div class="apps-grid mt-2" role="list" aria-label="Lista de apps">
           <button class="app-btn" data-cat="Uber" style="background:#000">Uber</button>
           <button class="app-btn" data-cat="99" style="background:#facc15;color:#111">99</button>
           <button class="app-btn" data-cat="inDriver" style="background:#10b981">inDriver</button>
+          <button class="app-btn" data-cat="Particular" style="background:#6b7280">Particular</button>
           <button class="app-btn" data-cat="Loja" style="background:#1e3a8a">Loja</button>
+          <button class="app-btn" data-cat="Doação" style="background:#8b5cf6">Doação</button>
         </div>
       </div>
 
       <div>
-        <h4>Saídas (Gastos)</h4>
-        <div style="display:flex;gap:8px">
-          <input id="valorSaida" type="number" placeholder="Valor (R$)"/>
-          <button id="addSaidaBtn" class="btn">Lançar</button>
+        <h3 style="margin:0 0 8px 0;font-size:15px">➖ Saídas (Gastos)</h3>
+
+        <div class="input-row mt-2" role="form" aria-label="Lançar gasto">
+          <input id="valorSaida" type="number" placeholder="Valor (R$)" aria-label="Valor de saída" />
+          <button id="addSaidaBtn" class="btn" aria-label="Adicionar gasto">Lançar</button>
         </div>
-        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+
+        <div class="gastos-grid mt-2" role="list" aria-label="Principais gastos">
           <button class="gasto-btn" data-cat="Combustível" style="background:#ef4444">Combustível</button>
           <button class="gasto-btn" data-cat="Alimentação" style="background:#8b5cf6">Alimentação</button>
           <button class="gasto-btn" data-cat="Manutenção" style="background:#6b7280">Manutenção</button>
+          <button class="gasto-btn" data-cat="Outros" style="background:#374151">Outros</button>
         </div>
       </div>
     </section>
 
-    <!-- Lançamentos recentes -->
-    <section class="card">
-      <h4>Lançamentos Recentes</h4>
-      <div id="lancamentosList" class="launch-list small muted">Nenhum lançamento</div>
-    </section>
-
-    <!-- Resumo final -->
-    <section class="card">
-      <h4>Resumo Final</h4>
-      <div style="display:flex;gap:12px">
-        <div style="flex:1"><div class="small">Total Apps</div><div id="finalTotalApps">R$ 0,00</div></div>
-        <div style="flex:1"><div class="small">Total Loja</div><div id="finalTotalLoja">R$ 0,00</div></div>
-        <div style="flex:1"><div class="small">Total Doação</div><div id="finalTotalDoacao">R$ 0,00</div></div>
-        <div style="flex:1"><div class="small">Total Geral</div><div id="finalTotalGeral">R$ 0,00</div></div>
+    <section class="card recentes-card" aria-label="Lançamentos recentes">
+      <h3 style="margin:0 0 8px 0;font-size:15px">Lançamentos Recentes</h3>
+      <div id="lancamentosList" class="launch-list mt-2" aria-live="polite">
+        <div class="muted small text-center">Nenhum lançamento ainda.</div>
       </div>
     </section>
 
-    <!-- Ações -->
-    <section style="display:flex;gap:8px">
-      <button id="saveAndResetBtn" class="btn">Salvar Resumo & Resetar Dia</button>
-      <button id="exportBtn" class="btn" style="background:transparent;border:1px solid rgba(255,255,255,0.06)">Exportar JSON</button>
+    <section class="card resumo-cat" aria-label="Resumo por categoria">
+      <h3 style="margin:0 0 8px 0;font-size:15px">Resumo Rápido por Categoria</h3>
+      <div id="resumoCategorias" class="resumo-grid mt-2 small muted" role="list"></div>
     </section>
 
-    <footer style="margin-top:12px" class="small muted">Dados salvos na nuvem (Firebase). Logout salva automaticamente.</footer>
+    <section class="card metric-card" aria-label="Métricas">
+      <h3 style="margin:0 0 8px 0;font-size:15px">Métricas</h3>
+
+      <div class="metric-grid mt-3">
+        <div class="metric-col">
+          <div class="metric-title">Ganhos Brutos — Somente Apps</div>
+          <div id="metricGanhosApps" class="metric-value text-green-400">R$ 0,00</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Ganhos Brutos — Apps + Loja</div>
+          <div id="metricGanhosTotal" class="metric-value text-cyan-300">R$ 0,00</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Gastos Totais</div>
+          <div id="metricGastosTotal" class="metric-value text-red-400">R$ 0,00</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Lucro Líquido</div>
+          <div id="metricLucroTotal" class="metric-value">R$ 0,00</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Média/Hora (Bruto)</div>
+          <div id="metricMediaHoraBrutoTotal" class="metric-value">R$ 0,00</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Média/Hora (Líquido)</div>
+          <div id="metricMediaHoraLiqTotal" class="metric-value">R$ 0,00</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Lucro / KM (Líquido)</div>
+          <div id="metricLucroKmTotal" class="metric-value">R$ 0,00</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Entradas Apps</div>
+          <div id="metricEntradasApps" class="metric-value">0</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Entradas Loja</div>
+          <div id="metricEntradasLoja" class="metric-value">0</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card actions-card" aria-label="Ações">
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button id="saveAndResetBtn" class="btn">Salvar Resumo & Resetar Dia</button>
+        <button id="exportBtn" class="btn-ghost">Exportar Resumo (JSON)</button>
+        <button id="viewHistoryBtn" class="btn-ghost">Ver Histórico de Dias</button>
+      </div>
+
+      <div id="historyPanel" class="history-panel mt-4 hidden" aria-live="polite"></div>
+    </section>
+
+    <section class="card final-resumo" aria-label="Resumo final">
+      <h3 style="margin:0 0 8px 0;font-size:15px">Resumo Final por Categoria</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px">
+        <div style="background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03));padding:12px;border-radius:12px;text-align:center">
+          <div class="muted">Total Apps</div>
+          <div id="finalTotalApps" class="metric-value">R$ 0,00</div>
+        </div>
+        <div style="background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03));padding:12px;border-radius:12px;text-align:center">
+          <div class="muted">Total Loja</div>
+          <div id="finalTotalLoja" class="metric-value">R$ 0,00</div>
+        </div>
+        <div style="background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03));padding:12px;border-radius:12px;text-align:center">
+          <div class="muted">Total Doações</div>
+          <div id="finalTotalDoacao" class="metric-value">R$ 0,00</div>
+        </div>
+        <div style="background:linear-gradient(135deg,var(--accent),#3b82f6);padding:12px;border-radius:12px;text-align:center;color:#fff">
+          <div class="muted" style="opacity:0.9">Total Geral</div>
+          <div id="finalTotalGeral" class="metric-value">R$ 0,00</div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="small muted" style="text-align:center;margin-top:10px">Dados armazenados localmente (localStorage). Faça export regularmente.</footer>
   </div>
 
-  <script type="module">
-    import {
-      auth, onAuthStateChanged, signOut,
-      saveStateToFirestore, loadStateFromFirestore
-    } from './firebase.js';
+  <div id="confettiRoot" class="confetti" aria-hidden="true"></div>
+  <script>
+/* ===========================
+   MAX ROTA — SCRIPT COMPLETO
+   Com adição do botão de Esconder Valores
+   =========================== */
 
-    // Basic state (kept simple to show integration)
-    let state = {
-      meta: 0, ganhosApps:0, ganhosLoja:0, totalDoacao:0, entradasApps:0, entradasLoja:0, gastos:0,
-      history: [], kmInicial:0, kmFinal:0, totalTimeWorked:0, lastStartTime:null, status:'stopped', celebrated:false
-    };
+/* UTIL */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const uid = () => Math.random().toString(36).slice(2,9);
 
-    // ELEMENTS
-    const userEmailEl = document.getElementById('userEmail');
-    const btnLogout = document.getElementById('btnLogout');
-    const stationButtons = document.querySelectorAll('#stationButtons .station-btn');
-    const radioPlayer = document.getElementById('radioPlayer');
-    const nowPlaying = document.getElementById('nowPlaying');
-    const stopRadioBtn = document.getElementById('stopRadioBtn');
+function formatBRL(v){ return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+function formatKM(v){ return Number(v||0).toFixed(1) + ' km'; }
+function formatTime(ms){ if(!ms||ms<=0) return '00:00:00'; const s=Math.floor(ms/1000); const h=Math.floor(s/3600); const m=Math.floor((s%3600)/60); const sec=s%60; return [h,m,sec].map(n=>String(n).padStart(2,'0')).join(':'); }
 
-    const metaInput = document.getElementById('metaInput'), setMetaBtn = document.getElementById('setMetaBtn'), progressBar = document.getElementById('progressBar'), metaMessage = document.getElementById('metaMessage');
-    const kmInicialEl = document.getElementById('kmInicial'), kmFinalEl = document.getElementById('kmFinal'), tempoTrabalhado = document.getElementById('tempoTrabalhado'), kmRodados = document.getElementById('kmRodados');
-    const toggleStartBtn = document.getElementById('toggleStartBtn'), finalizeBtn = document.getElementById('finalizeBtn'), saveKmBtn = document.getElementById('saveKmBtn');
-    const valorEntrada = document.getElementById('valorEntrada'), addEntradaBtn = document.getElementById('addEntradaBtn'), valorSaida = document.getElementById('valorSaida'), addSaidaBtn = document.getElementById('addSaidaBtn');
-    const appBtns = document.querySelectorAll('.app-btn'), gastoBtns = document.querySelectorAll('.gasto-btn');
+/* STATE */
+let state = {
+  meta: 0,
+  ganhosApps: 0,
+  ganhosLoja: 0,
+  totalDoacao: 0,
+  entradasApps: 0,
+  entradasLoja: 0,
+  gastos: 0,
+  history: [],
+  kmInicial: 0,
+  kmFinal: 0,
+  totalTimeWorked: 0,
+  lastStartTime: null,
+  status: 'stopped',
+  celebrated: false,
+  valuesHidden: false // NOVO: Estado para ocultar/mostrar valores
+};
 
-    const lancamentosList = document.getElementById('lancamentosList');
-    const finalTotalApps = document.getElementById('finalTotalApps'), finalTotalLoja = document.getElementById('finalTotalLoja'), finalTotalDoacao = document.getElementById('finalTotalDoacao'), finalTotalGeral = document.getElementById('finalTotalGeral');
+function saveState(){ localStorage.setItem('maxrota_state', JSON.stringify(state)); }
+function loadState(){
+  try{
+    const s = localStorage.getItem('maxrota_state');
+    if(s){ Object.assign(state, JSON.parse(s)); }
+    const savedMeta = localStorage.getItem('maxrota_meta');
+    if(savedMeta !== null) state.meta = Number(savedMeta);
+    const savedKmIni = localStorage.getItem('maxrota_kmInicial');
+    const savedKmFim = localStorage.getItem('maxrota_kmFinal');
+    if(savedKmIni !== null) state.kmInicial = Number(savedKmIni);
+    if(savedKmFim !== null) state.kmFinal = Number(savedKmFim);
+    
+    // NOVO: Carregar estado de valores ocultos
+    const savedHidden = localStorage.getItem('maxrota_valuesHidden');
+    if(savedHidden !== null) state.valuesHidden = savedHidden === 'true';
 
-    let uid = null;
-    let timerInterval = null;
+  }catch(e){ console.warn(e); }
+}
+loadState();
 
-    // Auth guard: redirect to login if not logged
-    onAuthStateChanged(auth, async (user) => {
-      if(!user){ window.location.href = 'login.html'; return; }
-      uid = user.uid;
-      userEmailEl.textContent = user.email || user.displayName || 'Usuário';
-      // load state from Firestore (if exists)
-      const saved = await loadStateFromFirestore(uid);
-      if(saved){
-        // merge into local state
-        Object.assign(state, saved);
-      } else {
-        // try to load localStorage as fallback
-        const local = localStorage.getItem('maxrota_state');
-        if(local) Object.assign(state, JSON.parse(local));
-      }
-      updateUI();
-      // start timer if running
-      if(state.status === 'running' && state.lastStartTime) startTimer();
-    });
+/* REFS */
+const metaInput = $('#metaInput'), setMetaBtn = $('#setMetaBtn'), progressBar = $('#progressBar'), progressText = $('#progressText'), metaMessage = $('#metaMessage'), progressBubbles = $('#progressBubbles');
+const kmInicialEl = $('#kmInicial'), kmFinalEl = $('#kmFinal'), tempoTrabalhado = $('#tempoTrabalhado'), kmRodados = $('#kmRodados'), toggleStartBtn = $('#toggleStartBtn'), finalizeBtn = $('#finalizeBtn'), saveKmBtn = $('#saveKmBtn');
+const valorEntrada = $('#valorEntrada'), valorSaida = $('#valorSaida'), lancamentosList = $('#lancamentosList');
+const appBtns = $$('.app-btn'), gastoBtns = $$('.gasto-btn');
+const stationButtons = $$('#stationButtons .station-btn'), radioPlayer = $('#radioPlayer'), nowPlaying = $('#nowPlaying'), stopRadioBtn = $('#stopRadioBtn');
+const metricGanhosApps = $('#metricGanhosApps'), metricGanhosTotal = $('#metricGanhosTotal'), metricGastosTotal = $('#metricGastosTotal'), metricLucroTotal = $('#metricLucroTotal');
+const metricMediaHoraBrutoTotal = $('#metricMediaHoraBrutoTotal'), metricMediaHoraLiqTotal = $('#metricMediaHoraLiqTotal'), metricLucroKmTotal = $('#metricLucroKmTotal');
+const metricEntradasApps = $('#metricEntradasApps'), metricEntradasLoja = $('#metricEntradasLoja');
+const finalTotalApps = $('#finalTotalApps'), finalTotalLoja = $('#finalTotalLoja'), finalTotalDoacao = $('#finalTotalDoacao'), finalTotalGeral = $('#finalTotalGeral');
+const confettiRoot = $('#confettiRoot'), saveAndResetBtn = $('#saveAndResetBtn'), exportBtn = $('#exportBtn'), viewHistoryBtn = $('#viewHistoryBtn'), historyPanel = $('#historyPanel');
+const autoThemeBtn = $('#autoThemeBtn'), themeDots = $$('.color-dot');
+const resumoCategorias = $('#resumoCategorias');
+const toggleValuesBtn = $('#toggleValuesBtn'); // NOVO: Referência ao botão
 
-    // LOGOUT
-    btnLogout.addEventListener('click', async ()=>{
-      // save before logout
-      if(uid) await saveStateToFirestore(uid, state);
-      await signOut(auth);
-      localStorage.setItem('maxrota_state', JSON.stringify(state));
-      window.location.href = 'login.html';
-    });
+/* NOVO: FUNÇÃO DE TOGGLE VALORES */
+function toggleValuesVisibility(){
+  state.valuesHidden = !state.valuesHidden;
+  localStorage.setItem('maxrota_valuesHidden', state.valuesHidden);
+  toggleValuesBtn.textContent = state.valuesHidden ? 'Mostrar Valores' : 'Esconder Valores';
+  toggleValuesBtn.setAttribute('aria-pressed', state.valuesHidden);
+  updateUI();
+}
+toggleValuesBtn.addEventListener('click', toggleValuesVisibility);
 
-    // RADIO
-    function setActiveStationBtn(btn){
-      document.querySelectorAll('#stationButtons .station-btn').forEach(b=>b.classList.remove('active'));
-      if(btn) btn.classList.add('active');
-    }
-    document.getElementById('stationButtons').addEventListener('click', async (e)=>{
-      const btn = e.target.closest('.station-btn'); if(!btn) return;
-      const src = btn.dataset.src, name = btn.dataset.name || 'Rádio';
-      try{ radioPlayer.pause(); }catch(e){}
-      setActiveStationBtn(btn);
-      nowPlaying.textContent = 'Carregando: ' + name;
-      radioPlayer.src = src;
-      try{ await radioPlayer.play(); nowPlaying.textContent = 'Tocando: ' + name; }catch(err){ console.warn(err); nowPlaying.textContent = 'Falha ao tocar ' + name; setActiveStationBtn(null); }
-    });
-    stopRadioBtn.addEventListener('click', ()=>{ try{ radioPlayer.pause(); radioPlayer.removeAttribute('src'); radioPlayer.load(); }catch(e){} nowPlaying.textContent='Nenhuma rádio selecionada.'; setActiveStationBtn(null); });
+/* RADIO */
+function setActiveStation(btn){ stationButtons.forEach(b=>b.classList.remove('active')); if(btn) btn.classList.add('active'); }
+stationButtons.forEach(btn=>btn.addEventListener('click', async ()=>{
+  try{ radioPlayer.pause(); }catch{} radioPlayer.src='';
+  const url = btn.dataset.src; const name = btn.dataset.name || 'Rádio';
+  setActiveStation(btn); nowPlaying.textContent = 'Carregando: ' + name;
+  try{ radioPlayer.src = url; radioPlayer.load(); await radioPlayer.play(); nowPlaying.textContent = 'Tocando: ' + name; }catch(err){ console.warn('Erro tocar',err); nowPlaying.textContent = 'Falha ao tocar ' + name; setActiveStation(null); }
+}));
+stopRadioBtn.addEventListener('click', ()=>{ try{ radioPlayer.pause(); radioPlayer.removeAttribute('src'); radioPlayer.load(); }catch(e){} nowPlaying.textContent='Nenhuma rádio selecionada.'; setActiveStation(null); });
+radioPlayer.addEventListener('error', ()=>{ nowPlaying.textContent='Erro ao carregar a estação.'; setActiveStation(null); });
 
-    // METAS
-    setMetaBtn.addEventListener('click', async ()=>{
-      const v = Number(metaInput.value) || 0;
-      if(v <= 0){ alert('Meta inválida'); return; }
-      state.meta = v;
-      await localSaveAndRemoteSave();
-      updateUI();
-    });
+/* TIMER & KM */
+let timerInterval = null;
+function getTempoTotal(){ let t = Number(state.totalTimeWorked || 0); if(state.status==='running' && state.lastStartTime) t += (Date.now() - state.lastStartTime); return t; }
+function getKMRodados(){ const ini=Number(state.kmInicial||0), fim=Number(state.kmFinal||0); return (fim>ini)?(fim-ini):0; }
 
-    // KM & TIMER
-    function getTempoTotal(){ let t = Number(state.totalTimeWorked || 0); if(state.status==='running' && state.lastStartTime) t += (Date.now() - state.lastStartTime); return t; }
-    function getKMRodados(){ const ini = Number(state.kmInicial||0), fim = Number(state.kmFinal||0); return (fim>ini)?(fim-ini):0; }
+function startTimer(){ stopTimer(); if(!state.lastStartTime) state.lastStartTime = Date.now(); timerInterval = setInterval(()=>{ tempoTrabalhado.textContent = formatTime(getTempoTotal()); updateDerivedMetrics(); },1000); }
+function stopTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } }
 
-    function startTimer(){ stopTimer(); if(!state.lastStartTime) state.lastStartTime = Date.now(); timerInterval = setInterval(()=>{ tempoTrabalhado.textContent = msToTime(getTempoTotal()); updateDerivedMetrics(); },1000); }
-    function stopTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval = null; } }
+toggleStartBtn.addEventListener('click', ()=>{
+  if(state.status==='stopped'){ state.status='running'; state.lastStartTime=Date.now(); toggleStartBtn.textContent='Pausar'; startTimer(); }
+  else if(state.status==='running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); state.lastStartTime=null; state.status='paused'; toggleStartBtn.textContent='Retomar'; stopTimer(); }
+  else if(state.status==='paused'){ state.status='running'; state.lastStartTime=Date.now(); toggleStartBtn.textContent='Pausar'; startTimer(); }
+  saveState(); updateUI();
+});
 
-    toggleStartBtn.addEventListener('click', ()=> {
-      if(state.status === 'stopped'){ state.status = 'running'; state.lastStartTime = Date.now(); toggleStartBtn.textContent='Pausar'; startTimer(); }
-      else if(state.status === 'running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); state.lastStartTime = null; state.status = 'paused'; toggleStartBtn.textContent='Retomar'; stopTimer(); }
-      else if(state.status === 'paused'){ state.status = 'running'; state.lastStartTime = Date.now(); toggleStartBtn.textContent='Pausar'; startTimer(); }
-      localSaveAndRemoteSave();
-      updateUI();
-    });
+finalizeBtn.addEventListener('click', ()=>{
+  if(state.status==='running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); state.lastStartTime=null; }
+  const tempoFinal = getTempoTotal(); const kmDia = getKMRodados();
+  state.status='stopped'; stopTimer();
+  // remove previous resumo if exists
+  const existing = finalizeBtn.parentElement.querySelector('.day-resume-card'); if(existing) existing.remove();
+  // small summary card
+  const resumoCard = document.createElement('div'); resumoCard.className='day-resume-card'; resumoCard.style.padding='10px'; resumoCard.style.marginTop='10px'; resumoCard.style.borderRadius='10px'; resumoCard.style.background='rgba(255,255,255,0.06)';
+  resumoCard.innerHTML = `<b>Dia Finalizado</b><br>Tempo Trabalhado: ${formatTime(tempoFinal)}<br>KM Rodado: ${formatKM(kmDia)}`;
+  finalizeBtn.parentElement.appendChild(resumoCard);
+  // zero timer totals (as requested)
+  state.totalTimeWorked = 0;
+  state.lastStartTime = null;
+  saveState(); updateUI();
+});
 
-    finalizeBtn.addEventListener('click', async ()=>{
-      if(state.status === 'running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); state.lastStartTime = null; }
-      state.status = 'stopped';
-      stopTimer();
-      // small inline card summary
-      alert('Dia finalizado! Tempo: ' + msToTime(getTempoTotal()) + '\nKM: ' + getKMRodados());
-      // save day to history (in-memory) and remote
-      await localSaveAndRemoteSave();
-      // reset running counters but keep history
-      state.totalTimeWorked = 0;
-      state.lastStartTime = null;
-      state.status = 'stopped';
-      updateUI();
-    });
+saveKmBtn.addEventListener('click', ()=>{
+  // read user inputs (but avoid overwriting while typing - this is a user action, so ok)
+  state.kmInicial = Number(kmInicialEl.value) || 0;
+  state.kmFinal = Number(kmFinalEl.value) || 0;
+  localStorage.setItem("maxrota_kmInicial", state.kmInicial);
+  localStorage.setItem("maxrota_kmFinal", state.kmFinal);
+  saveState(); updateUI();
+});
 
-    saveKmBtn.addEventListener('click', async ()=>{
-      state.kmInicial = Number(kmInicialEl.value) || 0;
-      state.kmFinal = Number(kmFinalEl.value) || 0;
-      await localSaveAndRemoteSave();
-      updateUI();
-    });
+/* LANÇAMENTOS */
+function addLancamento({type,value,category}){
+  const item = { id: uid(), type, value: Number(value), category, date: new Date().toISOString() };
+  if(type==='ganho'){
+    if(category==='Loja'){ state.ganhosLoja += item.value; state.entradasLoja++; }
+    else if(category==='Doação'){ state.totalDoacao += item.value; }
+    else { state.ganhosApps += item.value; state.entradasApps++; }
+  } else { state.gastos += item.value; }
+  state.history.unshift(item);
+  saveState(); updateUI();
+  // after adding, ensure input cleared for quick next entry
+  valorEntrada.value=''; valorSaida.value='';
+}
 
-    // LANÇAMENTOS
-    function addLancamento({type,value,category}){
-      const it = { id: Math.random().toString(36).slice(2,9), type, value: Number(value), category, date: new Date().toISOString() };
-      state.history.unshift(it);
-      if(type === 'ganho'){
-        if(category === 'Loja'){ state.ganhosLoja += it.value; state.entradasLoja++; }
-        else if(category === 'Doação') state.totalDoacao += it.value;
-        else { state.ganhosApps += it.value; state.entradasApps++; }
-      } else state.gastos += it.value;
-      localSaveAndRemoteSave();
-      updateUI();
-    }
+$('#addEntradaBtn').addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'ganho',value:v,category:'Particular'}); });
+$('#addSaidaBtn').addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'gasto',value:v,category:'Outros'}); });
 
-    addEntradaBtn.addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'ganho', value:v, category:'Particular'}); valorEntrada.value=''; });
-    addSaidaBtn.addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'gasto', value:v, category:'Outros'}); valorSaida.value=''; });
+appBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } const cat=b.dataset.cat; addLancamento({type:'ganho',value:v,category:cat}); }));
+gastoBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'gasto',value:v,category:b.dataset.cat}); }));
 
-    appBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'ganho', value:v, category: b.dataset.cat}); valorEntrada.value=''; }));
-    gastoBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'gasto', value:v, category: b.dataset.cat}); valorSaida.value=''; }));
+/* RENDER LANÇAMENTOS */
+function renderLancamentos(){
+  if(!state.history || state.history.length===0){ lancamentosList.innerHTML = '<div class="muted small text-center">Nenhum lançamento ainda.</div>'; return; }
+  lancamentosList.innerHTML = '';
+  state.history.slice(0,200).forEach(it=>{
+    const el = document.createElement('div'); el.className='launch-item';
+    
+    // Aplica a classe de ocultação/máscara se os valores estiverem escondidos
+    const valueClass = state.valuesHidden ? 'hidden-value' : '';
 
-    // RENDER / UTIL
-    function renderLancamentos(){
-      if(!state.history || state.history.length === 0){ lancamentosList.innerHTML = '<div class="small muted">Nenhum lançamento ainda.</div>'; return; }
-      lancamentosList.innerHTML = '';
-      state.history.slice(0,200).forEach(it=>{
-        const el = document.createElement('div'); el.style.display='flex'; el.style.justifyContent='space-between'; el.style.padding='6px 0'; el.style.borderBottom='1px dashed rgba(255,255,255,0.04)';
-        const left = document.createElement('div'); left.innerHTML = `<strong>${it.category}</strong> ${it.type==='ganho'?'+':'-'} ${formatBRL(it.value)}<div class="small muted">${new Date(it.date).toLocaleString()}</div>`;
-        const right = document.createElement('div'); right.innerHTML = `<button data-id="${it.id}" class="btn" style="background:transparent;border:1px solid rgba(255,255,255,0.04);margin-right:6px">✏️</button><button data-id="${it.id}" class="btn" style="background:transparent;border:1px solid rgba(255,255,255,0.04)">🗑️</button>`;
-        el.appendChild(left); el.appendChild(right);
-        lancamentosList.appendChild(el);
-        right.querySelectorAll('button')[0].addEventListener('click', ()=> editLancamento(it.id));
-        right.querySelectorAll('button')[1].addEventListener('click', ()=> deleteLancamento(it.id));
-      });
-    }
+    const left = document.createElement('div'); left.style.fontWeight='800'; 
+    left.innerHTML = `${it.category}: ${it.type==='ganho'?'+':'-'} <span class="${valueClass}">${formatBRL(it.value)}</span>`;
+    
+    const right = document.createElement('div');
+    const edit = document.createElement('button'); edit.className='btn-ghost'; edit.textContent='✏️'; edit.style.marginRight='8px';
+    const del = document.createElement('button'); del.className='btn-ghost'; del.textContent='🗑️';
+    right.appendChild(edit); right.appendChild(del);
+    el.appendChild(left); el.appendChild(right);
+    lancamentosList.appendChild(el);
 
-    function editLancamento(id){
-      const it = state.history.find(h=>h.id===id); if(!it) return;
-      const novo = prompt('Novo valor (R$):', it.value.toFixed(2)); if(novo===null) return;
-      const val = Number(novo); if(isNaN(val) || val<0){ alert('Valor inválido'); return; }
-      // revert old totals
-      if(it.type==='ganho'){ if(it.category==='Loja') state.ganhosLoja -= it.value; else if(it.category==='Doação') state.totalDoacao -= it.value; else state.ganhosApps -= it.value; } else state.gastos -= it.value;
-      it.value = val;
+    edit.addEventListener('click', ()=>{
+      const novoStr = prompt('Novo valor (R$):', it.value.toFixed(2));
+      if(novoStr===null) return;
+      const novo = Number(novoStr);
+      if(isNaN(novo) || novo<0){ alert('Valor inválido'); return; }
+      // revert old
+      if(it.type==='ganho'){
+        if(it.category==='Loja') state.ganhosLoja -= it.value;
+        else if(it.category==='Doação') state.totalDoacao -= it.value;
+        else state.ganhosApps -= it.value;
+      } else state.gastos -= it.value;
       // apply new
-      if(it.type==='ganho'){ if(it.category==='Loja') state.ganhosLoja += it.value; else if(it.category==='Doação') state.totalDoacao += it.value; else state.ganhosApps += it.value; } else state.gastos += it.value;
-      localSaveAndRemoteSave(); updateUI();
-    }
-
-    function deleteLancamento(id){
-      if(!confirm('Excluir lançamento?')) return;
-      state.history = state.history.filter(x=>x.id !== id);
-      recalcTotalsFromHistory();
-      localSaveAndRemoteSave(); updateUI();
-    }
-
-    function recalcTotalsFromHistory(){
-      state.ganhosApps = 0; state.ganhosLoja = 0; state.totalDoacao = 0; state.gastos = 0; state.entradasApps = 0; state.entradasLoja = 0;
-      state.history.forEach(it=>{
-        if(it.type==='ganho'){ if(it.category==='Loja'){ state.ganhosLoja += it.value; state.entradasLoja++; } else if(it.category==='Doação') state.totalDoacao += it.value; else { state.ganhosApps += it.value; state.entradasApps++; } } else state.gastos += it.value;
-      });
-    }
-
-    function updateDerivedMetrics(){
-      const totalBruto = state.ganhosApps + state.ganhosLoja + state.totalDoacao;
-      const lucro = totalBruto - state.gastos;
-      // tempo / km
-      tempoTrabalhado.textContent = msToTime(getTempoTotal());
-      kmRodados.textContent = getKMRodados().toFixed(1) + ' km';
-      // finals
-      finalTotalApps.textContent = formatBRL(state.ganhosApps);
-      finalTotalLoja.textContent = formatBRL(state.ganhosLoja);
-      finalTotalDoacao.textContent = formatBRL(state.totalDoacao);
-      finalTotalGeral.textContent = formatBRL(totalBruto - state.gastos);
-      // progress bar
-      if(state.meta && state.meta > 0){
-        const pct = Math.min(100, ((state.ganhosApps + state.ganhosLoja)/state.meta)*100);
-        progressBar.style.width = pct + '%';
-        metaMessage.textContent = pct < 100 ? `Faltam ${formatBRL(state.meta - (state.ganhosApps + state.ganhosLoja))}` : `Meta batida! (+${formatBRL((state.ganhosApps + state.ganhosLoja)-state.meta)})`;
-      } else {
-        progressBar.style.width = '0%';
-        metaMessage.textContent = 'Defina a meta.';
-      }
-    }
-
-    function updateUI(){
-      kmInicialEl.value = state.kmInicial || '';
-      kmFinalEl.value = state.kmFinal || '';
-      metaInput.value = state.meta || '';
-      renderLancamentos();
-      updateDerivedMetrics();
-    }
-
-    // small helpers
-    function formatBRL(v){ return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
-    function msToTime(ms){ if(!ms||ms<=0) return '00:00:00'; const s = Math.floor(ms/1000), h = Math.floor(s/3600), m = Math.floor((s%3600)/60), sec = s%60; return [h,m,sec].map(n=>String(n).padStart(2,'0')).join(':'); }
-
-    // local save + remote
-    let remoteSaveTimeout = null;
-    async function localSaveAndRemoteSave(){
-      // save local
-      localStorage.setItem('maxrota_state', JSON.stringify(state));
-      // throttle remote writes
-      if(remoteSaveTimeout) clearTimeout(remoteSaveTimeout);
-      remoteSaveTimeout = setTimeout(async ()=>{
-        if(uid) await saveStateToFirestore(uid, state);
-      }, 800);
-    }
-
-    // utilities to call on unload
-    window.addEventListener('beforeunload', ()=> {
-      if(uid) saveStateToFirestore(uid, state);
-      localStorage.setItem('maxrota_state', JSON.stringify(state));
+      it.value = novo;
+      if(it.type==='ganho'){
+        if(it.category==='Loja') state.ganhosLoja += it.value;
+        else if(it.category==='Doação') state.totalDoacao += it.value;
+        else state.ganhosApps += it.value;
+      } else state.gastos += it.value;
+      saveState(); updateUI();
     });
 
-    // init: bind stop radio, etc.
-    stopRadioBtn.addEventListener('click', ()=>{ try{ radioPlayer.pause(); radioPlayer.removeAttribute('src'); radioPlayer.load(); }catch(e){} nowPlaying.textContent = 'Nenhuma rádio selecionada.'; document.querySelectorAll('#stationButtons .station-btn').forEach(b=>b.classList.remove('active')); });
+    del.addEventListener('click', ()=>{
+      if(!confirm('Excluir lançamento?')) return;
+      state.history = state.history.filter(x=>x.id !== it.id);
+      // rebuild totals cleanly
+      recalcTotalsFromHistory();
+      saveState(); updateUI();
+    });
+  });
+}
 
-    // initial update (in case auth already loaded state)
+/* rebuild totals from history to avoid drift */
+function recalcTotalsFromHistory(){
+  state.ganhosApps=0; state.ganhosLoja=0; state.totalDoacao=0; state.gastos=0; state.entradasApps=0; state.entradasLoja=0;
+  state.history.forEach(it=>{
+    if(it.type==='ganho'){
+      if(it.category==='Loja'){ state.ganhosLoja += it.value; state.entradasLoja++; }
+      else if(it.category==='Doação'){ state.totalDoacao += it.value; }
+      else { state.ganhosApps += it.value; state.entradasApps++; }
+    } else state.gastos += it.value;
+  });
+}
+
+/* RESUMO CATEGORIAS */
+function renderResumoCategorias(){
+  const totals = {}; const counts = {};
+  state.history.forEach(it => { if(it.type!=='ganho') return; const c = it.category || 'Outros'; totals[c] = (totals[c]||0) + it.value; counts[c] = (counts[c]||0) + 1; });
+  resumoCategorias.innerHTML = '';
+
+  // Aplica a classe de ocultação/máscara se os valores estiverem escondidos
+  const valueClass = state.valuesHidden ? 'hidden-value' : '';
+
+  const order = ['Uber','99','inDriver','Particular','Loja','Doação'];
+  order.forEach(cat=>{ 
+    const val=totals[cat]||0, cnt=counts[cat]||0; 
+    const node=document.createElement('div'); 
+    node.innerHTML=`<div style="font-weight:900;margin-bottom:6px">${cat}</div><div style="font-weight:800" class="${valueClass}">${formatBRL(val)}</div><div class="small muted"><span class="${valueClass}">${cnt}</span> entr.</div>`; 
+    resumoCategorias.appendChild(node); 
+  });
+  Object.keys(totals).forEach(cat=>{ 
+    if(order.includes(cat)) return; 
+    const node=document.createElement('div'); 
+    node.innerHTML=`<div style="font-weight:900;margin-bottom:6px">${cat}</div><div style="font-weight:800" class="${valueClass}">${formatBRL(totals[cat])}</div><div class="small muted"><span class="${valueClass}">${counts[cat]||0}</span> entr.</div>`; 
+    resumoCategorias.appendChild(node); 
+  });
+}
+
+/* METRICS & PROGRESS */
+function updateDerivedMetrics(){
+  const totalBruto = Number(state.ganhosApps||0) + Number(state.ganhosLoja||0) + Number(state.totalDoacao||0);
+  const lucro = totalBruto - Number(state.gastos||0);
+  const tempo = getTempoTotal();
+  const horas = tempo / (1000*60*60) || 0;
+  const mediaBruto = horas>0? totalBruto / horas : 0;
+  const mediaLiq = horas>0? lucro / horas : 0;
+  const lucroKm = getKMRodados()>0? lucro / getKMRodados() : 0;
+
+  // Aplica a classe de ocultação/máscara se os valores estiverem escondidos
+  const valueClass = state.valuesHidden ? 'hidden-value' : '';
+
+  metricGanhosApps.textContent = formatBRL(state.ganhosApps);
+  metricGanhosTotal.textContent = formatBRL(totalBruto);
+  metricGastosTotal.textContent = formatBRL(state.gastos);
+  metricLucroTotal.textContent = formatBRL(lucro);
+  metricMediaHoraBrutoTotal.textContent = formatBRL(mediaBruto);
+  metricMediaHoraLiqTotal.textContent = formatBRL(mediaLiq);
+  metricLucroKmTotal.textContent = formatBRL(lucroKm);
+  metricEntradasApps.textContent = state.entradasApps;
+  metricEntradasLoja.textContent = state.entradasLoja;
+  
+  // Aplica a classe de ocultação para os valores
+  $$('#metricGanhosApps, #metricGanhosTotal, #metricGastosTotal, #metricLucroTotal, #metricMediaHoraBrutoTotal, #metricMediaHoraLiqTotal, #metricLucroKmTotal, #metricEntradasApps, #metricEntradasLoja').forEach(el => {
+    el.classList.toggle('hidden-value', state.valuesHidden);
+  });
+
+  tempoTrabalhado.textContent = formatTime(tempo);
+  kmRodados.textContent = formatKM(getKMRodados());
+  renderResumoFinal();
+  updateProgressBar();
+}
+
+/* progress */
+function updateProgressBar(){
+  const meta = Number(state.meta||0);
+  const atual = state.ganhosApps + state.ganhosLoja;
+  if(meta===0){ progressBar.style.width='0%'; progressText.textContent='0%'; metaMessage.textContent='Defina a meta para acompanhar o progresso.'; return; }
+  const pct = Math.min(100, (atual/meta)*100);
+  progressBar.style.width = pct + '%';
+  progressText.textContent = Math.round(pct) + '%';
+  
+  // Aplica a classe de ocultação/máscara se os valores estiverem escondidos
+  const valueClass = state.valuesHidden ? 'hidden-value' : '';
+  
+  if(atual < meta){ metaMessage.innerHTML = `Faltam <span class="${valueClass}">${formatBRL(meta - atual)}</span> para bater a meta.`; }
+  else { metaMessage.innerHTML = `Meta batida! (+<span class="${valueClass}">${formatBRL(atual - meta)}</span>)`; celebrate(); }
+}
+
+/* celebration */
+function celebrate(){
+  if(state.celebrated) return;
+  state.celebrated = true;
+  playVictorySequence();
+  triggerConfetti();
+  saveState();
+}
+
+function playVictorySequence(){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator(); osc.type='sawtooth'; osc.frequency.value=480;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.01, now); g.gain.exponentialRampToValueAtTime(0.9, now+0.05); g.gain.exponentialRampToValueAtTime(0.01, now+1.4);
+    osc.connect(g); g.connect(ctx.destination); osc.start(now); osc.stop(now+1.45);
+    // applause
+    const length = ctx.sampleRate * 4;
+    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<length;i++){ data[i] = (Math.random()*2-1) * (1 - i/length) * 0.8; }
+    const src = ctx.createBufferSource(); src.buffer = buffer; src.connect(ctx.destination); src.start(now+0.6);
+    setTimeout(()=>{ try{ src.stop(); ctx.close(); }catch(e){} }, 5200);
+  }catch(e){ console.warn('celebrate audio failed', e); }
+}
+
+function triggerConfetti(){
+  const colors = ['#10b981','#f97316','#facc15','#ef4444','#ec4899'];
+  for(let i=0;i<80;i++){
+    const el = document.createElement('div'); el.className='c'; el.style.left = Math.random()*100+'%'; el.style.top='-10px';
+    el.style.width = (6+Math.random()*12)+'px'; el.style.height = (10+Math.random()*14)+'px';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)]; confettiRoot.appendChild(el);
+    const dur = 1800 + Math.random()*2200;
+    el.animate([{transform:'translateY(0px) rotate(0deg)',opacity:1},{transform:`translateY(${300 + Math.random()*400}px) rotate(${Math.random()*720}deg)`,opacity:0}],{duration:dur,easing:'ease-out',iterations:1});
+    setTimeout(()=>el.remove(), dur+100);
+  }
+}
+
+/* SAVE DAY / HISTORY */
+function saveDaySummary(){
+  try{
+    const arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]');
+    const totalBruto = state.ganhosApps + state.ganhosLoja + state.totalDoacao;
+    const lucro = totalBruto - state.gastos;
+    const tempo = getTempoTotal();
+    const km = getKMRodados();
+    const mediaHora = tempo>0? totalBruto / (tempo/(1000*60*60)) : 0;
+    const resumo = { id: new Date().toISOString(), date: new Date().toISOString(), meta: state.meta, kmInicial: state.kmInicial, kmFinal: state.kmFinal, ganhosApps: state.ganhosApps, ganhosLoja: state.ganhosLoja, ganhoDoacao: state.totalDoacao, entradasApps: state.entradasApps, entradasLoja: state.entradasLoja, gastos: state.gastos, lucro, tempo, km, mediaHora, history: state.history.slice(0,500) };
+    arr.unshift(resumo); localStorage.setItem('maxrota_days', JSON.stringify(arr.slice(0,300)));
+  }catch(e){ console.error(e); }
+}
+
+saveAndResetBtn.addEventListener('click', ()=>{
+  if(!confirm('Deseja salvar o resumo do dia e resetar todos os dados atuais?')) return;
+  saveDaySummary();
+  state = { meta:0, ganhosApps:0, ganhosLoja:0, totalDoacao:0, entradasApps:0, entradasLoja:0, gastos:0, history:[], kmInicial:0, kmFinal:0, totalTimeWorked:0, lastStartTime:null, status:'stopped', celebrated:false, valuesHidden: state.valuesHidden }; // Mantém o estado de valuesHidden
+  kmInicialEl.value=''; kmFinalEl.value=''; metaInput.value=''; valorEntrada.value=''; valorSaida.value='';
+  toggleStartBtn.textContent='Iniciar Expediente';
+  stopTimer(); saveState(); updateUI();
+});
+
+exportBtn.addEventListener('click', ()=>{
+  const data = { state, days: JSON.parse(localStorage.getItem('maxrota_days')||'[]') };
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='maxrota_export.json'; a.click(); URL.revokeObjectURL(url);
+});
+
+viewHistoryBtn.addEventListener('click', ()=>{ historyPanel.classList.toggle('hidden'); if(!historyPanel.classList.contains('hidden')) renderHistory(); });
+function renderHistory(){
+  const arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]');
+  if(!arr || arr.length===0){ historyPanel.innerHTML = '<div class="muted small">Nenhum dia salvo.</div>'; return; }
+  historyPanel.innerHTML = arr.map(d=>{
+    const date = new Date(d.date);
+    // Não aplica a classe de ocultação/máscara no histórico para evitar confusão, apenas no painel principal.
+    return `<div style="padding:10px;border-bottom:1px solid rgba(255,255,255,0.04)"><div style="font-weight:800">${date.toLocaleString()}</div><div class="small muted">Lucro: ${formatBRL(d.lucro)} · KM: ${d.km} · Média/H: ${formatBRL(d.mediaHora||0)}</div><div style="margin-top:8px"><button class="btn-ghost open-day" data-id="${d.id}">Abrir</button> <button class="btn-ghost del-day" data-id="${d.id}">Excluir</button></div></div>`;
+  }).join('');
+  historyPanel.querySelectorAll('.del-day').forEach(b=>b.addEventListener('click', ()=>{
+    if(!confirm('Excluir dia?')) return;
+    const id = b.dataset.id; let arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]'); arr = arr.filter(x=>x.id !== id); localStorage.setItem('maxrota_days', JSON.stringify(arr)); renderHistory();
+  }));
+  historyPanel.querySelectorAll('.open-day').forEach(b=>b.addEventListener('click', ()=>{
+    const id = b.dataset.id; const arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]'); const d = arr.find(x=>x.id===id); if(!d) return alert('Dia não encontrado.');
+    alert(`Resumo ${new Date(d.date).toLocaleString()}\nLucro: ${formatBRL(d.lucro)}\nKM: ${d.km}\nMédia/H: ${formatBRL(d.mediaHora||0)}\nEntradas App: ${d.entradasApps} · Loja: ${d.entradasLoja}`);
+  }));
+}
+
+/* THEMES */
+let autoMode = true;
+function applyAutoTheme(){ if(!autoMode) return; const hour = new Date().getHours(); const day = hour>=6 && hour<18; document.body.classList.toggle('light-mode', day); autoThemeBtn.textContent = day? 'Modo Dia ☀️' : 'Modo Noite 🌙'; }
+applyAutoTheme(); setInterval(()=>{ if(autoMode) applyAutoTheme(); },60*1000);
+autoThemeBtn.addEventListener('click', ()=>{ autoMode = !autoMode; if(autoMode){ applyAutoTheme(); } else { document.body.classList.toggle('light-mode'); } });
+
+themeDots.forEach(d=>d.addEventListener('click', ()=>{ const acc=d.dataset.accent; document.body.classList.remove('accent-green','accent-orange','accent-yellow','accent-red','accent-pink'); document.body.classList.add('accent-'+acc); localStorage.setItem('maxrota_accent', acc); }));
+const savedAccent = localStorage.getItem('maxrota_accent') || 'green'; document.body.classList.add('accent-'+savedAccent);
+
+/* SET META (fix: safe save and persist) */
+setMetaBtn.addEventListener('click', () => {
+  const v = Number(metaInput.value);
+  if(!isNaN(v) && v > 0){
+    state.meta = v;
+    localStorage.setItem("maxrota_meta", v);
+    saveState();
     updateUI();
+    metaInput.blur();
+  } else { alert('Meta inválida.'); }
+});
 
-  </script>
+/* RENDER FINAL */
+function renderResumoFinal(){
+  const totalApps = state.ganhosApps;
+  const totalLoja = state.ganhosLoja;
+  const totalDoacao = state.totalDoacao;
+  const totalGeralBruto = totalApps + totalLoja + totalDoacao; // Total bruto para calculo do lucro
+  const lucroFinal = totalGeralBruto - state.gastos; // O Total Geral na verdade é o lucro líquido
+  
+  // Aplica a classe de ocultação/máscara se os valores estiverem escondidos
+  const valueClass = state.valuesHidden ? 'hidden-value' : '';
+
+  finalTotalApps.textContent = formatBRL(totalApps);
+  finalTotalLoja.textContent = formatBRL(totalLoja);
+  finalTotalDoacao.textContent = formatBRL(totalDoacao);
+  finalTotalGeral.textContent = formatBRL(lucroFinal); // Mostra o lucro líquido
+
+  // Aplica a classe de ocultação
+  finalTotalApps.classList.toggle('hidden-value', state.valuesHidden);
+  finalTotalLoja.classList.toggle('hidden-value', state.valuesHidden);
+  finalTotalDoacao.classList.toggle('hidden-value', state.valuesHidden);
+  finalTotalGeral.classList.toggle('hidden-value', state.valuesHidden);
+}
+
+/* UPDATE UI (focus-safe: não sobrescreve campos enquanto usuário digita) */
+function updateUI(){
+  // NOVO: Atualiza o texto do botão de toggle ao carregar
+  toggleValuesBtn.textContent = state.valuesHidden ? 'Mostrar Valores' : 'Esconder Valores';
+  toggleValuesBtn.setAttribute('aria-pressed', state.valuesHidden);
+  
+  // don't overwrite inputs while user is focused on them
+  if(document.activeElement !== metaInput) metaInput.value = state.meta || '';
+  if(document.activeElement !== kmInicialEl) kmInicialEl.value = state.kmInicial || '';
+  if(document.activeElement !== kmFinalEl) kmFinalEl.value = state.kmFinal || '';
+
+  if(state.status==='running') toggleStartBtn.textContent='Pausar';
+  else if(state.status==='paused') toggleStartBtn.textContent='Retomar';
+  else toggleStartBtn.textContent='Iniciar Expediente';
+
+  renderLancamentos(); renderResumoCategorias(); updateDerivedMetrics(); renderResumoFinal(); saveState();
+}
+
+/* LOAD initial */
+if(state.status==='running' && state.lastStartTime) startTimer();
+updateUI();
+
+/* IMPORTANT: avoid global frequent UI overwrite - timer handles periodic updates only while running */
+</script>
 </body>
 </html>
