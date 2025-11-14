@@ -1,11 +1,11 @@
 // ===============================
-// MAX ROTA - Firebase Config
+// MAX ROTA - Firebase Inicialização
 // ===============================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyBXkQlm0TbCsCdVGil8-5kGWbtj07SKXwA",
   authDomain: "maxrota.firebaseapp.com",
   projectId: "maxrota",
@@ -15,6 +15,5 @@ const firebaseConfig = {
   measurementId: "G-RBK7LM483D"
 };
 
-// Inicializa
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
