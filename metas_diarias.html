@@ -1,697 +1,385 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>MAX ROTA DIÁRIO</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>MAX ROTA DIÁRIO</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --accent:#10b981;
+  --bg1:#041226;
+  --bg2:#1b2540;
+  --card:rgba(255,255,255,0.03);
+  --muted:#9aa6b2;
+  --radius:12px;
+}
+*{box-sizing:border-box}
+body{font-family:Inter,system-ui,Arial;background:linear-gradient(135deg,var(--bg1),var(--bg2));color:#e6eef6;margin:0;padding:18px}
+.wrap{max-width:1100px;margin:0 auto}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.02));border-radius:14px;padding:14px;margin-bottom:16px;box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+.header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{display:flex;gap:12px;align-items:center}
+.logo img{height:76px;border-radius:10px}
+.title{font-size:20px;margin:0}
+.sub{color:var(--muted);font-size:13px;margin-top:4px}
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+/* theme controls */
+.theme-controls{display:flex;gap:8px;align-items:center}
+.theme-btn{padding:8px 12px;border-radius:10px;background:var(--accent);border:0;color:#012;font-weight:800;cursor:pointer}
+.color-dots{display:flex;gap:8px}
+.color-dot{width:32px;height:32px;border-radius:999px;cursor:pointer;border:2px solid rgba(255,255,255,0.06)}
 
-  <style>
-  /* ===========================
-     MAX ROTA – ESTILO GLOBAL
-     =========================== */
-  :root {
-    --accent: #10b981;
-    --bg1: #041226;
-    --bg2: #2a1160;
-    --text: #e6eef6;
-    --muted: #9aa6b2;
-    --card: rgba(255, 255, 255, 0.06);
-    --radius: 14px;
-    --scale: 1.12;
-  }
+/* radio */
+.radio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.station-btn{padding:12px;border-radius:10px;border:0;cursor:pointer;font-weight:800;color:#fff;display:flex;align-items:center;justify-content:center;min-height:52px}
+.station-btn.active{box-shadow:0 14px 30px rgba(0,0,0,0.6);transform:translateY(-4px)}
 
-  html, body { height:100%; margin:0; padding:0; }
+/* player */
+.radio-player{display:flex;gap:12px;align-items:center;margin-top:12px}
 
-  body {
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
-    background: linear-gradient(135deg, var(--bg1), var(--bg2));
-    color: var(--text);
-    padding: 20px;
-    transform: scale(var(--scale));
-    transform-origin: top left;
-  }
+/* meta */
+.meta-row{display:flex;gap:10px;align-items:center}
+.big-input{padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:inherit;font-weight:800}
+.progress{position:relative;height:50px;border-radius:999px;background:rgba(255,255,255,0.02);overflow:hidden;border:1px solid rgba(255,255,255,0.04);margin-top:12px}
+.progress-fill{position:absolute;left:0;top:0;height:100%;width:0;background:linear-gradient(90deg,var(--accent),#2563eb);transition:width .7s}
+.progress-text{position:absolute;left:0;right:0;text-align:center;line-height:50px;font-weight:900}
 
-  .wrap { max-width: 1200px; margin: 0 auto; }
+/* km & timer */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.card-field{background:rgba(255,255,255,0.01);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03)}
+.big-value{font-weight:900;font-size:18px;margin-top:6px}
 
-  .card {
-    background: var(--card);
-    backdrop-filter: blur(6px);
-    border-radius: 16px;
-    padding: 22px;
-    margin-bottom: 22px;
-    border: 1px solid rgba(255,255,255,0.03);
-    box-shadow: 0 10px 26px rgba(0,0,0,0.4);
-  }
+/* actions */
+.actions{display:flex;gap:8px;margin-top:12px}
+.btn-primary{background:var(--accent);border:0;padding:10px 14px;border-radius:10px;color:#012;font-weight:900;cursor:pointer}
+.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:10px 12px;border-radius:10px;color:var(--muted);cursor:pointer}
 
-  .header-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+/* lancamentos */
+.lancamentos-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.apps-grid,.gastos-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.app-btn,.gasto-btn{min-width:130px;height:52px;border-radius:12px;border:0;font-weight:900;cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center}
 
-  .logo-img {
-    height: 82px;
-    width: auto;
-    border-radius: 12px;
-  }
+/* list */
+.launch-list{max-height:320px;overflow:auto;margin-top:12px;display:flex;flex-direction:column;gap:8px}
+.launch-item{display:flex;justify-content:space-between;align-items:center;padding:10px;border-radius:10px;background:rgba(0,0,0,0.12)}
+.launch-item .meta{font-weight:800}
 
-  .theme-controls {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
+/* resumo */
+.resumo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mini-card{padding:10px;border-radius:10px;background:rgba(255,255,255,0.02);font-weight:800}
 
-  .theme-btn {
-    background: linear-gradient(120deg, var(--accent), #3b82f6);
-    color: #fff;
-    padding: 10px 18px;
-    border-radius: 12px;
-    border: none;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-  }
+.metric-compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.metric-panel{padding:12px;border-radius:10px;background:rgba(255,255,255,0.01)}
 
-  .theme-dots {
-    display: flex;
-    gap: 12px;
-  }
-
-  .color-dot {
-    width: 34px;
-    height: 34px;
-    border-radius: 999px;
-    border: 2px solid rgba(255,255,255,0.12);
-    cursor: pointer;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.3);
-  }
-
-  /* Rádios */
-  .radio-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-
-  .station-btn {
-    flex: 1 1 calc(33% - 12px);
-    min-width: 200px;
-    text-align: center;
-    padding: 16px;
-    border-radius: 14px;
-    color: #fff;
-    font-weight: 800;
-    border: 0;
-    cursor: pointer;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    justify-content: center;
-    transition: 0.18s;
-    font-size: 18px;
-  }
-
-  .station-btn .icon { font-size: 22px; }
-
-  .station-btn:hover { transform: scale(1.03); }
-
-  .station-btn.active {
-    box-shadow: 0 12px 28px rgba(0,0,0,0.5);
-    transform: translateY(-2px);
-  }
-
-  .radio-player {
-    margin-top: 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  /* Meta */
-  .meta-row {
-    display: flex;
-    gap: 12px;
-  }
-
-  .meta-row input {
-    flex: 1;
-    padding: 14px;
-    border-radius: var(--radius);
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(255,255,255,0.04);
-    color: var(--text);
-    font-weight: 700;
-    font-size: 17px;
-  }
-
-  .progress-container {
-    height: 48px;
-    border-radius: 24px;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.07);
-    overflow: hidden;
-    position: relative;
-  }
-
-  .progress-bar {
-    position: absolute;
-    left: 0;
-    top: 0;
-    height: 100%;
-    background: linear-gradient(120deg, var(--accent), #2563eb);
-    width: 0%;
-    animation: waveMove 3.5s linear infinite;
-    background-size: 200% 200%;
-  }
-
-  @keyframes waveMove {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-
-  .progress-text {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    line-height: 48px;
-    text-align: center;
-    font-weight: 900;
-    font-size: 18px;
-  }
-
-  .progress-bubbles {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    overflow: hidden;
-  }
-
-  /* KM */
-  .grid-4 {
-    display: grid;
-    grid-template-columns: repeat(4,1fr);
-    gap: 14px;
-  }
-
-  .grid-4 input {
-    width: 100%;
-    padding: 14px;
-    border-radius: var(--radius);
-    border: 1px solid rgba(255,255,255,0.12);
-    background: rgba(255,255,255,0.04);
-    color: var(--text);
-    font-weight: 700;
-    font-size: 17px;
-  }
-
-  .big-time {
-    font-size: 22px;
-    font-weight: 900;
-  }
-
-  .km-actions {
-    margin-top: 14px;
-    display: flex;
-    gap: 12px;
-  }
-
-  .btn {
-    padding: 14px 20px;
-    border-radius: var(--radius);
-    background: linear-gradient(120deg, var(--accent), #7c3aed);
-    border: none;
-    font-weight: 900;
-    cursor: pointer;
-    color: #fff;
-    font-size: 16px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.4);
-  }
-
-  .btn-ghost {
-    padding: 14px 20px;
-    border-radius: var(--radius);
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    font-weight: 700;
-    cursor: pointer;
-    color: var(--muted);
-  }
-
-  </style>
+@media(max-width:980px){
+  .radio-grid{grid-template-columns:repeat(2,1fr)}
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .lancamentos-grid{grid-template-columns:1fr}
+  .resumo-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
 </head>
-
-<body class="accent-green">
+<body>
   <div class="wrap">
-
-    <!-- HEADER -->
-    <header class="card header-card">
-      <div style="display:flex;align-items:center;gap:14px">
-        <img class="logo-img" src="https://i.postimg.cc/3RWn008g/Chat-GPT-Image-12-de-nov-de-2025-14-32-56.png">
+    <section class="card header">
+      <div class="logo">
+        <img src="https://i.postimg.cc/3RWn008g/Chat-GPT-Image-12-de-nov-de-2025-14-32-56.png" alt="logo">
         <div>
-          <h1 style="margin:0;font-size:22px">MAX ROTA DIÁRIO</h1>
-          <div class="small muted">Painel do Motorista</div>
+          <h1 class="title">MAX ROTA DIÁRIO</h1>
+          <div class="sub">Painel do motorista — interface grande</div>
         </div>
       </div>
-
       <div class="theme-controls">
-        <button id="autoThemeBtn" class="theme-btn">Auto 🌗</button>
-        <div class="theme-dots" style="margin-left:8px">
-          <button class="color-dot" data-accent="green" style="background:#10b981"></button>
-          <button class="color-dot" data-accent="orange" style="background:#f97316"></button>
-          <button class="color-dot" data-accent="yellow" style="background:#facc15"></button>
-          <button class="color-dot" data-accent="red" style="background:#ef4444"></button>
-          <button class="color-dot" data-accent="pink" style="background:#ec4899"></button>
+        <button id="autoTheme" class="theme-btn">Auto 🌗</button>
+        <div class="color-dots" id="colorDots">
+          <div class="color-dot" data-accent="green" style="background:#10b981"></div>
+          <div class="color-dot" data-accent="orange" style="background:#f97316"></div>
+          <div class="color-dot" data-accent="yellow" style="background:#facc15"></div>
+          <div class="color-dot" data-accent="red" style="background:#ef4444"></div>
         </div>
       </div>
-    </header>
+    </section>
 
-    <!-- RÁDIOS -->
-    <section class="card radio-card">
-      <h2 style="margin:0 0 8px 0;font-size:18px">🎧 Estações</h2>
+    <!-- radios -->
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>🎧 Estações</strong><div class="sub">4 por linha</div></div>
+      </div>
+      <div class="radio-grid" id="stationButtons" role="list">
+        <button class="station-btn" data-src="https://live.hunter.fm/pop_high" data-name="Pop Hits" style="background:#10b981">Pop Hits</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/pop2k_high" data-name="Pop2K" style="background:#f59e0b;color:#111">Pop2K</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/rock_high" data-name="Rock" style="background:#ef4444">Rock</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/mpb_high" data-name="MPB" style="background:#2563eb">MPB</button>
 
-      <div id="stationButtons" class="radio-grid">
+        <button class="station-btn" data-src="https://live.hunter.fm/sertanejo_high" data-name="Sertanejo" style="background:#c084fc">Sertanejo</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/gospel_high" data-name="Cristã" style="background:#facc15;color:#111">Cristã</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/groovesalad-128-mp3" data-name="Eletrônica" style="background:#2563eb">Eletrônica</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/secretagent-128-mp3" data-name="Surf" style="background:#06b6d4">Surf</button>
 
-        <!-- Pop Hits -->
-        <button class="station-btn" data-src="https://live.hunter.fm/pop_high" style="background:#10b981">
-          <span class="icon">🎶</span> Pop Hits
-        </button>
-
-        <!-- Flashback -->
-        <button class="station-btn" data-src="https://ice1.somafm.com/u80s-128-mp3" style="background:#8b5cf6">
-          <span class="icon">💿</span> Flashback 80s
-        </button>
-
-        <!-- Rock -->
-        <button class="station-btn" data-src="https://live.hunter.fm/rock_high" style="background:#ef4444">
-          <span class="icon">🎸</span> Rock
-        </button>
-
-        <!-- Sertanejo -->
-        <button class="station-btn" data-src="https://live.hunter.fm/sertanejo_high" style="background:#c084fc">
-          <span class="icon">🤠</span> Sertanejo
-        </button>
-
-        <!-- Hip Hop -->
-        <button class="station-btn" data-src="https://listen.181fm.com/181-true-rnb_128k.mp3" style="background:#111827">
-          <span class="icon">🎤</span> Hip Hop
-        </button>
-
-        <!-- Pop 2000 -->
-        <button class="station-btn" data-src="https://listen.181fm.com/181-power2000_128k.mp3" style="background:#f59e0b">
-          <span class="icon">📀</span> Pop2K
-        </button>
-
-        <!-- Indie -->
-        <button class="station-btn" data-src="https://ice1.somafm.com/indiepop-128-mp3" style="background:#6366f1">
-          <span class="icon">🌼</span> Indie
-        </button>
-
-        <!-- Eletrônica -->
-        <button class="station-btn" data-src="https://ice1.somafm.com/groovesalad-128-mp3" style="background:#2563eb">
-          <span class="icon">🎧</span> Eletrônica
-        </button>
-
-        <!-- Surf -->
-        <button class="station-btn" data-src="https://ice1.somafm.com/secretagent-128-mp3" style="background:#06b6d4">
-          <span class="icon">🏄</span> Surf
-        </button>
-
-        <!-- Reggae -->
-        <button class="station-btn" data-src="https://ice1.somafm.com/dubstep-128-mp3" style="background:#22c55e">
-          <span class="icon">🥁</span> Reggae
-        </button>
-
-        <!-- Cristã -->
-        <button class="station-btn" data-src="https://live.hunter.fm/gospel_high" style="background:#facc15">
-          <span class="icon">✝️</span> Cristã
-        </button>
-
+        <button class="station-btn" data-src="https://ice1.somafm.com/beatblender-128-mp3" data-name="Dance 2000" style="background:#db2777">Dance 2000</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/lush-128-mp3" data-name="Chill Lounge" style="background:#7c3aed">Chill</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/bagel-128-mp3" data-name="Alt Rock" style="background:#ef4444">Alt Rock</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/thetrip-128-mp3" data-name="EDM The Trip" style="background:#06b6d4">EDM</button>
       </div>
 
       <div class="radio-player">
-        <audio id="radioPlayer" controls preload="none"></audio>
-        <div style="display:flex;flex-direction:column;gap:6px;margin-left:12px">
-          <button id="stopRadioBtn" class="btn-ghost">Parar Rádio</button>
-          <div id="nowPlaying" class="small muted">Nenhuma rádio selecionada.</div>
+        <audio id="radioPlayer" controls preload="none" style="width:72%"></audio>
+        <div style="width:28%;display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <button id="stopRadio" class="btn-ghost" style="width:100%">Parar Rádio</button>
+          <div id="nowPlaying" class="sub" style="text-align:right">Nenhuma rádio selecionada.</div>
         </div>
       </div>
     </section>
-    <!-- META -->
-    <section class="card meta-card" aria-label="Meta diária">
-      <h2 style="margin:0 0 8px 0;font-size:18px">🎯 Meta Diária</h2>
 
-      <div class="meta-row mt-3" role="form" aria-label="Definir meta diária">
-        <input id="metaInput" type="number" placeholder="Ex: 300" aria-label="Valor da meta" />
-        <button id="setMetaBtn" class="btn" aria-label="Salvar meta">Salvar Meta</button>
+    <!-- meta -->
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>🎯 Meta Diária</strong><div class="sub">Barra com enchimento fluido</div></div>
       </div>
-
-      <div class="progress-container mt-4" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-        <div id="progressBar" class="progress-bar" style="width:0%"></div>
-        <div id="progressBubbles" class="progress-bubbles" aria-hidden="true"></div>
+      <div class="meta-row" style="margin-top:12px">
+        <input id="metaInput" class="big-input" type="number" placeholder="Ex: 300">
+        <button id="saveMeta" class="btn-primary">Salvar Meta</button>
+      </div>
+      <div class="progress" role="progressbar" aria-label="Progresso da meta">
+        <div id="progressFill" class="progress-fill"></div>
         <div id="progressText" class="progress-text">0%</div>
       </div>
-
-      <div id="metaMessage" class="small muted mt-2" aria-live="polite">Defina a meta para acompanhar o progresso.</div>
+      <div id="progressSub" class="sub" style="margin-top:8px">Defina a meta para acompanhar o progresso.</div>
     </section>
 
-    <!-- KM & TIMER -->
-    <section class="card km-card" aria-label="Jornada e quilometragem">
-      <h2 style="margin:0 0 8px 0;font-size:18px">🚗 Jornada e KM</h2>
+    <!-- km & timer -->
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>🚗 Jornada & KM</strong><div class="sub">Salve KM, inicie expediente e monitore</div></div>
+      </div>
+      <div class="grid-4">
+        <div class="card-field"><label>KM Inicial</label><input id="kmInicial" class="big-input" type="number" placeholder="Ex: 150000"></div>
+        <div class="card-field"><label>KM Final</label><input id="kmFinal" class="big-input" type="number" placeholder="Ex: 150250"></div>
+        <div class="card-field"><label>Tempo Trabalhado</label><div id="tempoTrabalhado" class="big-value">00:00:00</div></div>
+        <div class="card-field"><label>KM Rodados</label><div id="kmRodados" class="big-value">0.0 km</div></div>
+      </div>
+      <div class="actions" style="margin-top:12px">
+        <button id="toggleStart" class="btn-primary">Iniciar Expediente</button>
+        <button id="finalizeDay" class="btn-primary" style="background:linear-gradient(90deg,var(--accent),#7c3aed)">Finalizar Dia</button>
+        <button id="saveKmBtn" class="btn-primary">Salvar KM</button>
+      </div>
+      <div id="lastSession" style="margin-top:12px;display:none" class="mini-card"></div>
+    </section>
 
-      <div class="grid-4 mt-3" role="group" aria-label="Campos de quilometragem e tempo">
+    <!-- lançamentos -->
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>Lançamentos</strong><div class="sub">Entradas (esquerda) — Saídas (direita)</div></div>
+      </div>
+      <div class="lancamentos-grid">
         <div>
-          <label class="small muted" for="kmInicial">KM Inicial</label>
-          <input id="kmInicial" type="number" placeholder="Ex: 150000" aria-label="KM inicial" />
+          <div style="display:flex;gap:8px">
+            <input id="valorEntrada" class="big-input" type="number" placeholder="Valor (R$)">
+            <button id="addEntrada" class="btn-primary">Lançar</button>
+          </div>
+          <div class="apps-grid">
+            <button class="app-btn" data-cat="Uber" style="background:#000">Uber</button>
+            <button class="app-btn" data-cat="99" style="background:#facc15;color:#111">99</button>
+            <button class="app-btn" data-cat="inDriver" style="background:#10b981">inDriver</button>
+            <button class="app-btn" data-cat="Particular" style="background:#6b7280">Particular</button>
+            <button class="app-btn" data-cat="Loja" style="background:#1e3a8a">Loja</button>
+            <button class="app-btn" data-cat="Doação" style="background:#8b5cf6">Doação</button>
+          </div>
         </div>
-
         <div>
-          <label class="small muted" for="kmFinal">KM Final</label>
-          <input id="kmFinal" type="number" placeholder="Ex: 150250" aria-label="KM final" />
-        </div>
-
-        <div>
-          <label class="small muted">Tempo Trabalhado</label>
-          <div id="tempoTrabalhado" class="big-time" aria-live="polite">00:00:00</div>
-        </div>
-
-        <div>
-          <label class="small muted">KM Rodados</label>
-          <div id="kmRodados" class="big-time" aria-live="polite">0.0 km</div>
-        </div>
-      </div>
-
-      <div class="km-actions">
-        <button id="toggleStartBtn" class="btn mt-4" aria-pressed="false">Iniciar Expediente</button>
-        <button id="finalizeBtn" class="btn-ghost mt-4">Finalizar Dia</button>
-        <button id="saveKmBtn" class="btn-ghost mt-4">Salvar KM</button>
-      </div>
-    </section>
-
-    <!-- LANÇAMENTOS: Entradas / Saídas -->
-    <section class="card lancamentos-card grid-2cols" aria-label="Lançamentos">
-      <div>
-        <h3 style="margin:0 0 8px 0;font-size:16px">➕ Entradas (Apps)</h3>
-
-        <div class="input-row mt-2" role="form" aria-label="Lançar entrada">
-          <input id="valorEntrada" type="number" step="0.1" placeholder="Valor (R$)" aria-label="Valor de entrada" />
-          <button id="addEntradaBtn" class="btn" aria-label="Adicionar entrada">Lançar</button>
-        </div>
-
-        <div class="apps-grid mt-2" role="list" aria-label="Lista de apps">
-          <button class="app-btn" data-cat="Uber" style="background:#000" aria-label="Uber"> <span class="app-icon">🚗</span> Uber</button>
-          <button class="app-btn" data-cat="99" style="background:#facc15;color:#111" aria-label="99"> <span class="app-icon">🚕</span> 99</button>
-          <button class="app-btn" data-cat="inDriver" style="background:#10b981" aria-label="inDriver"> <span class="app-icon">📲</span> inDriver</button>
-          <button class="app-btn" data-cat="Particular" style="background:#6b7280" aria-label="Particular"> <span class="app-icon">🤝</span> Particular</button>
-          <button class="app-btn" data-cat="Loja" style="background:#1e3a8a" aria-label="Loja"> <span class="app-icon">🏬</span> Loja</button>
-          <button class="app-btn" data-cat="Doação" style="background:#8b5cf6" aria-label="Doação"> <span class="app-icon">🎁</span> Doação</button>
-        </div>
-      </div>
-
-      <div>
-        <h3 style="margin:0 0 8px 0;font-size:16px">➖ Saídas (Gastos)</h3>
-
-        <div class="input-row mt-2" role="form" aria-label="Lançar gasto">
-          <input id="valorSaida" type="number" step="0.1" placeholder="Valor (R$)" aria-label="Valor de saída" />
-          <button id="addSaidaBtn" class="btn" aria-label="Adicionar gasto">Lançar</button>
-        </div>
-
-        <div class="gastos-grid mt-2" role="list" aria-label="Principais gastos">
-          <button class="gasto-btn" data-cat="Combustível" style="background:#ef4444" aria-label="Combustível">⛽ Combustível</button>
-          <button class="gasto-btn" data-cat="Alimentação" style="background:#8b5cf6" aria-label="Alimentação">🍔 Alimentação</button>
-          <button class="gasto-btn" data-cat="Manutenção" style="background:#6b7280" aria-label="Manutenção">🔧 Manutenção</button>
-          <button class="gasto-btn" data-cat="Outros" style="background:#374151" aria-label="Outros">📦 Outros</button>
+          <div style="display:flex;gap:8px">
+            <input id="valorSaida" class="big-input" type="number" placeholder="Valor (R$)">
+            <button id="addSaida" class="btn-primary">Lançar</button>
+          </div>
+          <div class="gastos-grid">
+            <button class="gasto-btn" data-cat="Combustível" style="background:#ef4444">Combustível</button>
+            <button class="gasto-btn" data-cat="Alimentação" style="background:#8b5cf6">Alimentação</button>
+            <button class="gasto-btn" data-cat="Manutenção" style="background:#6b7280">Manutenção</button>
+            <button class="gasto-btn" data-cat="Outros" style="background:#374151">Outros</button>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Lançamentos recentes -->
-    <section class="card recentes-card" aria-label="Lançamentos recentes">
-      <h3 style="margin:0 0 8px 0;font-size:16px">Lançamentos Recentes</h3>
-      <div id="lancamentosList" class="launch-list mt-2" aria-live="polite">
-        <div class="muted small text-center">Nenhum lançamento ainda.</div>
+    <!-- recentes -->
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>Lançamentos Recentes</strong><div class="sub">Edite ou exclua</div></div>
+      </div>
+      <div id="lancamentosList" class="launch-list"><div class="sub">Nenhum lançamento ainda.</div></div>
+    </section>
+
+    <!-- resumo -->
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>Resumo Rápido</strong><div class="sub">Por categoria</div></div>
+      </div>
+      <div id="resumoCategorias" class="resumo-grid">
+        <div class="mini-card">Sem entradas</div>
+        <div class="mini-card">Sem entradas</div>
+        <div class="mini-card">Sem entradas</div>
       </div>
     </section>
 
-    <!-- Resumo por categoria -->
-    <section class="card resumo-cat" aria-label="Resumo por categoria">
-      <h3 style="margin:0 0 8px 0;font-size:16px">Resumo Rápido por Categoria</h3>
-      <div id="resumoCategorias" class="resumo-grid mt-2 small muted" role="list"></div>
-    </section>
-
-    <!-- Métricas -->
-    <section class="card metric-card" aria-label="Métricas">
-      <h3 style="margin:0 0 8px 0;font-size:16px">Métricas</h3>
-
-      <div class="metric-grid mt-3">
-        <div class="metric-col">
-          <div class="metric-title">Ganhos Brutos — Somente Apps</div>
-          <div id="metricGanhosApps" class="metric-value text-green-400">R$ 0,00</div>
+    <!-- metricas -->
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>Métricas</strong><div class="sub">Comparação Apps x Apps+Loja</div></div>
+      </div>
+      <div class="metric-compare">
+        <div class="metric-panel">
+          <div class="sub">Ganhos Brutos — Somente Apps</div>
+          <div id="ganhosApps" class="big-value">R$ 0,00</div>
+          <div style="margin-top:10px" class="sub">Média/h (Bruto)</div>
+          <div id="mediaHoraApps" class="big-value">R$ 0,00</div>
         </div>
-
-        <div class="metric-col">
-          <div class="metric-title">Ganhos Brutos — Apps + Loja</div>
-          <div id="metricGanhosTotal" class="metric-value text-cyan-300">R$ 0,00</div>
-        </div>
-
-        <div class="metric-col">
-          <div class="metric-title">Lucro Líquido</div>
-          <div id="metricLucroTotal" class="metric-value">R$ 0,00</div>
-        </div>
-
-        <div class="metric-col">
-          <div class="metric-title">Média/Hora (Bruto)</div>
-          <div id="metricMediaHoraBrutoTotal" class="metric-value">R$ 0,00</div>
-        </div>
-
-        <div class="metric-col">
-          <div class="metric-title">Média/Hora (Líquido)</div>
-          <div id="metricMediaHoraLiqTotal" class="metric-value">R$ 0,00</div>
-        </div>
-
-        <div class="metric-col">
-          <div class="metric-title">Lucro / KM (Líquido)</div>
-          <div id="metricLucroKmTotal" class="metric-value">R$ 0,00</div>
+        <div class="metric-panel">
+          <div class="sub">Ganhos Brutos — Apps + Loja</div>
+          <div id="ganhosTotal" class="big-value">R$ 0,00</div>
+          <div style="margin-top:10px" class="sub">Média/h (Líquido)</div>
+          <div id="mediaHoraLiq" class="big-value">R$ 0,00</div>
         </div>
       </div>
     </section>
 
-    <!-- Actions & History -->
-    <section class="card actions-card" aria-label="Ações">
-      <div style="display:flex;gap:12px;flex-wrap:wrap">
-        <button id="saveAndResetBtn" class="btn">Salvar Resumo & Resetar Dia</button>
+    <!-- ações -->
+    <section class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><strong>Ações</strong><div class="sub">Salvar resumo, exportar e histórico</div></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button id="saveReset" class="btn-primary">Salvar Resumo & Resetar Dia</button>
         <button id="exportBtn" class="btn-ghost">Exportar Resumo (JSON)</button>
-        <button id="viewHistoryBtn" class="btn-ghost">Ver Histórico de Dias</button>
+        <button id="viewHistory" class="btn-ghost">Ver Histórico</button>
       </div>
-
-      <div id="historyPanel" class="history-panel mt-4 hidden" aria-live="polite"></div>
+      <div id="historyPanel" style="margin-top:12px;display:none"></div>
     </section>
 
-    <!-- Final resumo -->
-    <section class="card final-resumo" aria-label="Resumo final">
-      <h3 style="margin:0 0 8px 0;font-size:16px">Resumo Final por Categoria</h3>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px">
-        <div><div class="muted">Total Apps</div><div id="finalTotalApps" class="metric-value">R$ 0,00</div></div>
-        <div><div class="muted">Total Loja</div><div id="finalTotalLoja" class="metric-value">R$ 0,00</div></div>
-        <div><div class="muted">Total Doações</div><div id="finalTotalDoacao" class="metric-value">R$ 0,00</div></div>
-        <div><div class="muted">Total Geral</div><div id="finalTotalGeral" class="metric-value">R$ 0,00</div></div>
-      </div>
-    </section>
-
-    <footer class="small muted" style="text-align:center;margin-top:10px">Dados armazenados localmente (localStorage). Faça export regularmente.</footer>
+    <footer style="text-align:center;margin-top:12px;color:var(--muted)">Dados armazenados localmente (localStorage)</footer>
   </div>
 
-  <!-- confetti holder -->
-  <div id="confettiRoot" class="confetti" aria-hidden="true"></div>
+  <div id="confetti" class="confetti" aria-hidden="true" style="pointer-events:none;position:fixed;inset:0;z-index:9999"></div>
   <script>
-/* ===========================
-   BLOCO 3/3 — SCRIPT COMPLETO
-   =========================== */
+/* Utilities */
+const $ = s=>document.querySelector(s);
+const $$ = s=>Array.from(document.querySelectorAll(s));
+const uid = ()=>Math.random().toString(36).slice(2,9);
+const formatBRL = v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const formatKM = v=>Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}) + ' km';
+const formatTime = ms=>{ if(!ms||ms<=0) return '00:00:00'; const s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60; return [h,m,sec].map(n=>String(n).padStart(2,'0')).join(':') };
 
-/* UTIL */
-const $ = s => document.querySelector(s);
-const $$ = s => Array.from(document.querySelectorAll(s));
-const uid = () => Math.random().toString(36).slice(2,9);
-
-function formatBRL(v){ return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
-function formatKM(v){ return Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}) + ' km'; }
-function formatTime(ms){ if(!ms || ms<=0) return '00:00:00'; const s=Math.floor(ms/1000), h=Math.floor(s/3600), m=Math.floor((s%3600)/60), sec=s%60; return [h,m,sec].map(n=>String(n).padStart(2,'0')).join(':'); }
-
-/* STATE */
+/* State */
 let state = {
-  meta: 0,
-  ganhosApps: 0,
-  ganhosLoja: 0,
-  totalDoacao: 0,
-  entradasApps: 0,
-  entradasLoja: 0,
-  gastos: 0,
-  history: [],
-  totalTimeWorked: 0,
-  lastStartTime: null,
-  status: 'stopped',
-  kmInicial: 0,
-  kmFinal: 0,
-  celebrated: false
+  meta:0, ganhosApps:0, ganhosLoja:0, totalDoacao:0, entradasApps:0, entradasLoja:0, gastos:0,
+  history:[], totalTimeWorked:0, lastStartTime:null, status:'stopped', kmInicial:0, kmFinal:0, celebrated:false, lastSession:null
 };
-let timerInterval = null;
-let autoMode = true;
+let timer = null;
 
-/* REFS */
+/* Elements */
 const stationButtons = $$('#stationButtons .station-btn');
-const radioPlayer = $('#radioPlayer');
-const nowPlaying = $('#nowPlaying');
-const stopRadioBtn = $('#stopRadioBtn');
+const radioPlayer = $('#radioPlayer'), nowPlaying = $('#nowPlaying'), stopRadio = $('#stopRadio');
 
-const metaInput = $('#metaInput'), setMetaBtn = $('#setMetaBtn');
-const progressBar = $('#progressBar'), progressText = $('#progressText'), progressBubbles = $('#progressBubbles'), metaMessage = $('#metaMessage');
-const confettiRoot = $('#confettiRoot');
+const metaInput = $('#metaInput'), saveMeta = $('#saveMeta'), progressFill = $('#progressFill'), progressText = $('#progressText'), progressSub = $('#progressSub');
 
 const kmInicialEl = $('#kmInicial'), kmFinalEl = $('#kmFinal'), tempoTrabalhado = $('#tempoTrabalhado'), kmRodados = $('#kmRodados');
-const toggleStartBtn = $('#toggleStartBtn'), finalizeBtn = $('#finalizeBtn'), saveKmBtn = $('#saveKmBtn');
+const toggleStart = $('#toggleStart'), finalizeDay = $('#finalizeDay'), saveKmBtn = $('#saveKmBtn');
 
-const valorEntrada = $('#valorEntrada'), addEntradaBtn = $('#addEntradaBtn'), valorSaida = $('#valorSaida'), addSaidaBtn = $('#addSaidaBtn');
+const valorEntrada = $('#valorEntrada'), addEntrada = $('#addEntrada'), valorSaida = $('#valorSaida'), addSaida = $('#addSaida');
 const appBtns = $$('.app-btn'), gastoBtns = $$('.gasto-btn');
 
 const lancamentosList = $('#lancamentosList'), resumoCategorias = $('#resumoCategorias');
 
-const metricGanhosApps = $('#metricGanhosApps'), metricGanhosTotal = $('#metricGanhosTotal'), metricLucroTotal = $('#metricLucroTotal');
-const metricMediaHoraBrutoTotal = $('#metricMediaHoraBrutoTotal'), metricMediaHoraLiqTotal = $('#metricMediaHoraLiqTotal'), metricLucroKmTotal = $('#metricLucroKmTotal');
-const finalTotalApps = $('#finalTotalApps'), finalTotalLoja = $('#finalTotalLoja'), finalTotalDoacao = $('#finalTotalDoacao'), finalTotalGeral = $('#finalTotalGeral');
+const ganhosAppsEl = $('#ganhosApps'), ganhosTotalEl = $('#ganhosTotal'), mediaHoraAppsEl = $('#mediaHoraApps'), mediaHoraLiqEl = $('#mediaHoraLiq');
 
-const saveAndResetBtn = $('#saveAndResetBtn'), exportBtn = $('#exportBtn'), viewHistoryBtn = $('#viewHistoryBtn'), historyPanel = $('#historyPanel');
-const autoThemeBtn = $('#autoThemeBtn'), themeDots = $$('.color-dot');
+const saveReset = $('#saveReset'), exportBtn = $('#exportBtn'), viewHistory = $('#viewHistory'), historyPanel = $('#historyPanel');
 
-/* PERSIST */
-function saveState(){ localStorage.setItem('maxrota_state', JSON.stringify(state)); }
-function loadState(){ try{ const s = JSON.parse(localStorage.getItem('maxrota_state')||'{}'); if(Object.keys(s).length) Object.assign(state,s); }catch(e){ console.warn(e);} }
+const lastSessionEl = $('#lastSession');
+const confettiRoot = $('#confetti');
+
+const autoTheme = $('#autoTheme'), colorDots = $$('#colorDots .color-dot');
+
+/* Persistence */
+function saveState(){ localStorage.setItem('maxrota_state', JSON.stringify(state)); localStorage.setItem('maxrota_meta', state.meta||0); }
+function loadState(){ try{ const s = JSON.parse(localStorage.getItem('maxrota_state')||'{}'); if(Object.keys(s).length) Object.assign(state,s); const m = Number(localStorage.getItem('maxrota_meta')||0); if(m) state.meta = m; }catch(e){console.warn(e)} }
 loadState();
 
-/* RADIO */
-function setActiveStation(btn){ stationButtons.forEach(b=>{ b.classList.remove('active'); b.setAttribute('aria-pressed','false'); }); if(btn){ btn.classList.add('active'); btn.setAttribute('aria-pressed','true'); } }
+/* Radio */
+function setActive(btn){
+  stationButtons.forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
 stationButtons.forEach(btn=>btn.addEventListener('click', async ()=>{
-  const src=btn.dataset.src, name=btn.dataset.name||btn.textContent||'Rádio';
+  const src = btn.dataset.src, name = btn.dataset.name || btn.textContent;
   try{ radioPlayer.pause(); }catch(e){}
-  radioPlayer.src='';
-  setActiveStation(btn);
-  nowPlaying.textContent = `Carregando: ${name} ...`;
-  radioPlayer.crossOrigin='anonymous';
-  radioPlayer.src = src;
-  try{
-    radioPlayer.load();
-    await radioPlayer.play();
-    nowPlaying.textContent = `Tocando: ${name}`;
-  }catch(err){
-    console.warn('Erro tocar estação',err);
-    nowPlaying.textContent = `Falha ao tocar ${name}. Tente outro.`;
-    setActiveStation(null);
-  }
+  radioPlayer.src = ''; setActive(btn); nowPlaying.textContent = 'Carregando: ' + name + ' ...';
+  radioPlayer.crossOrigin = 'anonymous'; radioPlayer.src = src;
+  try{ radioPlayer.load(); await radioPlayer.play(); nowPlaying.textContent = 'Tocando: ' + name; }catch(err){ console.warn(err); nowPlaying.textContent = 'Falha ao tocar ' + name; setActive(null); }
 }));
-stopRadioBtn.addEventListener('click', ()=>{ try{ radioPlayer.pause(); radioPlayer.removeAttribute('src'); radioPlayer.load(); }catch(e){} nowPlaying.textContent='Nenhuma rádio selecionada.'; setActiveStation(null); });
-radioPlayer.addEventListener('error', ()=>{ nowPlaying.textContent='Erro ao carregar estação.'; setActiveStation(null); });
+stopRadio.addEventListener('click', ()=>{ try{ radioPlayer.pause(); radioPlayer.removeAttribute('src'); radioPlayer.load(); }catch(e){} nowPlaying.textContent='Nenhuma rádio selecionada.'; setActive(null); });
 
-/* TIMER & KM */
+/* Timer & KM */
 function getTempoTotal(){ let t = Number(state.totalTimeWorked||0); if(state.status==='running' && state.lastStartTime) t += (Date.now() - state.lastStartTime); return t; }
 function getKMRodados(){ return (Number(state.kmFinal) > Number(state.kmInicial)) ? (Number(state.kmFinal) - Number(state.kmInicial)) : 0; }
 
-function startTimer(){ stopTimer(); if(!state.lastStartTime) state.lastStartTime = Date.now(); timerInterval = setInterval(()=>{ tempoTrabalhado.textContent = formatTime(getTempoTotal()); updateDerivedMetrics(); }, 1000); }
-function stopTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval = null; } }
+function startTimer(){ stopTimer(); if(!state.lastStartTime) state.lastStartTime = Date.now(); timer = setInterval(()=>{ tempoTrabalhado.textContent = formatTime(getTempoTotal()); updateMetrics(); }, 1000); }
+function stopTimer(){ if(timer){ clearInterval(timer); timer = null; } }
 
-toggleStartBtn.addEventListener('click', ()=>{
-  if(state.status === 'stopped'){
-    state.status = 'running'; state.lastStartTime = Date.now(); toggleStartBtn.textContent = 'Pausar'; startTimer();
-  } else if(state.status === 'running'){
-    state.totalTimeWorked += (Date.now() - state.lastStartTime);
-    state.lastStartTime = null; state.status = 'paused'; toggleStartBtn.textContent = 'Retomar'; stopTimer();
-  } else if(state.status === 'paused'){
-    state.status = 'running'; state.lastStartTime = Date.now(); toggleStartBtn.textContent = 'Pausar'; startTimer();
-  }
-  saveState(); atualizarInterface();
+toggleStart.addEventListener('click', ()=>{
+  if(state.status === 'stopped'){ state.status='running'; state.lastStartTime = Date.now(); toggleStart.textContent='Pausar'; startTimer(); }
+  else if(state.status === 'running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); state.lastStartTime = null; state.status='paused'; toggleStart.textContent='Retomar'; stopTimer(); }
+  else if(state.status === 'paused'){ state.status='running'; state.lastStartTime = Date.now(); toggleStart.textContent='Pausar'; startTimer(); }
+  saveState(); renderUI();
 });
 
-finalizeBtn.addEventListener('click', ()=>{
-  if(state.status === 'running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); state.lastStartTime = null; }
-  state.status = 'stopped'; toggleStartBtn.textContent = 'Iniciar Expediente'; stopTimer(); saveState(); atualizarInterface();
+$('#saveKmBtn').addEventListener('click', ()=>{ state.kmInicial = Number(kmInicialEl.value||0); state.kmFinal = Number(kmFinalEl.value||0); saveState(); renderUI(); });
+
+/* Finalize Day: show mini-card with last session, then zero timer values */
+finalizeDay.addEventListener('click', ()=>{
+  const prior = getTempoTotal();
+  const priorText = formatTime(prior);
+  state.lastSession = { tempo: prior, label: priorText, date: new Date().toISOString() };
+  lastSessionEl.style.display = 'block';
+  lastSessionEl.innerHTML = `<strong>Última sessão</strong><div class="sub">Tempo: ${priorText}</div>`;
+  // zero working time
+  state.totalTimeWorked = 0; state.lastStartTime = null; state.status = 'stopped';
+  stopTimer();
+  toggleStart.textContent = 'Iniciar Expediente';
+  saveState(); renderUI();
 });
 
-saveKmBtn.addEventListener('click', ()=>{
-  const s = Number(kmInicialEl.value) || 0;
-  const e = Number(kmFinalEl.value) || 0;
-  // update state and persist immediately and re-render
-  state.kmInicial = s;
-  state.kmFinal = e;
-  saveState();
-  atualizarInterface();
-});
+/* Meta */
+saveMeta.addEventListener('click', ()=>{ const v = Number(metaInput.value||0); state.meta = v>0?v:0; localStorage.setItem('maxrota_meta', state.meta||0); saveState(); renderUI(); });
 
-/* META */
-setMetaBtn.addEventListener('click', ()=>{
-  const v = Number(metaInput.value) || 0;
-  state.meta = v>0? v : 0;
-  localStorage.setItem('maxrota_meta', state.meta);
-  saveState();
-  atualizarInterface();
-});
-
-/* BUBBLES (progress) */
-setInterval(()=>{ const b = document.createElement('div'); const size = 6 + Math.random()*14; b.style.width = size + 'px'; b.style.height = size + 'px'; b.style.position = 'absolute'; b.style.left = (Math.random()*100) + '%'; b.style.bottom = '-10px'; b.style.borderRadius = '50%'; b.style.background = 'rgba(255,255,255,' + (0.06 + Math.random()*0.18) + ')'; b.style.animation = 'riseBubble ' + (2 + Math.random()*2) + 's linear'; progressBubbles.appendChild(b); setTimeout(()=> b.remove(), 4200); }, 420);
-const bubbleStyle = document.createElement('style'); bubbleStyle.innerHTML = '@keyframes riseBubble{0%{transform:translateY(0) scale(0.6);opacity:0.6}60%{opacity:0.9}100%{transform:translateY(-120%) scale(1.2);opacity:0}}'; document.head.appendChild(bubbleStyle);
-
-/* LANÇAMENTOS */
-function addLancamento({type, value, category}){
-  const item = { id: uid(), type, value: Number(value), category: category || '—', date: new Date().toISOString() };
+/* Lançamentos */
+function addLancamento(obj){
+  const item = { id: uid(), type: obj.type, value: Number(obj.value), category: obj.category||'—', date: new Date().toISOString() };
   state.history.unshift(item);
-  if(type === 'ganho'){
-    if(category === 'Loja'){ state.ganhosLoja += item.value; state.entradasLoja++; }
-    else if(category === 'Doação'){ state.totalDoacao += item.value; }
+  if(item.type === 'ganho'){
+    if(item.category === 'Loja'){ state.ganhosLoja += item.value; state.entradasLoja++; }
+    else if(item.category === 'Doação'){ state.totalDoacao += item.value; }
     else { state.ganhosApps += item.value; state.entradasApps++; }
-  } else {
-    state.gastos += item.value;
-  }
-  saveState(); atualizarInterface();
+  } else { state.gastos += item.value; }
+  saveState(); renderUI();
 }
 
-/* UI handlers for lançamentos */
-$$('.app-btn').forEach(b => b.addEventListener('click', ()=>{
-  const cat = b.dataset.cat || b.getAttribute('data-cat');
-  const val = Number(valorEntrada.value);
-  if(isNaN(val) || val <= 0){ alert('Valor inválido'); return; }
-  addLancamento({ type:'ganho', value: val, category: cat });
-  valorEntrada.value = '';
-}));
-$('#addEntradaBtn').addEventListener('click', ()=>{
-  const v = Number(valorEntrada.value);
-  if(isNaN(v) || v <= 0){ alert('Valor inválido'); return; }
-  addLancamento({ type:'ganho', value: v, category: 'Particular' });
-  valorEntrada.value = '';
-});
-$$('.gasto-btn').forEach(b => b.addEventListener('click', ()=>{
-  const cat = b.dataset.cat || b.getAttribute('data-cat');
-  const val = Number(valorSaida.value);
-  if(isNaN(val) || val <= 0){ alert('Valor inválido'); return; }
-  addLancamento({ type:'gasto', value: val, category: cat });
-  valorSaida.value = '';
-}));
-$('#addSaidaBtn').addEventListener('click', ()=>{
-  const v = Number(valorSaida.value);
-  if(isNaN(v) || v <= 0){ alert('Valor inválido'); return; }
-  addLancamento({ type:'gasto', value: v, category: 'Outros' });
-  valorSaida.value = '';
-});
+appBtns.forEach(b=>b.addEventListener('click', ()=>{ const cat=b.dataset.cat||b.getAttribute('data-cat'); const v = Number(valorEntrada.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'ganho', value:v, category:cat}); valorEntrada.value=''; valorEntrada.focus(); }));
+addEntrada.addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'ganho', value:v, category:'Particular'}); valorEntrada.value=''; valorEntrada.focus(); });
 
-/* render lançamentos (edit & delete) */
+gastoBtns.forEach(b=>b.addEventListener('click', ()=>{ const cat=b.dataset.cat||b.getAttribute('data-cat'); const v = Number(valorSaida.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'gasto', value:v, category:cat}); valorSaida.value=''; valorSaida.focus(); }));
+addSaida.addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'gasto', value:v, category:'Outros'}); valorSaida.value=''; valorSaida.focus(); });
+
+/* Render lançamentos */
 function renderLancamentos(){
   if(!lancamentosList) return;
-  if(!state.history || state.history.length === 0){ lancamentosList.innerHTML = '<div class="muted small text-center">Nenhum lançamento ainda.</div>'; return; }
+  if(!state.history || state.history.length===0){ lancamentosList.innerHTML = '<div class="sub">Nenhum lançamento ainda.</div>'; return; }
   lancamentosList.innerHTML = '';
   state.history.slice(0,200).forEach(it=>{
-    const el = document.createElement('div'); el.className = 'launch-item';
-    const left = document.createElement('div'); left.innerHTML = `<div style="font-weight:800">${it.category} ${it.type==='ganho'?'<span style="color:#10b981">+':'<span style="color:#fb7185">-'} ${formatBRL(it.value)}</span></div><div class="small muted">${new Date(it.date).toLocaleString()}</div>`;
-    const right = document.createElement('div');
-    const edit = document.createElement('button'); edit.className = 'btn-ghost'; edit.textContent = '✏️';
-    const del = document.createElement('button'); del.className = 'btn-ghost'; del.textContent = '🗑️';
+    const el = document.createElement('div'); el.className='launch-item';
+    const left = document.createElement('div'); left.innerHTML = `<div class="meta">${it.category} ${it.type==='ganho'?'<span style="color:#10b981">+':'<span style="color:#fb7185">-'} ${formatBRL(it.value)}</span></div><div class="sub">${new Date(it.date).toLocaleString()}</div>`;
+    const right = document.createElement('div'); right.style.display='flex';
+    const edit = document.createElement('button'); edit.className='btn-ghost'; edit.textContent='Editar';
+    const del = document.createElement('button'); del.className='btn-ghost'; del.textContent='Excluir';
     right.appendChild(edit); right.appendChild(del);
     el.appendChild(left); el.appendChild(right);
     lancamentosList.appendChild(el);
@@ -700,293 +388,176 @@ function renderLancamentos(){
       const novoStr = prompt('Novo valor (R$):', it.value.toFixed(2));
       if(novoStr === null) return;
       const novo = Number(novoStr);
-      if(isNaN(novo) || novo < 0){ alert('Valor inválido'); return; }
-      // revert old totals
-      if(it.type === 'ganho'){
-        if(it.category === 'Loja') state.ganhosLoja -= it.value;
-        else if(it.category === 'Doação') state.totalDoacao -= it.value;
-        else state.ganhosApps -= it.value;
-      } else state.gastos -= it.value;
-      // apply new
+      if(isNaN(novo)||novo<0){ alert('Valor inválido'); return; }
+      if(it.type==='ganho'){ if(it.category==='Loja') state.ganhosLoja -= it.value; else if(it.category==='Doação') state.totalDoacao -= it.value; else state.ganhosApps -= it.value; } else state.gastos -= it.value;
       it.value = novo;
-      if(it.type === 'ganho'){
-        if(it.category === 'Loja') state.ganhosLoja += it.value;
-        else if(it.category === 'Doação') state.totalDoacao += it.value;
-        else state.ganhosApps += it.value;
-      } else state.gastos += it.value;
-      saveState(); atualizarInterface();
+      if(it.type==='ganho'){ if(it.category==='Loja') state.ganhosLoja += it.value; else if(it.category==='Doação') state.totalDoacao += it.value; else state.ganhosApps += it.value; } else state.gastos += it.value;
+      saveState(); renderUI();
     });
 
     del.addEventListener('click', ()=>{
       if(!confirm('Excluir lançamento?')) return;
-      const idx = state.history.findIndex(h => h.id === it.id); if(idx === -1) return;
+      const idx = state.history.findIndex(h=>h.id===it.id); if(idx===-1) return;
       const item = state.history[idx];
-      if(item.type === 'ganho'){
-        if(item.category === 'Loja'){ state.ganhosLoja -= item.value; state.entradasLoja = Math.max(0, state.entradasLoja-1); }
-        else if(item.category === 'Doação'){ state.totalDoacao -= item.value; }
-        else { state.ganhosApps -= item.value; state.entradasApps = Math.max(0, state.entradasApps-1); }
-      } else { state.gastos -= item.value; }
+      if(item.type==='ganho'){ if(item.category==='Loja'){ state.ganhosLoja -= item.value; state.entradasLoja = Math.max(0,state.entradasLoja-1); } else if(item.category==='Doação'){ state.totalDoacao -= item.value; } else { state.ganhosApps -= item.value; state.entradasApps = Math.max(0,state.entradasApps-1); } } else state.gastos -= item.value;
       state.history.splice(idx,1);
-      saveState(); atualizarInterface();
+      saveState(); renderUI();
     });
   });
 }
 
 /* resumo categorias */
-function renderResumoCategorias(){
+function renderResumo(){
   const totals = {}, counts = {};
-  (state.history || []).forEach(it=>{
-    if(it.type !== 'ganho') return;
-    const cat = it.category || 'Outros';
-    totals[cat] = (totals[cat] || 0) + it.value;
-    counts[cat] = (counts[cat] || 0) + 1;
-  });
+  (state.history||[]).forEach(it=>{ if(it.type!=='ganho') return; const cat=it.category||'Outros'; totals[cat]=(totals[cat]||0)+it.value; counts[cat]=(counts[cat]||0)+1; });
   resumoCategorias.innerHTML = '';
-  const order = ['Uber','99','inDriver','Particular','Loja','Doação'];
+  const order=['Uber','99','inDriver','Particular','Loja','Doação'];
   order.forEach(cat=>{
-    const val = totals[cat] || 0; const cnt = counts[cat] || 0;
-    const node = document.createElement('div');
-    node.innerHTML = `<div style="font-weight:900;margin-bottom:6px">${cat}</div><div style="font-weight:800">${formatBRL(val)}</div><div class="small muted">${cnt} entr.</div>`;
-    resumoCategorias.appendChild(node);
+    const v = totals[cat]||0, c = counts[cat]||0;
+    const el = document.createElement('div'); el.className='mini-card'; el.innerHTML = `<div style="font-weight:900">${cat}</div><div style="margin-top:6px">${formatBRL(v)}</div><div class="sub">${c} entr.</div>`;
+    resumoCategorias.appendChild(el);
   });
-  Object.keys(totals).forEach(cat=>{
-    if(order.includes(cat)) return;
-    const node = document.createElement('div');
-    node.innerHTML = `<div style="font-weight:900;margin-bottom:6px">${cat}</div><div style="font-weight:800">${formatBRL(totals[cat])}</div><div class="small muted">${counts[cat]||0} entr.</div>`;
-    resumoCategorias.appendChild(node);
-  });
+  Object.keys(totals).forEach(cat=>{ if(order.includes(cat)) return; const el=document.createElement('div'); el.className='mini-card'; el.innerHTML = `<div style="font-weight:900">${cat}</div><div style="margin-top:6px">${formatBRL(totals[cat])}</div><div class="sub">${counts[cat]||0} entr.</div>`; resumoCategorias.appendChild(el); });
+  if(Object.keys(totals).length===0){ resumoCategorias.innerHTML = '<div class="mini-card">Sem entradas</div><div class="mini-card">Sem entradas</div><div class="mini-card">Sem entradas</div>'; }
 }
 
 /* metrics & progress */
-function updateDerivedMetrics(){
-  const ganhosBrutosTotal = Number(state.ganhosApps || 0) + Number(state.ganhosLoja || 0) + Number(state.totalDoacao || 0);
-  const lucroTotal = ganhosBrutosTotal - Number(state.gastos || 0);
-  const tempoMs = getTempoTotal();
-  const horas = tempoMs/(1000*60*60) || 0;
+function updateMetrics(){
+  const ganhosBrutosTotal = Number(state.ganhosApps||0) + Number(state.ganhosLoja||0) + Number(state.totalDoacao||0);
+  const lucro = ganhosBrutosTotal - Number(state.gastos||0);
+  const tempo = getTempoTotal();
+  const horas = tempo/(1000*60*60) || 0;
   const mediaHora = horas>0 ? ganhosBrutosTotal / horas : 0;
-  const mediaLiq = horas>0 ? lucroTotal / horas : 0;
+  const mediaHoraLiq = horas>0 ? lucro / horas : 0;
 
-  metricGanhosApps.textContent = formatBRL(state.ganhosApps);
-  metricGanhosTotal.textContent = formatBRL(ganhosBrutosTotal);
-  metricLucroTotal.textContent = formatBRL(lucroTotal);
-  metricMediaHoraBrutoTotal.textContent = formatBRL(mediaHora);
-  metricMediaHoraLiqTotal.textContent = formatBRL(mediaLiq);
-  metricLucroKmTotal.textContent = formatBRL(getKMRodados()>0 ? (lucroTotal/getKMRodados()) : 0);
-
-  finalTotalApps.textContent = formatBRL(state.ganhosApps);
-  finalTotalLoja.textContent = formatBRL(state.ganhosLoja);
-  finalTotalDoacao.textContent = formatBRL(state.totalDoacao);
-  finalTotalGeral.textContent = formatBRL(ganhosBrutosTotal - state.gastos);
+  ganhosAppsEl.textContent = formatBRL(state.ganhosApps);
+  ganhosTotalEl.textContent = formatBRL(ganhosBrutosTotal);
+  mediaHoraAppsEl.textContent = formatBRL((state.ganhosApps || 0) / (horas || 1));
+  mediaHoraLiqEl.textContent = formatBRL(mediaHoraLiq);
 
   // progress
-  const meta = Number(state.meta || 0);
-  const current = Number(state.ganhosApps || 0) + Number(state.ganhosLoja || 0);
-  const pct = meta > 0 ? Math.min(100, (current/meta)*100) : 0;
-  progressBar.style.width = pct + '%';
+  const meta = Number(state.meta||0);
+  const current = Number(state.ganhosApps||0) + Number(state.ganhosLoja||0);
+  const pct = meta>0 ? Math.min(100,(current/meta)*100) : 0;
+  progressFill.style.width = pct + '%';
   progressText.textContent = Math.round(pct) + '%';
-  if(meta === 0) metaMessage.textContent = 'Defina a meta para acompanhar o progresso.';
-  else { const falt = meta - current; metaMessage.textContent = falt > 0 ? `Faltam ${formatBRL(falt)}.` : `Meta batida! (+${formatBRL(Math.abs(falt))})`; }
+  if(meta===0) progressSub.textContent = 'Defina a meta para acompanhar o progresso.'; else { const falt = meta - current; progressSub.textContent = falt>0? `Faltam ${formatBRL(falt)}.` : `Meta batida! (+${formatBRL(Math.abs(falt))})`; }
 
+  // tempo & km
   tempoTrabalhado.textContent = formatTime(getTempoTotal());
   kmRodados.textContent = formatKM(getKMRodados());
 
   maybeCelebrate();
 }
 
-/* CELEBRATION: trombeta + applause + confetti */
-async function playVictorySequence(){
+/* celebration */
+function playCelebration(){
   try{
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
     const now = ctx.currentTime;
-
-    // Trombeta breve
-    const o1 = ctx.createOscillator(); o1.type='sawtooth'; o1.frequency.value = 440;
-    const o2 = ctx.createOscillator(); o2.type='sine'; o2.frequency.value = 660;
-    const g = ctx.createGain(); g.gain.setValueAtTime(0.0001, now);
-    o1.connect(g); o2.connect(g); g.connect(ctx.destination);
-    g.gain.exponentialRampToValueAtTime(0.85, now + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + 1.05);
-    o1.start(now); o2.start(now); o1.stop(now + 1.05); o2.stop(now + 1.05);
-
-    // Flourish melody
-    const notes = [880,988,1175];
-    const mg = ctx.createGain(); mg.gain.setValueAtTime(0.0001, now + 0.6); mg.connect(ctx.destination);
-    notes.forEach((n,i)=>{ const o = ctx.createOscillator(); o.type='triangle'; o.frequency.value = n; o.connect(mg); const t0 = now + 0.6 + i*0.18; o.start(t0); o.stop(t0 + 0.18); });
-    mg.gain.exponentialRampToValueAtTime(0.14, now + 0.62);
-    mg.gain.exponentialRampToValueAtTime(0.0001, now + 2.6);
-
-    // Applause noise ~5s
-    const len = ctx.sampleRate * 5;
-    const buffer = ctx.createBuffer(1, len, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for(let i=0;i<len;i++){ const t = i/ctx.sampleRate; const env = 1-(t/5); data[i] = (Math.random()*2-1)*0.6*env*(Math.random()>0.94?1.4:1); }
-    const noise = ctx.createBufferSource(); noise.buffer = buffer; const ng = ctx.createGain(); noise.connect(ng); ng.connect(ctx.destination);
-    ng.gain.setValueAtTime(0.0001, now + 1.0); ng.gain.exponentialRampToValueAtTime(1.0, now + 1.05); ng.gain.exponentialRampToValueAtTime(0.0001, now + 6.2);
-    noise.start(now + 1.0);
-    setTimeout(()=>{ try{ noise.stop(); ctx.close(); }catch(e){} }, 7000);
+    const o = ctx.createOscillator(); o.type='sawtooth'; o.frequency.value=420;
+    const g = ctx.createGain(); o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0.0001, now); g.gain.exponentialRampToValueAtTime(0.8, now+0.02); g.gain.exponentialRampToValueAtTime(0.0001, now+1.3);
+    o.start(now); o.stop(now+1.3);
+    const len = ctx.sampleRate * 4; const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const data = buf.getChannelData(0); for(let i=0;i<len;i++){ const t=i/ctx.sampleRate; const env=1-(t/4); data[i] = (Math.random()*2-1)*0.6*env; }
+    const noise = ctx.createBufferSource(); noise.buffer = buf; const ng = ctx.createGain(); noise.connect(ng); ng.connect(ctx.destination);
+    ng.gain.setValueAtTime(0.0001, now+0.6); ng.gain.exponentialRampToValueAtTime(0.9, now+0.62); ng.gain.exponentialRampToValueAtTime(0.0001, now+5.0);
+    noise.start(now+0.6);
+    setTimeout(()=>{ try{ noise.stop(); ctx.close(); }catch(e){} }, 5500);
   }catch(e){ console.warn('audio fail', e); }
-}
-
-function triggerConfetti(){
   const colors = ['#10b981','#f97316','#facc15','#ef4444','#ec4899'];
-  for(let i=0;i<120;i++){
-    const el = document.createElement('div'); el.className='c';
-    const size = 6 + Math.random()*12; el.style.width = size + 'px'; el.style.height = (size*1.4) + 'px';
-    el.style.left = (Math.random()*100) + '%'; el.style.top = (-10 + Math.random()*20) + '%';
-    el.style.background = colors[Math.floor(Math.random()*colors.length)];
-    el.style.transform = 'rotate(' + Math.random()*360 + 'deg)';
+  for(let i=0;i<100;i++){
+    const el = document.createElement('div'); el.style.position='absolute'; el.style.width='10px'; el.style.height='14px';
+    el.style.left = Math.random()*100 + '%'; el.style.top = Math.random()*40 + '%'; el.style.background = colors[Math.floor(Math.random()*colors.length)];
+    el.style.transform = 'rotate(' + (Math.random()*360) + 'deg)'; el.style.opacity = '0.95';
     confettiRoot.appendChild(el);
     const dur = 2200 + Math.random()*2000;
-    el.animate([{ transform: 'translateY(0px) rotate(0deg)', opacity:1 }, { transform: 'translateY(' + (200 + Math.random()*400) + 'px) rotate(' + (360 + Math.random()*720) + 'deg)', opacity:0.2 }], { duration:dur, easing:'ease-out' });
-    setTimeout(()=> el.remove(), dur + 100);
+    el.animate([{transform:'translateY(0px)'},{transform:'translateY(400px)'}], {duration:dur, iterations:1, easing:'ease-out'});
+    setTimeout(()=>el.remove(), dur+100);
   }
 }
 
+/* maybe celebrate */
 function maybeCelebrate(){
-  const meta = Number(state.meta || 0);
-  if(meta <= 0) return;
-  const current = Number(state.ganhosApps || 0) + Number(state.ganhosLoja || 0);
-  const pct = (current / meta) * 100;
-  if(pct >= 100 && !state.celebrated){
+  const meta = Number(state.meta||0);
+  if(meta<=0) return;
+  const current = Number(state.ganhosApps||0) + Number(state.ganhosLoja||0);
+  const pct = (current/meta)*100;
+  if(pct>=100 && !state.celebrated){
     state.celebrated = true;
-    playVictorySequence();
-    triggerConfetti();
+    playCelebration();
   }
-  if(pct < 100) state.celebrated = false;
+  if(pct<100) state.celebrated = false;
 }
 
-/* SAVE DAY / HISTORY */
-function saveDaySummary(){
+/* Save day summary */
+function saveDay(){
   try{
     const arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]');
-    const ganhosBrutosTotal = Number(state.ganhosApps||0) + Number(state.ganhosLoja||0) + Number(state.totalDoacao||0);
-    const lucro = ganhosBrutosTotal - Number(state.gastos||0);
-    const tempo = getTempoTotal();
+    const ganhosBrutos = Number(state.ganhosApps||0) + Number(state.ganhosLoja||0) + Number(state.totalDoacao||0);
+    const lucro = ganhosBrutos - Number(state.gastos||0);
+    const tempo = state.lastSession ? state.lastSession.tempo : getTempoTotal();
     const km = getKMRodados();
-    const mediaHora = tempo>0 ? ganhosBrutosTotal/(tempo/(1000*60*60)) : 0;
-    const resumo = {
-      id: new Date().toISOString(),
-      date: new Date().toISOString(),
-      meta: state.meta,
-      kmInicial: state.kmInicial,
-      kmFinal: state.kmFinal,
-      ganhosApps: state.ganhosApps,
-      ganhosLoja: state.ganhosLoja,
-      ganhoDoacao: state.totalDoacao,
-      entradasApps: state.entradasApps,
-      entradasLoja: state.entradasLoja,
-      gastos: state.gastos,
-      lucro,
-      tempo,
-      km,
-      mediaHora,
-      history: state.history.slice(0,500)
-    };
+    const mediaHora = tempo>0 ? ganhosBrutos/(tempo/(1000*60*60)) : 0;
+    const resumo = { id:new Date().toISOString(), date:new Date().toISOString(), meta:state.meta, kmInicial:state.kmInicial, kmFinal:state.kmFinal, ganhosApps:state.ganhosApps, ganhosLoja:state.ganhosLoja, ganhoDoacao:state.totalDoacao, entradasApps:state.entradasApps, entradasLoja:state.entradasLoja, gastos:state.gastos, lucro, tempo, km, mediaHora, history: state.history.slice(0,500), lastSession: state.lastSession || null };
     arr.unshift(resumo);
     localStorage.setItem('maxrota_days', JSON.stringify(arr.slice(0,300)));
-  }catch(e){ console.error('saveDaySummary failed', e); }
+    return resumo;
+  }catch(e){ console.error(e); return null; }
 }
 
-/* Save & Reset */
-saveAndResetBtn.addEventListener('click', ()=>{
-  if(!confirm('Deseja salvar o resumo do dia e resetar todos os dados atuais?')) return;
-  saveDaySummary();
-  state = {
-    meta:0, ganhosApps:0, ganhosLoja:0, totalDoacao:0, entradasApps:0, entradasLoja:0, gastos:0,
-    history:[], totalTimeWorked:0, lastStartTime:null, status:'stopped', kmInicial:0, kmFinal:0, celebrated:false
-  };
-  kmInicialEl.value=''; kmFinalEl.value=''; metaInput.value='';
-  toggleStartBtn.textContent='Iniciar Expediente';
-  stopTimer();
-  saveState();
-  atualizarInterface();
+/* Save & reset */
+$('#saveReset').addEventListener('click', ()=>{
+  if(!confirm('Salvar resumo do dia e resetar?')) return;
+  const resumo = saveDay();
+  if(resumo) alert('Resumo salvo. Lucro: '+formatBRL(resumo.lucro)+'\nKM: '+(resumo.km||0)+' km\nTempo: '+formatTime(resumo.tempo));
+  state = { meta:0, ganhosApps:0, ganhosLoja:0, totalDoacao:0, entradasApps:0, entradasLoja:0, gastos:0, history:[], totalTimeWorked:0, lastStartTime:null, status:'stopped', kmInicial:0, kmFinal:0, celebrated:false, lastSession:null };
+  kmInicialEl.value=''; kmFinalEl.value=''; metaInput.value=''; valorEntrada.value=''; valorSaida.value='';
+  toggleStart.textContent='Iniciar Expediente'; stopTimer(); saveState(); renderUI();
 });
 
-/* Export */
-exportBtn.addEventListener('click', ()=>{
+/* Export & History */
+$('#exportBtn').addEventListener('click', ()=>{
   const data = { state, days: JSON.parse(localStorage.getItem('maxrota_days')||'[]') };
-  const blob = new Blob([JSON.stringify(data,null,2)], { type:'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'maxrota_export.json'; a.click(); URL.revokeObjectURL(url);
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'maxrota_export.json'; a.click(); URL.revokeObjectURL(url);
 });
 
-/* History panel */
-viewHistoryBtn.addEventListener('click', ()=>{
-  historyPanel.classList.toggle('hidden');
-  if(!historyPanel.classList.contains('hidden')) renderHistory();
-});
+$('#viewHistory').addEventListener('click', ()=>{ historyPanel.style.display = historyPanel.style.display==='block' ? 'none' : 'block'; renderHistory(); });
+
 function renderHistory(){
   const arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]');
-  if(!arr || arr.length === 0){ historyPanel.innerHTML = '<div class="muted small">Nenhum dia salvo.</div>'; return; }
+  if(!arr || arr.length===0){ historyPanel.innerHTML = '<div class="sub">Nenhum dia salvo.</div>'; return; }
   historyPanel.innerHTML = arr.map(d=>{
-    const date = new Date(d.date);
-    return `<div style="padding:8px;border-bottom:1px dashed rgba(255,255,255,0.04)"><div style="font-weight:800">${date.toLocaleDateString()} ${date.toLocaleTimeString()}</div><div class="small muted">Lucro: ${formatBRL(d.lucro)} · KM: ${d.km} · Média/H: ${formatBRL(d.mediaHora||0)}</div><div style="margin-top:6px"><button class="btn-ghost open-day" data-id="${d.id}">Abrir</button> <button class="btn-ghost del-day" data-id="${d.id}">Excluir</button></div></div>`;
+    const date = new Date(d.date); return `<div style="padding:8px;border-radius:8px;background:rgba(0,0,0,0.08);margin-bottom:8px"><div style="font-weight:900">${date.toLocaleDateString()}</div><div class="sub">Lucro: ${formatBRL(d.lucro)} · KM: ${d.km} · Tempo: ${formatTime(d.tempo)}</div></div>`;
   }).join('');
-  historyPanel.querySelectorAll('.del-day').forEach(b=>b.addEventListener('click', ()=>{
-    if(!confirm('Excluir dia?')) return;
-    const id = b.dataset.id; let arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]'); arr = arr.filter(x=>x.id !== id); localStorage.setItem('maxrota_days', JSON.stringify(arr)); renderHistory();
-  }));
-  historyPanel.querySelectorAll('.open-day').forEach(b=>b.addEventListener('click', ()=>{
-    const id = b.dataset.id; const arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]'); const d = arr.find(x=>x.id === id);
-    if(!d) return alert('Dia não encontrado.');
-    alert(`Resumo ${new Date(d.date).toLocaleString()}\nLucro: ${formatBRL(d.lucro)}\nKM: ${d.km}\nMédia/H: ${formatBRL(d.mediaHora||0)}\nEntradas App: ${d.entradasApps} · Loja: ${d.entradasLoja}`);
-  }));
 }
 
-/* THEMES */
-function applyAutoTheme(){ const h = new Date().getHours(); const isDay = (h >= 6 && h < 18); document.body.classList.toggle('light-mode', isDay); autoThemeBtn.textContent = isDay ? 'Modo Dia ☀️' : 'Modo Noite 🌙'; }
-applyAutoTheme();
-setInterval(()=>{ if(autoMode) applyAutoTheme(); }, 60*1000);
-
-autoThemeBtn.addEventListener('click', ()=>{
-  autoMode = !autoMode;
-  if(autoMode){ applyAutoTheme(); localStorage.removeItem('maxrota_manual'); } else { document.body.classList.toggle('light-mode'); localStorage.setItem('maxrota_manual','1'); }
+/* Themes */
+autoTheme.addEventListener('click', ()=>{
+  if(document.body.classList.contains('light')){ document.body.classList.remove('light'); autoTheme.textContent='Auto 🌗'; }
+  else { document.body.classList.add('light'); autoTheme.textContent='Manual ☀️'; }
 });
+colorDots.forEach(d=>d.addEventListener('click', ()=>{ const acc = d.dataset.accent; document.documentElement.style.setProperty('--accent', acc==='green'?'#10b981': acc==='orange'?'#f97316': acc==='yellow'?'#facc15':'#ef4444'); }));
 
-themeDots.forEach(d => d.addEventListener('click', ()=>{
-  const acc = d.dataset.accent;
-  document.body.classList.remove('accent-green','accent-orange','accent-yellow','accent-red','accent-pink');
-  document.body.classList.add('accent-'+acc);
-  localStorage.setItem('maxrota_accent', acc);
-}));
-const savedAccent = localStorage.getItem('maxrota_accent') || 'green';
-document.body.classList.add('accent-'+savedAccent);
-
-/* RENDER / UPDATE */
-function atualizarInterface(){
-  // populate inputs from state only when user not typing (safer approach)
-  if(document.activeElement !== kmInicialEl) kmInicialEl.value = state.kmInicial || '';
-  if(document.activeElement !== kmFinalEl) kmFinalEl.value = state.kmFinal || '';
-  if(document.activeElement !== metaInput) metaInput.value = state.meta || '';
-
-  renderLancamentos();
-  renderResumoCategorias();
-  updateDerivedMetrics();
-
-  if(state.status === 'running') toggleStartBtn.textContent = 'Pausar';
-  else if(state.status === 'paused') toggleStartBtn.textContent = 'Retomar';
-  else toggleStartBtn.textContent = 'Iniciar Expediente';
-
+/* Render UI */
+function renderUI(){
+  kmInicialEl.value = state.kmInicial || '';
+  kmFinalEl.value = state.kmFinal || '';
+  metaInput.value = state.meta || '';
+  if(state.lastSession){ lastSessionEl.style.display='block'; lastSessionEl.innerHTML = `<strong>Última sessão</strong><div class="sub">Tempo: ${formatTime(state.lastSession.tempo)}</div>`; } else { lastSessionEl.style.display='none'; }
+  renderLancamentos(); renderResumo(); updateMetrics();
   saveState();
 }
 
-/* resume timer if needed */
-if(state.status === 'running' && state.lastStartTime) { startTimer(); toggleStartBtn.textContent = 'Pausar'; }
-
-/* initial meta load */
-const metaSaved = Number(localStorage.getItem('maxrota_meta')||0);
-if(metaSaved) state.meta = metaSaved;
-
-/* periodic update */
-atualizarInterface();
-setInterval(atualizarInterface, 2000);
-
-/* keyboard shortcuts */
-valorEntrada.addEventListener('keyup', e => { if(e.key === 'Enter') addEntradaBtn.click(); });
-valorSaida.addEventListener('keyup', e => { if(e.key === 'Enter') addSaidaBtn.click(); });
-
-/* final console */
-console.log('MAX ROTA DIÁRIO — script carregado e pronto.');
+/* initialize */
+function init(){
+  if(state.status==='running' && state.lastStartTime) { startTimer(); toggleStart.textContent='Pausar'; }
+  renderUI();
+  setInterval(()=>{ updateMetrics(); }, 2000);
+}
+init();
 </script>
 </body>
 </html>
