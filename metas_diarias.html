@@ -124,7 +124,7 @@
 </head>
 
 <body class="accent-green">
-  <div class="wrap">
+  <script type="module" src="auth-guard.js"></script> <div class="wrap">
 
     <header class="card header-card" role="banner" aria-label="Cabeçalho MAX ROTA">
       <div style="display:flex;align-items:center;gap:12px">
@@ -151,7 +151,9 @@
       </div>
     </header>
     <section class="card radio-card" aria-label="Rádios">
-      <h2 style="margin:0 0 8px 0;font-size:16px">🎧 Estações</h2>
+      <div style="display:flex; justify-content: space-between; align-items: center;">
+        <h2 style="margin:0;font-size:16px">🎧 Estações</h2>
+        <button onclick="logout()" class="btn">Sair</button> </div>
 
       <div id="stationButtons" class="radio-grid" role="list" aria-label="Lista de rádios">
         <button class="station-btn" data-src="https://live.hunter.fm/pop_high" data-name="Hunter Pop" style="background:#10b981">Hunter Pop</button>
@@ -809,5 +811,16 @@ updateUI();
 
 /* IMPORTANT: avoid global frequent UI overwrite - timer handles periodic updates only while running */
 </script>
+
+<script type="module">
+import { auth } from "./firebase.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+window.logout = async () => {
+  await signOut(auth);
+  location.href = "login.html";
+};
+</script>
+
 </body>
 </html>
