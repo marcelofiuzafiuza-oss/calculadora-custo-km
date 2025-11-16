@@ -5,9 +5,11 @@
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>MAX ROTA DIÁRIO</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-
-  <!-- Chart.js (mantido como no seu arquivo original) -->
+  <!-- Chart.js está incluído caso queira reabilitar gráficos no futuro -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+
+  <!-- O bloco de inicialização do Firebase foi removido daqui, conforme solicitado. 
+       A inicialização é feita agora apenas no final do <body> para consolidar getAuth e getFirestore. -->
 
   <style>
   /* ===========================
@@ -19,7 +21,7 @@
     --bg2: #2a1160;
     --text: #e6eef6;
     --muted: #9aa6b2;
-    --card: rgba(255,255,255,0.06);
+    --card: rgba(255, 255, 255, 0.06);
     --radius: 14px;
     --scale: 1.02;
   }
@@ -31,7 +33,7 @@
   }
   .wrap{max-width:1200px;margin:0 auto}
   .card{background:var(--card);backdrop-filter:blur(6px);border-radius:16px;padding:18px;margin-bottom:18px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 26px rgba(0,0,0,0.35)}
-  .header-card{display:flex;justify-content:space-between;align-items:center; flex-wrap: wrap; gap: 10px;}
+  .header-card{display:flex;justify-content:space-between;align-items:center; flex-wrap: wrap; gap: 10px;} /* Ajustado para melhor responsividade e acomodar o botão */
   .logo-img{height:74px;width:auto;border-radius:12px}
   .theme-controls{display:flex;align-items:center;gap:12px}
   .theme-btn{background:linear-gradient(120deg,var(--accent),#3b82f6);color:#fff;padding:10px 14px;border-radius:12px;border:none;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,0.3)}
@@ -77,165 +79,200 @@
   body.light-mode{--bg1:#f5f7fb;--bg2:#e8f0ff;--text:#0b1220;--muted:#566170;--card:rgba(255,255,255,0.9)}
   .muted{color:var(--muted)}
   .small{font-size:13px}
-
-  /* Ocultar valores */
-  .hidden-value { visibility: hidden; position: relative; }
+  /* Estilo para valores escondidos, mantém o espaço */
+  .hidden-value-mask {
+    color: transparent;
+    text-shadow: 0 0 8px rgba(0,0,0,0.9); /* Adiciona uma sombra para criar o efeito de "escondido" */
+    font-size: 10px; /* Reduz o tamanho para a máscara ser menor, mas visível */
+  }
+  .hidden-value {
+    visibility: hidden;
+    position: relative;
+  }
   .hidden-value::after {
     content: '****';
     visibility: visible;
-    position: absolute; inset: 0;
-    text-align: inherit; 
-    font-size: inherit;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     color: var(--text);
+    text-align: inherit;
+    line-height: inherit;
+    font-size: inherit;
+    font-weight: inherit;
   }
-
+  /* Estilo para o botão no header */
+  .header-actions-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px; /* Espaço entre o controle de tema e o botão de toggle */
+      align-items: flex-end; /* Alinha o botão de toggle à direita */
+  }
   .toggle-btn {
     padding: 6px 10px;
     border-radius: 8px;
     background: rgba(255,255,255,0.1);
     border: 1px solid rgba(255,255,255,0.08);
-    color: var(--text);
-    cursor: pointer;
-    font-size: 12px;
     font-weight: 600;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 13px;
+    white-space: nowrap; /* Não quebra a linha do texto do botão */
+    width: fit-content; /* Largura do conteúdo */
   }
+
+  @media(max-width:1000px){body{transform:scale(1.00)}.grid-4{grid-template-columns:repeat(2,1fr)}.grid-2cols{grid-template-columns:1fr}.wrap{padding:8px)}
   </style>
 </head>
 
 <body class="accent-green">
+  <!-- AUTH-GUARD - Atualizado para usar window.auth -->
+  <script type="module">
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  <!-- AUTH GUARD -->
-  <script type="module" src="auth-guard.js"></script>
-
+onAuthStateChanged(window.auth, user => {
+  if (!user) {
+    location.href = "login.html";
+  } else {
+    window.__USER_UID__ = user.uid;
+    console.log("Usuário logado:", user.uid);
+  }
+});
+</script>
   <div class="wrap">
 
-    <!-- HEADER -->
-    <header class="card header-card">
+    <!-- HEADER (ALTERADO PARA INCLUIR O BOTÃO) -->
+    <header class="card header-card" role="banner" aria-label="Cabeçalho MAX ROTA">
       <div style="display:flex;align-items:center;gap:12px">
-        <img id="logoImg" class="logo-img"
-             src="https://i.postimg.cc/3RWn008g/Chat-GPT-Image-12-de-nov-de-2025-14-32-56.png">
+        <img id="logoImg" class="logo-img" src="https://i.postimg.cc/3RWn008g/Chat-GPT-Image-12-de-nov-de-2025-14-32-56.png" alt="MAX ROTA DIÁRIO">
         <div>
           <h1 style="margin:0;font-size:20px">MAX ROTA DIÁRIO</h1>
           <div class="small muted">Painel do Motorista</div>
         </div>
       </div>
 
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:10px">
-        <div class="theme-controls">
-          <button id="autoThemeBtn" class="theme-btn">Auto 🌗</button>
-          <div class="theme-dots">
-            <button class="color-dot" data-accent="green" style="background:#10b981"></button>
-            <button class="color-dot" data-accent="orange" style="background:#f97316"></button>
-            <button class="color-dot" data-accent="yellow" style="background:#facc15"></button>
-            <button class="color-dot" data-accent="red" style="background:#ef4444"></button>
-            <button class="color-dot" data-accent="pink" style="background:#ec4899"></button>
+      <div class="header-actions-container">
+        <!-- Controles de Tema/Cor -->
+        <div class="theme-controls" aria-hidden="false">
+          <button id="autoThemeBtn" class="theme-btn" title="Ativar modo automático dia/noite">Auto 🌗</button>
+          <div class="theme-dots" role="toolbar" aria-label="Temas" style="margin-left:8px">
+            <button class="color-dot" data-accent="green" style="background:#10b981" title="Verde"></button>
+            <button class="color-dot" data-accent="orange" style="background:#f97316" title="Laranja"></button>
+            <button class="color-dot" data-accent="yellow" style="background:#facc15" title="Amarelo"></button>
+            <button class="color-dot" data-accent="red" style="background:#ef4444" title="Vermelho"></button>
+            <button class="color-dot" data-accent="pink" style="background:#ec4899" title="Rosa"></button>
           </div>
         </div>
-
-        <button id="toggleValuesBtn" class="toggle-btn">Esconder Valores</button>
+        
+        <!-- Botão de Ocultar Valores -->
+        <button id="toggleValuesBtn" class="toggle-btn" aria-pressed="false" title="Mostrar/Esconder valores monetários e de contagem">Esconder Valores</button>
       </div>
     </header>
-    <!-- RÁDIOS -->
-    <section class="card radio-card">
+    <!-- FIM DO HEADER (ALTERADO) -->
+
+    <!-- RÁDIOS (SEGUNDO CARD) -->
+    <section class="card radio-card" aria-label="Rádios">
       <div style="display:flex; justify-content: space-between; align-items: center;">
         <h2 style="margin:0;font-size:16px">🎧 Estações</h2>
-        <button onclick="logout()" class="btn">Sair</button>
+        <button onclick="logout()" class="btn">Sair</button> <!-- BOTÃO SAIR ADICIONADO AQUI -->
       </div>
 
-      <div id="stationButtons" class="radio-grid">
-        <!-- LISTA DE ESTAÇÕES (mantidas iguais ao seu arquivo original) -->
-        <button class="station-btn" data-src="https://live.hunter.fm/pop_high" style="background:#10b981">Hunter Pop</button>
-        <button class="station-btn" data-src="https://live.hunter.fm/pop2k_high" style="background:#06b6d4">Pop2K</button>
-        <button class="station-btn" data-src="https://ice1.somafm.com/u80s-128-mp3" style="background:#8b5cf6">80s</button>
-        <button class="station-btn" data-src="http://listen.181fm.com/181-power_128k.mp3" style="background:#f97316">Power181</button>
+      <div id="stationButtons" class="radio-grid" role="list" aria-label="Lista de rádios">
+        <!-- Testadas e estáveis (Hunter + SomaFM + outros públicos) -->
+        <button class="station-btn" data-src="https://live.hunter.fm/pop_high" data-name="Hunter Pop" style="background:#10b981">Hunter Pop</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/pop2k_high" data-name="Hunter Pop2K" style="background:#06b6d4">Pop2K</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/u80s-128-mp3" data-name="Flashback 80s" style="background:#8b5cf6">80s</button>
+        <button class="station-btn" data-src="http://listen.181fm.com/181-power_128k.mp3" data-name="Power 181" style="background:#f97316">Power181</button>
 
-        <button class="station-btn" data-src="https://live.hunter.fm/rock_high" style="background:#ef4444">Rock</button>
-        <button class="station-btn" data-src="https://live.hunter.fm/sertanejo_high" style="background:#f59e0b">Sertanejo</button>
-        <button class="station-btn" data-src="https://live.hunter.fm/hiphop_high" style="background:#111827">HipHop</button>
-        <button class="station-btn" data-src="https://live.hunter.fm/gospel_high" style="background:#facc15;color:#111">Cristã</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/rock_high" data-name="Rock Classic" style="background:#ef4444">Rock</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/sertanejo_high" data-name="Sertanejo" style="background:#f59e0b">Sertanejo</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/hiphop_high" data-name="Hip Hop" style="background:#111827">HipHop</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/gospel_high" data-name="Cristã" style="background:#facc15;color:#111">Cristã</button>
 
-        <button class="station-btn" data-src="https://ice1.somafm.com/groovesalad-128-mp3" style="background:#2563eb">Eletrônica</button>
-        <button class="station-btn" data-src="https://ice1.somafm.com/beatblender-128-mp3" style="background:#7c3aed">House / Deep</button>
-        <button class="station-btn" data-src="https://ice1.somafm.com/secretagent-128-mp3" style="background:#06b6d4">Surf</button>
-        <button class="station-btn" data-src="https://ice1.somafm.com/dubstep-128-mp3" style="background:#4ade80">Reggae</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/groovesalad-128-mp3" data-name="GrooveSalad" style="background:#2563eb">Eletrônica</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/beatblender-128-mp3" data-name="BeatBlender" style="background:#7c3aed">House / Deep</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/secretagent-128-mp3" data-name="Surf" style="background:#06b6d4">Surf</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/dubstep-128-mp3" data-name="Reggae/Dub" style="background:#4ade80">Reggae</button>
 
-        <button class="station-btn" data-src="https://live.hunter.fm/mpb_high" style="background:#1e3a8a">MPB</button>
-        <button class="station-btn" data-src="https://stream.radioparadise.com/mp3-192" style="background:#111827">RadioParadise</button>
-        <button class="station-btn" data-src="http://listen.181fm.com/181-beat_128k.mp3" style="background:#0ea5e9">181 HipHop</button>
-        <button class="station-btn" data-src="https://live.hunter.fm/mpb_high" style="background:#8b5cf6">MPB alt</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/mpb_high" data-name="MPB Brasil" style="background:#1e3a8a">MPB</button>
+        <button class="station-btn" data-src="https://stream.radioparadise.com/mp3-192" data-name="Radio Paradise" style="background:#111827">RadioParadise</button>
+        <button class="station-btn" data-src="http://listen.181fm.com/181-beat_128k.mp3" data-name="181 HipHop" style="background:#0ea5e9">181 HipHop</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/mpb_high" data-name="MPB (alt)" style="background:#8b5cf6">MPB alt</button>
       </div>
 
-      <div class="radio-player">
-        <audio id="radioPlayer" controls></audio>
+      <div class="radio-player mt-4" aria-label="Player de rádio">
+        <audio id="radioPlayer" controls preload="none" class="w-full" aria-label="Player de rádio"></audio>
         <div style="display:flex;flex-direction:column;gap:8px;margin-left:12px">
-          <button id="stopRadioBtn" class="btn-ghost">Parar Rádio</button>
-          <div id="nowPlaying" class="small muted">Nenhuma rádio selecionada.</div>
+          <button id="stopRadioBtn" class="btn-ghost w-36" aria-label="Parar rádio">Parar Rádio</button>
+          <div id="nowPlaying" class="small muted" aria-live="polite">Nenhuma rádio selecionada.</div>
         </div>
       </div>
     </section>
 
     <!-- META -->
-    <section class="card meta-card">
+    <section class="card meta-card" aria-label="Meta diária">
       <h2 style="margin:0 0 8px 0;font-size:16px">🎯 Meta Diária</h2>
 
-      <div class="meta-row mt-3">
-        <input id="metaInput" type="number" placeholder="Ex: 300" />
-        <button id="setMetaBtn" class="btn">Salvar Meta</button>
+      <div class="meta-row mt-3" role="form" aria-label="Definir meta diária">
+        <input id="metaInput" type="number" placeholder="Ex: 300" aria-label="Valor da meta" />
+        <button id="setMetaBtn" class="btn" aria-label="Salvar meta">Salvar Meta</button>
       </div>
 
-      <div class="progress-container mt-4">
-        <div id="progressBar" class="progress-bar"></div>
-        <div id="progressBubbles" class="progress-bubbles"></div>
+      <div class="progress-container mt-4" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div id="progressBar" class="progress-bar" style="width:0%"></div>
+        <div id="progressBubbles" class="progress-bubbles" aria-hidden="true"></div>
         <div id="progressText" class="progress-text">0%</div>
       </div>
 
-      <div id="metaMessage" class="small muted mt-2">Defina a meta para acompanhar o progresso.</div>
+      <div id="metaMessage" class="small muted mt-2" aria-live="polite">Defina a meta para acompanhar o progresso.</div>
     </section>
 
-    <!-- KM -->
-    <section class="card km-card">
+    <!-- KM & TIMER -->
+    <section class="card km-card" aria-label="Jornada e quilometragem">
       <h2 style="margin:0 0 8px 0;font-size:16px">🚗 Jornada e KM</h2>
 
-      <div class="grid-4 mt-3">
+      <div class="grid-4 mt-3" role="group" aria-label="Campos de quilometragem e tempo">
         <div>
           <label class="small muted" for="kmInicial">KM Inicial</label>
-          <input id="kmInicial" type="number" placeholder="Ex: 150000" />
+          <input id="kmInicial" type="number" placeholder="Ex: 150000" aria-label="KM inicial" />
         </div>
 
         <div>
           <label class="small muted" for="kmFinal">KM Final</label>
-          <input id="kmFinal" type="number" placeholder="Ex: 150250" />
+          <input id="kmFinal" type="number" placeholder="Ex: 150250" aria-label="KM final" />
         </div>
 
         <div>
           <label class="small muted">Tempo Trabalhado</label>
-          <div id="tempoTrabalhado" class="big-time">00:00:00</div>
+          <div id="tempoTrabalhado" class="big-time" aria-live="polite">00:00:00</div>
         </div>
 
         <div>
           <label class="small muted">KM Rodados</label>
-          <div id="kmRodados" class="big-time">0.0 km</div>
+          <div id="kmRodados" class="big-time" aria-live="polite">0.0 km</div>
         </div>
       </div>
 
       <div class="km-actions">
-        <button id="toggleStartBtn" class="btn mt-4">Iniciar Expediente</button>
+        <button id="toggleStartBtn" class="btn mt-4" aria-pressed="false">Iniciar Expediente</button>
         <button id="finalizeBtn" class="btn-ghost mt-4">Finalizar Dia</button>
         <button id="saveKmBtn" class="btn mt-4">Salvar KM</button>
       </div>
     </section>
 
-    <!-- LANÇAMENTOS -->
-    <section class="card lancamentos-card grid-2cols">
+    <!-- LANÇAMENTOS: Entradas / Saídas -->
+    <section class="card lancamentos-card grid-2cols" aria-label="Lançamentos">
       <div>
         <h3 style="margin:0 0 8px 0;font-size:15px">➕ Entradas (Apps)</h3>
 
-        <div class="input-row mt-2">
-          <input id="valorEntrada" type="number" placeholder="Valor (R$)" />
-          <button id="addEntradaBtn" class="btn">Lançar</button>
+        <div class="input-row mt-2" role="form" aria-label="Lançar entrada">
+          <input id="valorEntrada" type="number" placeholder="Valor (R$)" aria-label="Valor de entrada" />
+          <button id="addEntradaBtn" class="btn" aria-label="Adicionar entrada">Lançar</button>
         </div>
 
-        <div class="apps-grid mt-2">
+        <div class="apps-grid mt-2" role="list" aria-label="Lista de apps">
           <button class="app-btn" data-cat="Uber" style="background:#000">Uber</button>
           <button class="app-btn" data-cat="99" style="background:#facc15;color:#111">99</button>
           <button class="app-btn" data-cat="inDriver" style="background:#10b981">inDriver</button>
@@ -248,12 +285,12 @@
       <div>
         <h3 style="margin:0 0 8px 0;font-size:15px">➖ Saídas (Gastos)</h3>
 
-        <div class="input-row mt-2">
-          <input id="valorSaida" type="number" placeholder="Valor (R$)" />
-          <button id="addSaidaBtn" class="btn">Lançar</button>
+        <div class="input-row mt-2" role="form" aria-label="Lançar gasto">
+          <input id="valorSaida" type="number" placeholder="Valor (R$)" aria-label="Valor de saída" />
+          <button id="addSaidaBtn" class="btn" aria-label="Adicionar gasto">Lançar</button>
         </div>
 
-        <div class="gastos-grid mt-2">
+        <div class="gastos-grid mt-2" role="list" aria-label="Principais gastos">
           <button class="gasto-btn" data-cat="Combustível" style="background:#ef4444">Combustível</button>
           <button class="gasto-btn" data-cat="Alimentação" style="background:#8b5cf6">Alimentação</button>
           <button class="gasto-btn" data-cat="Manutenção" style="background:#6b7280">Manutenção</button>
@@ -262,38 +299,39 @@
       </div>
     </section>
 
-    <!-- LANÇAMENTOS RECENTES -->
-    <section class="card recentes-card">
+    <!-- Lançamentos recentes -->
+    <section class="card recentes-card" aria-label="Lançamentos recentes">
       <h3 style="margin:0 0 8px 0;font-size:15px">Lançamentos Recentes</h3>
-      <div id="lancamentosList" class="launch-list mt-2">
+      <div id="lancamentosList" class="launch-list mt-2" aria-live="polite">
         <div class="muted small text-center">Nenhum lançamento ainda.</div>
       </div>
     </section>
 
-    <!-- RESUMO POR CATEGORIA -->
-    <section class="card resumo-cat">
+    <!-- Resumo por categoria -->
+    <section class="card resumo-cat" aria-label="Resumo por categoria">
       <h3 style="margin:0 0 8px 0;font-size:15px">Resumo Rápido por Categoria</h3>
-      <div id="resumoCategorias" class="resumo-grid mt-2 small muted"></div>
+      <div id="resumoCategorias" class="resumo-grid mt-2 small muted" role="list"></div>
     </section>
 
-    <!-- MÉTRICAS -->
-    <section class="card metric-card">
+    <!-- MÉTRICAS — (CARD SEPARADO) -->
+    <section class="card metric-card" aria-label="Métricas">
+      <!-- Retiramos o botão daqui -->
       <h3 style="margin:0 0 8px 0;font-size:15px">Métricas</h3>
 
       <div class="metric-grid mt-3">
         <div class="metric-col">
           <div class="metric-title">Ganhos Brutos — Somente Apps</div>
-          <div id="metricGanhosApps" class="metric-value">R$ 0,00</div>
+          <div id="metricGanhosApps" class="metric-value text-green-400">R$ 0,00</div>
         </div>
 
         <div class="metric-col">
           <div class="metric-title">Ganhos Brutos — Apps + Loja</div>
-          <div id="metricGanhosTotal" class="metric-value">R$ 0,00</div>
+          <div id="metricGanhosTotal" class="metric-value text-cyan-300">R$ 0,00</div>
         </div>
 
         <div class="metric-col">
           <div class="metric-title">Gastos Totais</div>
-          <div id="metricGastosTotal" class="metric-value">R$ 0,00</div>
+          <div id="metricGastosTotal" class="metric-value text-red-400">R$ 0,00</div>
         </div>
 
         <div class="metric-col">
@@ -328,37 +366,33 @@
       </div>
     </section>
 
-    <!-- AÇÕES -->
-    <section class="card actions-card">
+    <!-- Actions -->
+    <section class="card actions-card" aria-label="Ações">
       <div style="display:flex;gap:12px;flex-wrap:wrap">
         <button id="saveAndResetBtn" class="btn">Salvar Resumo & Resetar Dia</button>
         <button id="exportBtn" class="btn-ghost">Exportar Resumo (JSON)</button>
         <button id="viewHistoryBtn" class="btn-ghost">Ver Histórico de Dias</button>
       </div>
 
-      <div id="historyPanel" class="history-panel mt-4 hidden"></div>
+      <div id="historyPanel" class="history-panel mt-4 hidden" aria-live="polite"></div>
     </section>
 
-    <!-- RESUMO FINAL -->
-    <section class="card final-resumo">
+    <!-- Final resumo (mini-cards) -->
+    <section class="card final-resumo" aria-label="Resumo final">
       <h3 style="margin:0 0 8px 0;font-size:15px">Resumo Final por Categoria</h3>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px">
-
-        <div style="background:rgba(255,255,255,0.06);padding:12px;border-radius:12px;text-align:center">
+        <div style="background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03));padding:12px;border-radius:12px;text-align:center">
           <div class="muted">Total Apps</div>
           <div id="finalTotalApps" class="metric-value">R$ 0,00</div>
         </div>
-
-        <div style="background:rgba(255,255,255,0.06);padding:12px;border-radius:12px;text-align:center">
+        <div style="background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03));padding:12px;border-radius:12px;text-align:center">
           <div class="muted">Total Loja</div>
           <div id="finalTotalLoja" class="metric-value">R$ 0,00</div>
         </div>
-
-        <div style="background:rgba(255,255,255,0.06);padding:12px;border-radius:12px;text-align:center">
+        <div style="background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03));padding:12px;border-radius:12px;text-align:center">
           <div class="muted">Total Doações</div>
           <div id="finalTotalDoacao" class="metric-value">R$ 0,00</div>
         </div>
-
         <div style="background:linear-gradient(135deg,var(--accent),#3b82f6);padding:12px;border-radius:12px;text-align:center;color:#fff">
           <div class="muted" style="opacity:0.9">Total Geral</div>
           <div id="finalTotalGeral" class="metric-value">R$ 0,00</div>
@@ -366,25 +400,15 @@
       </div>
     </section>
 
-    <footer class="small muted" style="text-align:center;margin-top:10px">
-      Dados armazenados localmente (para segurança). Sincronização ativa com Firebase.
-    </footer>
-
+    <footer class="small muted" style="text-align:center;margin-top:10px">Dados armazenados localmente (localStorage). Faça export regularmente.</footer>
   </div>
 
-  <!-- CONFETTI -->
-  <div id="confettiRoot" class="confetti"></div>
-
-  <!-- ============================ -->
-  <!-- SCRIPT PRINCIPAL (IMPORTADO) -->
-  <!-- ============================ -->
-  <script type="module" src="firebase.js"></script>
-
-  <!-- SCRIPT LÓGICO COMPLETO DO APP -->
+  <!-- confetti holder -->
+  <div id="confettiRoot" class="confetti" aria-hidden="true"></div>
+  
   <script type="module">
-    <script type="module">
 /* ===========================
-   MAX ROTA — SCRIPT PRINCIPAL (COLAR INTEIRO)
+   MAX ROTA — SCRIPT PRINCIPAL
    =========================== */
 import { 
   doc, 
@@ -418,8 +442,8 @@ let state = {
   lastStartTime: null,
   status: 'stopped',
   celebrated: false,
-  valuesHidden: false,
-  savedDays: []
+  valuesHidden: false, // NOVO: Estado para ocultar/mostrar valores
+  savedDays: [] // Para armazenar resumos salvos
 };
 
 /* ============================================
@@ -430,7 +454,8 @@ function loadLocalState() {
   try {
     const s = localStorage.getItem("maxrota_state");
     if (s) Object.assign(state, JSON.parse(s));
-    // legacy fallback
+    
+    // Assegura que savedDays é um array se o localStorage não o definiu (caso de estado antigo)
     if (!Array.isArray(state.savedDays)) {
       state.savedDays = JSON.parse(localStorage.getItem("maxrota_days") || "[]");
     }
@@ -445,65 +470,50 @@ function saveLocalState() {
 
 async function loadState() {
   const uid = window.__USER_UID__;
+
+  loadLocalState(); // carrega o local primeiro (UI não atualiza ainda)
+
   if (!uid) {
-    // sem usuário: carrega local
-    loadLocalState();
+    console.warn("Sem UID — usando apenas LocalStorage");
     updateUI();
     return;
   }
 
-  const fb = window.__FIREBASE__;
-  if(!fb || !fb.db){
-    console.warn("Firebase ainda não inicializado. Carregando local.");
-    loadLocalState();
-    updateUI();
-    return;
-  }
-  const { db } = fb;
+  const { db } = window.__FIREBASE__;
   const ref = doc(db, "users", uid);
 
   try {
     const snap = await getDoc(ref);
+
     if (snap.exists()) {
-      console.log("Carregado do Firebase", snap.data());
-      // merge: manter defaults quando campos ausentes
-      const remote = snap.data();
-      Object.assign(state, remote);
-      // garantir tipos corretos
-      state.meta = Number(state.meta||0);
-      state.ganhosApps = Number(state.ganhosApps||0);
-      state.ganhosLoja = Number(state.ganhosLoja||0);
-      state.gastos = Number(state.gastos||0);
-      state.kmInicial = Number(state.kmInicial||0);
-      state.kmFinal = Number(state.kmFinal||0);
-      state.totalTimeWorked = Number(state.totalTimeWorked||0);
-      state.history = Array.isArray(state.history)? state.history : [];
-      state.savedDays = Array.isArray(state.savedDays)? state.savedDays : (JSON.parse(localStorage.getItem("maxrota_days")||"[]"));
-      saveLocalState();
-      updateUI();
+      console.log("⚡ Firebase carregado");
+      const cloud = snap.data();
+
+      // Estado final = Firebase sobrepõe localStorage
+      Object.assign(state, cloud);
+
+      saveLocalState(); // backup local
     } else {
-      console.log("Primeiro acesso — criando registro no Firebase.");
-      await saveState(); // cria o documento
+      console.log("Primeiro acesso — criando estado no Firebase");
+      await setDoc(ref, state);
     }
   } catch (e) {
-    console.error("Erro ao carregar do Firebase:", e);
-    loadLocalState(); // fallback
-    updateUI();
+    console.error("Erro ao carregar Firebase:", e);
   }
+
+  updateUI(); // só chama aqui
 }
 
 async function saveState() {
   const uid = window.__USER_UID__;
-  // sempre salva local primeiro
+  const { db } = window.__FIREBASE__;
+
+  // Sempre salva local
   saveLocalState();
 
-  if (!uid) return; // sem usuário logado, nada a enviar
-  const fb = window.__FIREBASE__;
-  if(!fb || !fb.db){
-    console.warn("Firebase não disponível no momento.");
-    return;
-  }
-  const { db } = fb;
+  // Se o usuário não estiver logado → não salva na nuvem
+  if (!uid) return;
+
   const ref = doc(db, "users", uid);
 
   try {
@@ -516,7 +526,8 @@ async function saveState() {
 
 async function saveDaySummary() {
   const uid = window.__USER_UID__;
-  const fb = window.__FIREBASE__;
+  const { db } = window.__FIREBASE__;
+
   const resumo = {
     id: new Date().toISOString(),
     date: new Date().toISOString(),
@@ -529,33 +540,48 @@ async function saveDaySummary() {
     entradasApps: state.entradasApps,
     entradasLoja: state.entradasLoja,
     gastos: state.gastos,
-    lucro: state.ganhosApps + state.ganhosLoja + state.totalDoacao - state.gastos,
+    lucro:
+      state.ganhosApps +
+      state.ganhosLoja +
+      state.totalDoacao -
+      state.gastos,
     tempo: state.totalTimeWorked,
     km: state.kmFinal - state.kmInicial,
-    history: state.history
+    history: state.history,
   };
 
-  // atualiza local
+  // Atualiza a cópia local do estado e faz o backup de dias no localStorage
   let days = state.savedDays || [];
   days.unshift(resumo);
-  state.savedDays = days.slice(0, 120);
-  localStorage.setItem("maxrota_days", JSON.stringify(state.savedDays));
-  saveLocalState();
+  state.savedDays = days;
+  localStorage.setItem("maxrota_days", JSON.stringify(days.slice(0, 120))); // Backup local (limitado a 120 dias)
+  saveLocalState(); // Salva o novo array days dentro do estado principal no localStorage
 
-  if (!uid || !fb || !fb.db) {
-    console.warn("Resumo salvo localmente (sem Firebase).");
+
+  if (!uid) {
+    console.warn("Resumo salvo localmente, usuário deslogado.");
     return;
   }
 
-  const { db } = fb;
   const ref = doc(db, "users", uid);
+
   try {
-    await setDoc(ref, { savedDays: state.savedDays }, { merge: true });
+    // Salva o array completo no Firebase
+    await setDoc(
+      ref,
+      {
+        savedDays: state.savedDays,
+      },
+      { merge: true }
+    );
     console.log("Resumo do dia enviado ao Firebase.");
   } catch (e) {
     console.error("Erro ao salvar resumo no Firebase:", e);
   }
 }
+
+/* FIM DAS FUNÇÕES DE SYNC */
+
 
 /* REFS */
 const metaInput = $('#metaInput'), setMetaBtn = $('#setMetaBtn'), progressBar = $('#progressBar'), progressText = $('#progressText'), metaMessage = $('#metaMessage'), progressBubbles = $('#progressBubbles');
@@ -570,9 +596,9 @@ const finalTotalApps = $('#finalTotalApps'), finalTotalLoja = $('#finalTotalLoja
 const confettiRoot = $('#confettiRoot'), saveAndResetBtn = $('#saveAndResetBtn'), exportBtn = $('#exportBtn'), viewHistoryBtn = $('#viewHistoryBtn'), historyPanel = $('#historyPanel');
 const autoThemeBtn = $('#autoThemeBtn'), themeDots = $$('.color-dot');
 const resumoCategorias = $('#resumoCategorias');
-const toggleValuesBtn = $('#toggleValuesBtn');
+const toggleValuesBtn = $('#toggleValuesBtn'); 
 
-/* TOGGLE VALORES */
+/* NOVO: FUNÇÃO DE TOGGLE VALORES */
 function toggleValuesVisibility(){
   state.valuesHidden = !state.valuesHidden;
   saveState();
@@ -580,18 +606,18 @@ function toggleValuesVisibility(){
   toggleValuesBtn.setAttribute('aria-pressed', state.valuesHidden);
   updateUI();
 }
-toggleValuesBtn && toggleValuesBtn.addEventListener('click', toggleValuesVisibility);
+toggleValuesBtn.addEventListener('click', toggleValuesVisibility);
 
 /* RADIO */
 function setActiveStation(btn){ stationButtons.forEach(b=>b.classList.remove('active')); if(btn) btn.classList.add('active'); }
 stationButtons.forEach(btn=>btn.addEventListener('click', async ()=>{
   try{ radioPlayer.pause(); }catch{} radioPlayer.src='';
-  const url = btn.dataset.src; const name = btn.dataset.name || btn.textContent || 'Rádio';
+  const url = btn.dataset.src; const name = btn.dataset.name || 'Rádio';
   setActiveStation(btn); nowPlaying.textContent = 'Carregando: ' + name;
   try{ radioPlayer.src = url; radioPlayer.load(); await radioPlayer.play(); nowPlaying.textContent = 'Tocando: ' + name; }catch(err){ console.warn('Erro tocar',err); nowPlaying.textContent = 'Falha ao tocar ' + name; setActiveStation(null); }
 }));
-stopRadioBtn && stopRadioBtn.addEventListener('click', ()=>{ try{ radioPlayer.pause(); radioPlayer.removeAttribute('src'); radioPlayer.load(); }catch(e){} nowPlaying.textContent='Nenhuma rádio selecionada.'; setActiveStation(null); });
-radioPlayer && radioPlayer.addEventListener('error', ()=>{ nowPlaying.textContent='Erro ao carregar a estação.'; setActiveStation(null); });
+stopRadioBtn.addEventListener('click', ()=>{ try{ radioPlayer.pause(); radioPlayer.removeAttribute('src'); radioPlayer.load(); }catch(e){} nowPlaying.textContent='Nenhuma rádio selecionada.'; setActiveStation(null); });
+radioPlayer.addEventListener('error', ()=>{ nowPlaying.textContent='Erro ao carregar a estação.'; setActiveStation(null); });
 
 /* TIMER & KM */
 let timerInterval = null;
@@ -601,27 +627,31 @@ function getKMRodados(){ const ini=Number(state.kmInicial||0), fim=Number(state.
 function startTimer(){ stopTimer(); if(!state.lastStartTime) state.lastStartTime = Date.now(); timerInterval = setInterval(()=>{ tempoTrabalhado.textContent = formatTime(getTempoTotal()); updateDerivedMetrics(); },1000); }
 function stopTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } }
 
-toggleStartBtn && toggleStartBtn.addEventListener('click', ()=>{
+toggleStartBtn.addEventListener('click', ()=>{
   if(state.status==='stopped'){ state.status='running'; state.lastStartTime=Date.now(); toggleStartBtn.textContent='Pausar'; startTimer(); }
   else if(state.status==='running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); state.lastStartTime=null; state.status='paused'; toggleStartBtn.textContent='Retomar'; stopTimer(); }
   else if(state.status==='paused'){ state.status='running'; state.lastStartTime=Date.now(); toggleStartBtn.textContent='Pausar'; startTimer(); }
   saveState(); updateUI();
 });
 
-finalizeBtn && finalizeBtn.addEventListener('click', ()=>{
+finalizeBtn.addEventListener('click', ()=>{
   if(state.status==='running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); state.lastStartTime=null; }
   const tempoFinal = getTempoTotal(); const kmDia = getKMRodados();
   state.status='stopped'; stopTimer();
+  // remove previous resumo if exists
   const existing = finalizeBtn.parentElement.querySelector('.day-resume-card'); if(existing) existing.remove();
+  // small summary card
   const resumoCard = document.createElement('div'); resumoCard.className='day-resume-card'; resumoCard.style.padding='10px'; resumoCard.style.marginTop='10px'; resumoCard.style.borderRadius='10px'; resumoCard.style.background='rgba(255,255,255,0.06)';
   resumoCard.innerHTML = `<b>Dia Finalizado</b><br>Tempo Trabalhado: ${formatTime(tempoFinal)}<br>KM Rodado: ${formatKM(kmDia)}`;
   finalizeBtn.parentElement.appendChild(resumoCard);
+  // zero timer totals (as requested)
   state.totalTimeWorked = 0;
   state.lastStartTime = null;
   saveState(); updateUI();
 });
 
-saveKmBtn && saveKmBtn.addEventListener('click', ()=>{
+saveKmBtn.addEventListener('click', ()=>{
+  // read user inputs (but avoid overwriting while typing - this is a user action, so ok)
   state.kmInicial = Number(kmInicialEl.value) || 0;
   state.kmFinal = Number(kmFinalEl.value) || 0;
   saveState(); updateUI();
@@ -637,11 +667,12 @@ function addLancamento({type,value,category}){
   } else { state.gastos += item.value; }
   state.history.unshift(item);
   saveState(); updateUI();
+  // after adding, ensure input cleared for quick next entry
   valorEntrada.value=''; valorSaida.value='';
 }
 
-$('#addEntradaBtn') && $('#addEntradaBtn').addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ console.error('Valor inválido'); return; } addLancamento({type:'ganho',value:v,category:'Particular'}); });
-$('#addSaidaBtn') && $('#addSaidaBtn').addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ console.error('Valor inválido'); return; } addLancamento({type:'gasto',value:v,category:'Outros'}); });
+$('#addEntradaBtn').addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ console.error('Valor inválido'); return; } addLancamento({type:'ganho',value:v,category:'Particular'}); });
+$('#addSaidaBtn').addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ console.error('Valor inválido'); return; } addLancamento({type:'gasto',value:v,category:'Outros'}); });
 
 appBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ console.error('Valor inválido'); return; } const cat=b.dataset.cat; addLancamento({type:'ganho',value:v,category:cat}); }));
 gastoBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ console.error('Valor inválido'); return; } addLancamento({type:'gasto',value:v,category:b.dataset.cat}); }));
@@ -652,9 +683,13 @@ function renderLancamentos(){
   lancamentosList.innerHTML = '';
   state.history.slice(0,200).forEach(it=>{
     const el = document.createElement('div'); el.className='launch-item';
+    
+    // Aplica a classe de ocultação/máscara se os valores estiverem escondidos
     const valueClass = state.valuesHidden ? 'hidden-value' : '';
+
     const left = document.createElement('div'); left.style.fontWeight='800'; 
     left.innerHTML = `${it.category}: ${it.type==='ganho'?'+':'-'} <span class="${valueClass}">${formatBRL(it.value)}</span>`;
+    
     const right = document.createElement('div');
     const edit = document.createElement('button'); edit.className='btn-ghost'; edit.textContent='✏️'; edit.style.marginRight='8px';
     const del = document.createElement('button'); del.className='btn-ghost'; del.textContent='🗑️';
@@ -667,11 +702,13 @@ function renderLancamentos(){
       if(novoStr===null) return;
       const novo = Number(novoStr);
       if(isNaN(novo) || novo<0){ console.error('Valor inválido'); return; }
+      // revert old
       if(it.type==='ganho'){
         if(it.category==='Loja') state.ganhosLoja -= it.value;
         else if(it.category==='Doação') state.totalDoacao -= it.value;
         else state.ganhosApps -= it.value;
       } else state.gastos -= it.value;
+      // apply new
       it.value = novo;
       if(it.type==='ganho'){
         if(it.category==='Loja') state.ganhosLoja += it.value;
@@ -684,6 +721,7 @@ function renderLancamentos(){
     del.addEventListener('click', ()=>{
       if(!confirm('Excluir lançamento?')) return;
       state.history = state.history.filter(x=>x.id !== it.id);
+      // rebuild totals cleanly
       recalcTotalsFromHistory();
       saveState(); updateUI();
     });
@@ -707,7 +745,10 @@ function renderResumoCategorias(){
   const totals = {}; const counts = {};
   state.history.forEach(it => { if(it.type!=='ganho') return; const c = it.category || 'Outros'; totals[c] = (totals[c]||0) + it.value; counts[c] = (counts[c]||0) + 1; });
   resumoCategorias.innerHTML = '';
+
+  // Aplica a classe de ocultação/máscara se os valores estiverem escondidos
   const valueClass = state.valuesHidden ? 'hidden-value' : '';
+
   const order = ['Uber','99','inDriver','Particular','Loja','Doação'];
   order.forEach(cat=>{ 
     const val=totals[cat]||0, cnt=counts[cat]||0; 
@@ -733,6 +774,9 @@ function updateDerivedMetrics(){
   const mediaLiq = horas>0? lucro / horas : 0;
   const lucroKm = getKMRodados()>0? lucro / getKMRodados() : 0;
 
+  // Aplica a classe de ocultação/máscara se os valores estiverem escondidos
+  const valueClass = state.valuesHidden ? 'hidden-value' : '';
+
   metricGanhosApps.textContent = formatBRL(state.ganhosApps);
   metricGanhosTotal.textContent = formatBRL(totalBruto);
   metricGastosTotal.textContent = formatBRL(state.gastos);
@@ -743,6 +787,7 @@ function updateDerivedMetrics(){
   metricEntradasApps.textContent = state.entradasApps;
   metricEntradasLoja.textContent = state.entradasLoja;
   
+  // Aplica a classe de ocultação para os valores
   $$('#metricGanhosApps, #metricGanhosTotal, #metricGastosTotal, #metricLucroTotal, #metricMediaHoraBrutoTotal, #metricMediaHoraLiqTotal, #metricLucroKmTotal, #metricEntradasApps, #metricEntradasLoja').forEach(el => {
     el.classList.toggle('hidden-value', state.valuesHidden);
   });
@@ -761,8 +806,12 @@ function updateProgressBar(){
   const pct = Math.min(100, (atual/meta)*100);
   progressBar.style.width = pct + '%';
   progressText.textContent = Math.round(pct) + '%';
-  if(atual < meta){ metaMessage.innerHTML = `Faltam <span class="${state.valuesHidden ? 'hidden-value' : ''}">${formatBRL(meta - atual)}</span> para bater a meta.`; }
-  else { metaMessage.innerHTML = `Meta batida! (+<span class="${state.valuesHidden ? 'hidden-value' : ''}">${formatBRL(atual - meta)}</span>)`; celebrate(); }
+  
+  // Aplica a classe de ocultação/máscara se os valores estiverem escondidos
+  const valueClass = state.valuesHidden ? 'hidden-value' : '';
+  
+  if(atual < meta){ metaMessage.innerHTML = `Faltam <span class="${valueClass}">${formatBRL(meta - atual)}</span> para bater a meta.`; }
+  else { metaMessage.innerHTML = `Meta batida! (+<span class="${valueClass}">${formatBRL(atual - meta)}</span>)`; celebrate(); }
 }
 
 /* celebration */
@@ -781,6 +830,7 @@ function playVictorySequence(){
     const osc = ctx.createOscillator(); osc.type='sawtooth'; osc.frequency.value=480;
     const g = ctx.createGain(); g.gain.setValueAtTime(0.01, now); g.gain.exponentialRampToValueAtTime(0.9, now+0.05); g.gain.exponentialRampToValueAtTime(0.01, now+1.4);
     osc.connect(g); g.connect(ctx.destination); osc.start(now); osc.stop(now+1.45);
+    // applause
     const length = ctx.sampleRate * 4;
     const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
     const data = buffer.getChannelData(0);
@@ -802,58 +852,68 @@ function triggerConfetti(){
   }
 }
 
-/* SAVE / RESET */
-saveAndResetBtn && saveAndResetBtn.addEventListener('click', async ()=>{
+saveAndResetBtn.addEventListener('click', async ()=>{
   if(!confirm('Deseja salvar o resumo do dia e resetar todos os dados atuais?')) return;
-  await saveDaySummary();
+  await saveDaySummary(); // Salva antes de resetar
+  
+  // Mantém apenas o estado de ocultação e o histórico salvo. O resto é zerado.
   const tempHidden = state.valuesHidden;
-  const tempSavedDays = state.savedDays;
-  state = { meta:0, ganhosApps:0, ganhosLoja:0, totalDoacao:0, entradasApps:0, entradasLoja:0, gastos:0, history:[], kmInicial:0, kmFinal:0, totalTimeWorked:0, lastStartTime:null, status:'stopped', celebrated:false, valuesHidden: tempHidden, savedDays: tempSavedDays };
+  const tempSavedDays = state.savedDays; 
+
+  state = { meta:0, ganhosApps:0, ganhosLoja:0, totalDoacao:0, entradasApps:0, entradasLoja:0, gastos:0, history:[], kmInicial:0, kmFinal:0, totalTimeWorked:0, lastStartTime:null, status:'stopped', celebrated:false, valuesHidden: tempHidden, savedDays: tempSavedDays }; 
+  
   kmInicialEl.value=''; kmFinalEl.value=''; metaInput.value=''; valorEntrada.value=''; valorSaida.value='';
   toggleStartBtn.textContent='Iniciar Expediente';
-  stopTimer();
-  await saveState();
+  stopTimer(); 
+  await saveState(); 
   updateUI();
 });
 
-exportBtn && exportBtn.addEventListener('click', ()=>{
+exportBtn.addEventListener('click', ()=>{
+  // Exporta o estado atual, que inclui savedDays (o histórico completo)
   const data = { state: state };
   const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='maxrota_export.json'; a.click(); URL.revokeObjectURL(url);
 });
 
-viewHistoryBtn && viewHistoryBtn.addEventListener('click', ()=>{ historyPanel.classList.toggle('hidden'); if(!historyPanel.classList.contains('hidden')) renderHistory(); });
+viewHistoryBtn.addEventListener('click', ()=>{ historyPanel.classList.toggle('hidden'); if(!historyPanel.classList.contains('hidden')) renderHistory(); });
 function renderHistory(){
+  // Usa state.savedDays que foi carregado do Firebase/localStorage
   const arr = state.savedDays || [];
   if(!arr || arr.length===0){ historyPanel.innerHTML = '<div class="muted small">Nenhum dia salvo.</div>'; return; }
+  
   historyPanel.innerHTML = arr.map(d=>{
     const date = new Date(d.date);
     return `<div style="padding:10px;border-bottom:1px solid rgba(255,255,255,0.04)"><div style="font-weight:800">${date.toLocaleString()}</div><div class="small muted">Lucro: ${formatBRL(d.lucro)} · KM: ${d.km} · Média/H: ${formatBRL(d.mediaHora||0)}</div><div style="margin-top:8px"><button class="btn-ghost open-day" data-id="${d.id}">Abrir</button> <button class="btn-ghost del-day" data-id="${d.id}">Excluir</button></div></div>`;
   }).join('');
+  
+  // Ações de exclusão e visualização
   historyPanel.querySelectorAll('.del-day').forEach(b=>b.addEventListener('click', async ()=>{
     if(!confirm('Excluir dia?')) return;
-    const id = b.dataset.id;
+    const id = b.dataset.id; 
     state.savedDays = state.savedDays.filter(x=>x.id !== id);
-    await saveState();
+    await saveState(); // Salva o estado sem o dia excluído no Firebase e local
     renderHistory();
   }));
   historyPanel.querySelectorAll('.open-day').forEach(b=>b.addEventListener('click', ()=>{
     const id = b.dataset.id; const d = state.savedDays.find(x=>x.id===id); if(!d) return console.error('Dia não encontrado.');
+    console.log(d); // Loga o objeto completo
     alert(`Resumo ${new Date(d.date).toLocaleString()}\nLucro: ${formatBRL(d.lucro)}\nKM: ${d.km} km\nTempo: ${formatTime(d.tempo)}\nEntradas App: ${d.entradasApps} · Loja: ${d.entradasLoja}`);
   }));
 }
+
 
 /* THEMES */
 let autoMode = true;
 function applyAutoTheme(){ if(!autoMode) return; const hour = new Date().getHours(); const day = hour>=6 && hour<18; document.body.classList.toggle('light-mode', day); autoThemeBtn.textContent = day? 'Modo Dia ☀️' : 'Modo Noite 🌙'; }
 applyAutoTheme(); setInterval(()=>{ if(autoMode) applyAutoTheme(); },60*1000);
-autoThemeBtn && autoThemeBtn.addEventListener('click', ()=>{ autoMode = !autoMode; if(autoMode){ applyAutoTheme(); } else { document.body.classList.toggle('light-mode'); } });
+autoThemeBtn.addEventListener('click', ()=>{ autoMode = !autoMode; if(autoMode){ applyAutoTheme(); } else { document.body.classList.toggle('light-mode'); } });
 
 themeDots.forEach(d=>d.addEventListener('click', ()=>{ const acc=d.dataset.accent; document.body.classList.remove('accent-green','accent-orange','accent-yellow','accent-red','accent-pink'); document.body.classList.add('accent-'+acc); localStorage.setItem('maxrota_accent', acc); }));
 const savedAccent = localStorage.getItem('maxrota_accent') || 'green'; document.body.classList.add('accent-'+savedAccent);
 
-/* SET META */
-setMetaBtn && setMetaBtn.addEventListener('click', () => {
+/* SET META (fix: safe save and persist) */
+setMetaBtn.addEventListener('click', () => {
   const v = Number(metaInput.value);
   if(!isNaN(v) && v > 0){
     state.meta = v;
@@ -868,62 +928,118 @@ function renderResumoFinal(){
   const totalApps = state.ganhosApps;
   const totalLoja = state.ganhosLoja;
   const totalDoacao = state.totalDoacao;
-  const totalGeralBruto = totalApps + totalLoja + totalDoacao;
-  const lucroFinal = totalGeralBruto - state.gastos;
+  const totalGeralBruto = totalApps + totalLoja + totalDoacao; // Total bruto para calculo do lucro
+  const lucroFinal = totalGeralBruto - state.gastos; // O Total Geral na verdade é o lucro líquido
+  
+  // Aplica a classe de ocultação/máscara se os valores estiverem escondidos
+  const valueClass = state.valuesHidden ? 'hidden-value' : '';
+
   finalTotalApps.textContent = formatBRL(totalApps);
   finalTotalLoja.textContent = formatBRL(totalLoja);
   finalTotalDoacao.textContent = formatBRL(totalDoacao);
-  finalTotalGeral.textContent = formatBRL(lucroFinal);
+  finalTotalGeral.textContent = formatBRL(lucroFinal); // Mostra o lucro líquido
+
+  // Aplica a classe de ocultação
   finalTotalApps.classList.toggle('hidden-value', state.valuesHidden);
   finalTotalLoja.classList.toggle('hidden-value', state.valuesHidden);
   finalTotalDoacao.classList.toggle('hidden-value', state.valuesHidden);
   finalTotalGeral.classList.toggle('hidden-value', state.valuesHidden);
 }
 
-/* UPDATE UI */
+/* UPDATE UI (focus-safe: não sobrescreve campos enquanto usuário digita) */
 function updateUI(){
-  toggleValuesBtn && (toggleValuesBtn.textContent = state.valuesHidden ? 'Mostrar Valores' : 'Esconder Valores');
-  toggleValuesBtn && toggleValuesBtn.setAttribute('aria-pressed', state.valuesHidden);
+  // NOVO: Atualiza o texto do botão de toggle ao carregar
+  toggleValuesBtn.textContent = state.valuesHidden ? 'Mostrar Valores' : 'Esconder Valores';
+  toggleValuesBtn.setAttribute('aria-pressed', state.valuesHidden);
+  
+  // don't overwrite inputs while user is focused on them
   if(document.activeElement !== metaInput) metaInput.value = state.meta || '';
   if(document.activeElement !== kmInicialEl) kmInicialEl.value = state.kmInicial || '';
   if(document.activeElement !== kmFinalEl) kmFinalEl.value = state.kmFinal || '';
+
   if(state.status==='running') toggleStartBtn.textContent='Pausar';
   else if(state.status==='paused') toggleStartBtn.textContent='Retomar';
   else toggleStartBtn.textContent='Iniciar Expediente';
+
   renderLancamentos(); renderResumoCategorias(); updateDerivedMetrics(); renderResumoFinal(); 
 }
 
 /* LOAD initial */
+// O loadState() será chamado automaticamente pelo listener do AUTH-GUARD/DOMContentLoaded
 if (state.status === 'running' && state.lastStartTime) startTimer();
-loadLocalState();
-updateUI();
+loadLocalState(); // Carrega o local (para ser sobrescrito pelo Firebase logo depois, se houver UID)
+updateUI(); // Chama updateUI para garantir que a interface inicial seja renderizada
+</script>
 
-/* Sincronização automática: aguarda auth */
+<!-- FIREBASE IMPORTS (GLOBAL) - Adicionado ANTES do </body> -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // CONFIG DO SEU FIREBASE
+  const firebaseConfig = {
+    apiKey: "AIzaSyBXkQlm0TbCsCdVGil8-5kGWbtj07SKXwA",
+    authDomain: "maxrota.firebaseapp.com",
+    projectId: "maxrota",
+    storageBucket: "maxrota.firebasestorage.app",
+    messagingSenderId: "425002957978",
+    appId: "1:425002957978:web:1e4f38239e552de452f323",
+    measurementId: "G-RBK7LM483D"
+  };
+
+  // Inicializar
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Torna acessível no escopo global
+  window.__FIREBASE__ = { auth, db };
+  // Também expõe o auth para o AUTH-GUARD e LOGOUT
+  window.auth = auth; 
+</script>
+
+
+<!-- BLOCO DE SAÍDA (LOGOUT) ADICIONADO AQUI -->
+<script type="module">
+import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+window.logout = async () => {
+  await signOut(window.auth); 
+  location.href = "login.html";
+};
+</script>
+
+<!-- LISTENERS DE SINCRONIZAÇÃO AUTOMÁTICA (Atualizado) -->
+<script type="module">
+// Carrega assim que o usuário estiver logado
 document.addEventListener("DOMContentLoaded", () => {
-  const check = setInterval(() => {
-    if (window.__USER_UID__) {
-      clearInterval(check);
-      // inicializa dados Firebase e carrega estado do servidor
+  const wait = setInterval(() => {
+    if (window.__USER_UID__ && window.loadState) {
+      clearInterval(wait);
       loadState();
     }
-  }, 300);
+  }, 200);
 });
 
-// Poll periódico para manter sincronizado (opcional)
+// Sincroniza a cada 10s, mas sem quebrar inputs
 setInterval(async () => {
   if (!window.__USER_UID__) return;
+
+  // Cria uma cópia do estado antes de tentar carregar do Firebase
+  const before = JSON.stringify(window.state); 
+
   await loadState();
-}, 15000); 
 
+  // Verifica se o estado mudou após o carregamento (só para fins de log)
+  const after = JSON.stringify(window.state);
+
+  if (before !== after) {
+    console.log("🔄 Estado sincronizado com Firebase");
+  }
+}, 10000); 
 </script>
-  </script>
-
-  <!-- LOGOUT -->
-  <script type="module">
-    import { auth } from "./firebase.js";
-    import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    window.logout = async () => { await signOut(auth); location.href = "login.html"; };
-  </script>
 
 </body>
 </html>
+
