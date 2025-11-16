@@ -844,14 +844,13 @@ loadLocalState();
 updateUI();
             </script>
             <!-- ===========================
-      FIREBASE CORE (PARTE FINAL)
+      FIREBASE CORE (CARREGA PRIMEIRO)
 ===========================-->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
   import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
   import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-  // CONFIG DA SUA CONTA FIREBASE
   const firebaseConfig = {
     apiKey: "AIzaSyBXkQlm0TbCsCdVGil8-5kGWbtj07SKXwA",
     authDomain: "maxrota.firebaseapp.com",
@@ -862,14 +861,42 @@ updateUI();
     measurementId: "G-RBK7LM483D"
   };
 
-  // Inicializar Firebase
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
 
-  // Expor globalmente
   window.__FIREBASE__ = { auth, db };
   window.auth = auth;
+</script>
+
+<!-- ===========================
+      AUTH GUARD (AGORA NO LUGAR CERTO)
+===========================-->
+<script type="module">
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+  const wait = setInterval(() => {
+    if (window.__FIREBASE__ && window.auth) {
+      clearInterval(wait);
+
+      onAuthStateChanged(window.auth, user => {
+        if (!user) {
+          console.log("⛔ Usuário não logado → redirecionando");
+          location.href = "login.html";
+          return;
+        }
+
+        console.log("🔐 Usuário logado:", user.uid);
+        window.__USER_UID__ = user.uid;
+
+        // Agora sim: carrega o estado do Firebase
+        if (window.loadState) {
+          console.log("📡 Carregando dados iniciais do Firebase…");
+          window.loadState();
+        }
+      });
+    }
+  }, 200);
 </script>
 
 <!-- ===========================
@@ -886,55 +913,15 @@ updateUI();
 </script>
 
 <!-- ===========================
-      SINCRONIZAÇÃO AUTOMÁTICA
+      SINCRONIZAÇÃO PERIÓDICA
 ===========================-->
 <script type="module">
-
-  // Aguarda login e carrega estado do Firebase
-  document.addEventListener("DOMContentLoaded", () => {
-    const check = setInterval(() => {
-      if (window.__USER_UID__) {
-        clearInterval(check);
-        console.log("🔄 Sincronizando dados iniciais com Firebase…");
-        loadState();
-      }
-    }, 300);
-  });
-
-  // A cada 15s sincroniza com Firebase (sem apagar nada do layout)
-  setInterval(async () => {
-    if (!window.__USER_UID__) return;
-    console.log("🔄 Atualizando dados do Firebase…");
-    await loadState();
-  }, 15000);
-
-</script>
-<!-- AUTH GUARD (CORRIGIDO — AGORA DEPOIS DO FIREBASE) -->
-<script type="module">
-  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-  const waitForFirebase = setInterval(() => {
-    if (window.__FIREBASE__ && window.auth) {
-      clearInterval(waitForFirebase);
-
-      onAuthStateChanged(window.auth, user => {
-        if (!user) {
-          console.log("⛔ Nenhum usuário logado — redirecionando");
-          location.href = "login.html";
-          return;
-        }
-
-        console.log("🔐 Usuário logado:", user.uid);
-        window.__USER_UID__ = user.uid;
-
-        // Agora SIM podemos carregar tudo
-        if (window.loadState) {
-          console.log("📡 Carregando dados do Firebase...");
-          window.loadState();
-        }
-      });
+  setInterval(() => {
+    if (window.__USER_UID__ && window.loadState) {
+      console.log("🔄 Sincronizando com Firebase...");
+      loadState();
     }
-  }, 200);
+  }, 15000);
 </script>
 </body>
 </html>
