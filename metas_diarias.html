@@ -1,6 +1,22 @@
 <!doctype html><!--force-refresh-->
 <html lang="pt-BR">
 <head>
+  <!-- FORCE NO-CACHE -->
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+
+<script>
+  // Força o navegador a sempre carregar a versão mais recente
+  (function() {
+    const version = "v1.0.4"; // você pode mudar quando quiser
+    if (localStorage.getItem("maxrota_version") !== version) {
+      localStorage.setItem("maxrota_version", version);
+      console.log("🧹 Limpando cache automaticamente...");
+      window.location.reload(true);
+    }
+  })();
+</script>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>MAX ROTA DIÁRIO</title>
