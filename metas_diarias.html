@@ -957,7 +957,29 @@ $("#addSaidaBtn").addEventListener("click", () => {
   const v = Number(valorSaida.value);
   if (v > 0) addLancamento({ type: "gasto", value: v, category: "Outros" });
 });
+/* ===========================
+   SALVAR META (FIX)
+=========================== */
+setMetaBtn.addEventListener("click", () => {
+  const v = Number(metaInput.value) || 0;
+  state.meta = v;
+  saveState();
+  updateDerivedMetrics();
+  updateUI();
+});
 
+
+/* ===========================
+   SALVAR KM (FIX)
+=========================== */
+saveKmBtn.addEventListener("click", () => {
+  state.kmInicial = Number(kmInicialEl.value) || 0;
+  state.kmFinal = Number(kmFinalEl.value) || 0;
+
+  saveState();
+  updateDerivedMetrics();
+  updateUI();
+});
 appBtns.forEach(b =>
   b.addEventListener("click", () => {
     const v = Number(valorEntrada.value);
