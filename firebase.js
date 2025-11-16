@@ -1,12 +1,12 @@
-// ===============================
-// MAX ROTA – Firebase Inicialização
-// ===============================
+// =================================
+// MAX ROTA — FIREBASE INICIALIZAÇÃO
+// =================================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// 🔥 SUA CONFIGURAÇÃO FIREBASE
+// SUA CONFIGURAÇÃO
 const firebaseConfig = {
   apiKey: "AIzaSyBXkQlm0TbCsCdVGil8-5kGWbtj07SKXwA",
   authDomain: "maxrota.firebaseapp.com",
@@ -17,9 +17,8 @@ const firebaseConfig = {
   measurementId: "G-RBK7LM483D"
 };
 
-// Inicializa
 const app = initializeApp(firebaseConfig);
 
-// Exporta serviços
+// EXPORTA AUTH E DB
 export const auth = getAuth(app);
 export const db = getFirestore(app);
