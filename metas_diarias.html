@@ -382,12 +382,540 @@
 
   <!-- SCRIPT LÓGICO COMPLETO DO APP -->
   <script type="module">
-    /* TODO — AQUI ENTRA TODO O SEU SCRIPT PRINCIPAL
-       (ESTADOS, SALVAR, KM, META, LANÇAMENTOS, HISTÓRICO, RÁDIO, TEMPO, ETC)
-       — EXATAMENTE IGUAL AO QUE VOCÊ MANDOU —
-       — COMPLETO —
-       — FUNCIONANDO —
-    */
+    <script type="module">
+/* ===========================
+   MAX ROTA — SCRIPT PRINCIPAL (COLAR INTEIRO)
+   =========================== */
+import { 
+  doc, 
+  getDoc, 
+  setDoc, 
+  updateDoc 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"; // Importações do Firestore
+
+/* UTIL */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const uid = () => Math.random().toString(36).slice(2,9);
+
+function formatBRL(v){ return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+function formatKM(v){ return Number(v||0).toFixed(1) + ' km'; }
+function formatTime(ms){ if(!ms||ms<=0) return '00:00:00'; const s=Math.floor(ms/1000); const h=Math.floor(s/3600); const m=Math.floor((s%3600)/60); const sec=s%60; return [h,m,sec].map(n=>String(n).padStart(2,'0')).join(':'); }
+
+/* STATE */
+let state = {
+  meta: 0,
+  ganhosApps: 0,
+  ganhosLoja: 0,
+  totalDoacao: 0,
+  entradasApps: 0,
+  entradasLoja: 0,
+  gastos: 0,
+  history: [],
+  kmInicial: 0,
+  kmFinal: 0,
+  totalTimeWorked: 0,
+  lastStartTime: null,
+  status: 'stopped',
+  celebrated: false,
+  valuesHidden: false,
+  savedDays: []
+};
+
+/* ============================================
+   FIREBASE/LOCAL SYNC FUNCTIONS
+   ============================================ */
+
+function loadLocalState() {
+  try {
+    const s = localStorage.getItem("maxrota_state");
+    if (s) Object.assign(state, JSON.parse(s));
+    // legacy fallback
+    if (!Array.isArray(state.savedDays)) {
+      state.savedDays = JSON.parse(localStorage.getItem("maxrota_days") || "[]");
+    }
+  } catch (e) {
+    console.warn("Erro ao carregar estado local:", e);
+  }
+}
+
+function saveLocalState() {
+  localStorage.setItem("maxrota_state", JSON.stringify(state));
+}
+
+async function loadState() {
+  const uid = window.__USER_UID__;
+  if (!uid) {
+    // sem usuário: carrega local
+    loadLocalState();
+    updateUI();
+    return;
+  }
+
+  const fb = window.__FIREBASE__;
+  if(!fb || !fb.db){
+    console.warn("Firebase ainda não inicializado. Carregando local.");
+    loadLocalState();
+    updateUI();
+    return;
+  }
+  const { db } = fb;
+  const ref = doc(db, "users", uid);
+
+  try {
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      console.log("Carregado do Firebase", snap.data());
+      // merge: manter defaults quando campos ausentes
+      const remote = snap.data();
+      Object.assign(state, remote);
+      // garantir tipos corretos
+      state.meta = Number(state.meta||0);
+      state.ganhosApps = Number(state.ganhosApps||0);
+      state.ganhosLoja = Number(state.ganhosLoja||0);
+      state.gastos = Number(state.gastos||0);
+      state.kmInicial = Number(state.kmInicial||0);
+      state.kmFinal = Number(state.kmFinal||0);
+      state.totalTimeWorked = Number(state.totalTimeWorked||0);
+      state.history = Array.isArray(state.history)? state.history : [];
+      state.savedDays = Array.isArray(state.savedDays)? state.savedDays : (JSON.parse(localStorage.getItem("maxrota_days")||"[]"));
+      saveLocalState();
+      updateUI();
+    } else {
+      console.log("Primeiro acesso — criando registro no Firebase.");
+      await saveState(); // cria o documento
+    }
+  } catch (e) {
+    console.error("Erro ao carregar do Firebase:", e);
+    loadLocalState(); // fallback
+    updateUI();
+  }
+}
+
+async function saveState() {
+  const uid = window.__USER_UID__;
+  // sempre salva local primeiro
+  saveLocalState();
+
+  if (!uid) return; // sem usuário logado, nada a enviar
+  const fb = window.__FIREBASE__;
+  if(!fb || !fb.db){
+    console.warn("Firebase não disponível no momento.");
+    return;
+  }
+  const { db } = fb;
+  const ref = doc(db, "users", uid);
+
+  try {
+    await setDoc(ref, state, { merge: true });
+    console.log("Estado sincronizado com Firebase.");
+  } catch (e) {
+    console.error("Erro ao salvar no Firebase:", e);
+  }
+}
+
+async function saveDaySummary() {
+  const uid = window.__USER_UID__;
+  const fb = window.__FIREBASE__;
+  const resumo = {
+    id: new Date().toISOString(),
+    date: new Date().toISOString(),
+    meta: state.meta,
+    kmInicial: state.kmInicial,
+    kmFinal: state.kmFinal,
+    ganhosApps: state.ganhosApps,
+    ganhosLoja: state.ganhosLoja,
+    ganhoDoacao: state.totalDoacao,
+    entradasApps: state.entradasApps,
+    entradasLoja: state.entradasLoja,
+    gastos: state.gastos,
+    lucro: state.ganhosApps + state.ganhosLoja + state.totalDoacao - state.gastos,
+    tempo: state.totalTimeWorked,
+    km: state.kmFinal - state.kmInicial,
+    history: state.history
+  };
+
+  // atualiza local
+  let days = state.savedDays || [];
+  days.unshift(resumo);
+  state.savedDays = days.slice(0, 120);
+  localStorage.setItem("maxrota_days", JSON.stringify(state.savedDays));
+  saveLocalState();
+
+  if (!uid || !fb || !fb.db) {
+    console.warn("Resumo salvo localmente (sem Firebase).");
+    return;
+  }
+
+  const { db } = fb;
+  const ref = doc(db, "users", uid);
+  try {
+    await setDoc(ref, { savedDays: state.savedDays }, { merge: true });
+    console.log("Resumo do dia enviado ao Firebase.");
+  } catch (e) {
+    console.error("Erro ao salvar resumo no Firebase:", e);
+  }
+}
+
+/* REFS */
+const metaInput = $('#metaInput'), setMetaBtn = $('#setMetaBtn'), progressBar = $('#progressBar'), progressText = $('#progressText'), metaMessage = $('#metaMessage'), progressBubbles = $('#progressBubbles');
+const kmInicialEl = $('#kmInicial'), kmFinalEl = $('#kmFinal'), tempoTrabalhado = $('#tempoTrabalhado'), kmRodados = $('#kmRodados'), toggleStartBtn = $('#toggleStartBtn'), finalizeBtn = $('#finalizeBtn'), saveKmBtn = $('#saveKmBtn');
+const valorEntrada = $('#valorEntrada'), valorSaida = $('#valorSaida'), lancamentosList = $('#lancamentosList');
+const appBtns = $$('.app-btn'), gastoBtns = $$('.gasto-btn');
+const stationButtons = $$('#stationButtons .station-btn'), radioPlayer = $('#radioPlayer'), nowPlaying = $('#nowPlaying'), stopRadioBtn = $('#stopRadioBtn');
+const metricGanhosApps = $('#metricGanhosApps'), metricGanhosTotal = $('#metricGanhosTotal'), metricGastosTotal = $('#metricGastosTotal'), metricLucroTotal = $('#metricLucroTotal');
+const metricMediaHoraBrutoTotal = $('#metricMediaHoraBrutoTotal'), metricMediaHoraLiqTotal = $('#metricMediaHoraLiqTotal'), metricLucroKmTotal = $('#metricLucroKmTotal');
+const metricEntradasApps = $('#metricEntradasApps'), metricEntradasLoja = $('#metricEntradasLoja');
+const finalTotalApps = $('#finalTotalApps'), finalTotalLoja = $('#finalTotalLoja'), finalTotalDoacao = $('#finalTotalDoacao'), finalTotalGeral = $('#finalTotalGeral');
+const confettiRoot = $('#confettiRoot'), saveAndResetBtn = $('#saveAndResetBtn'), exportBtn = $('#exportBtn'), viewHistoryBtn = $('#viewHistoryBtn'), historyPanel = $('#historyPanel');
+const autoThemeBtn = $('#autoThemeBtn'), themeDots = $$('.color-dot');
+const resumoCategorias = $('#resumoCategorias');
+const toggleValuesBtn = $('#toggleValuesBtn');
+
+/* TOGGLE VALORES */
+function toggleValuesVisibility(){
+  state.valuesHidden = !state.valuesHidden;
+  saveState();
+  toggleValuesBtn.textContent = state.valuesHidden ? 'Mostrar Valores' : 'Esconder Valores';
+  toggleValuesBtn.setAttribute('aria-pressed', state.valuesHidden);
+  updateUI();
+}
+toggleValuesBtn && toggleValuesBtn.addEventListener('click', toggleValuesVisibility);
+
+/* RADIO */
+function setActiveStation(btn){ stationButtons.forEach(b=>b.classList.remove('active')); if(btn) btn.classList.add('active'); }
+stationButtons.forEach(btn=>btn.addEventListener('click', async ()=>{
+  try{ radioPlayer.pause(); }catch{} radioPlayer.src='';
+  const url = btn.dataset.src; const name = btn.dataset.name || btn.textContent || 'Rádio';
+  setActiveStation(btn); nowPlaying.textContent = 'Carregando: ' + name;
+  try{ radioPlayer.src = url; radioPlayer.load(); await radioPlayer.play(); nowPlaying.textContent = 'Tocando: ' + name; }catch(err){ console.warn('Erro tocar',err); nowPlaying.textContent = 'Falha ao tocar ' + name; setActiveStation(null); }
+}));
+stopRadioBtn && stopRadioBtn.addEventListener('click', ()=>{ try{ radioPlayer.pause(); radioPlayer.removeAttribute('src'); radioPlayer.load(); }catch(e){} nowPlaying.textContent='Nenhuma rádio selecionada.'; setActiveStation(null); });
+radioPlayer && radioPlayer.addEventListener('error', ()=>{ nowPlaying.textContent='Erro ao carregar a estação.'; setActiveStation(null); });
+
+/* TIMER & KM */
+let timerInterval = null;
+function getTempoTotal(){ let t = Number(state.totalTimeWorked || 0); if(state.status==='running' && state.lastStartTime) t += (Date.now() - state.lastStartTime); return t; }
+function getKMRodados(){ const ini=Number(state.kmInicial||0), fim=Number(state.kmFinal||0); return (fim>ini)?(fim-ini):0; }
+
+function startTimer(){ stopTimer(); if(!state.lastStartTime) state.lastStartTime = Date.now(); timerInterval = setInterval(()=>{ tempoTrabalhado.textContent = formatTime(getTempoTotal()); updateDerivedMetrics(); },1000); }
+function stopTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } }
+
+toggleStartBtn && toggleStartBtn.addEventListener('click', ()=>{
+  if(state.status==='stopped'){ state.status='running'; state.lastStartTime=Date.now(); toggleStartBtn.textContent='Pausar'; startTimer(); }
+  else if(state.status==='running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); state.lastStartTime=null; state.status='paused'; toggleStartBtn.textContent='Retomar'; stopTimer(); }
+  else if(state.status==='paused'){ state.status='running'; state.lastStartTime=Date.now(); toggleStartBtn.textContent='Pausar'; startTimer(); }
+  saveState(); updateUI();
+});
+
+finalizeBtn && finalizeBtn.addEventListener('click', ()=>{
+  if(state.status==='running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); state.lastStartTime=null; }
+  const tempoFinal = getTempoTotal(); const kmDia = getKMRodados();
+  state.status='stopped'; stopTimer();
+  const existing = finalizeBtn.parentElement.querySelector('.day-resume-card'); if(existing) existing.remove();
+  const resumoCard = document.createElement('div'); resumoCard.className='day-resume-card'; resumoCard.style.padding='10px'; resumoCard.style.marginTop='10px'; resumoCard.style.borderRadius='10px'; resumoCard.style.background='rgba(255,255,255,0.06)';
+  resumoCard.innerHTML = `<b>Dia Finalizado</b><br>Tempo Trabalhado: ${formatTime(tempoFinal)}<br>KM Rodado: ${formatKM(kmDia)}`;
+  finalizeBtn.parentElement.appendChild(resumoCard);
+  state.totalTimeWorked = 0;
+  state.lastStartTime = null;
+  saveState(); updateUI();
+});
+
+saveKmBtn && saveKmBtn.addEventListener('click', ()=>{
+  state.kmInicial = Number(kmInicialEl.value) || 0;
+  state.kmFinal = Number(kmFinalEl.value) || 0;
+  saveState(); updateUI();
+});
+
+/* LANÇAMENTOS */
+function addLancamento({type,value,category}){
+  const item = { id: uid(), type, value: Number(value), category, date: new Date().toISOString() };
+  if(type==='ganho'){
+    if(category==='Loja'){ state.ganhosLoja += item.value; state.entradasLoja++; }
+    else if(category==='Doação'){ state.totalDoacao += item.value; }
+    else { state.ganhosApps += item.value; state.entradasApps++; }
+  } else { state.gastos += item.value; }
+  state.history.unshift(item);
+  saveState(); updateUI();
+  valorEntrada.value=''; valorSaida.value='';
+}
+
+$('#addEntradaBtn') && $('#addEntradaBtn').addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ console.error('Valor inválido'); return; } addLancamento({type:'ganho',value:v,category:'Particular'}); });
+$('#addSaidaBtn') && $('#addSaidaBtn').addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ console.error('Valor inválido'); return; } addLancamento({type:'gasto',value:v,category:'Outros'}); });
+
+appBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ console.error('Valor inválido'); return; } const cat=b.dataset.cat; addLancamento({type:'ganho',value:v,category:cat}); }));
+gastoBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ console.error('Valor inválido'); return; } addLancamento({type:'gasto',value:v,category:b.dataset.cat}); }));
+
+/* RENDER LANÇAMENTOS */
+function renderLancamentos(){
+  if(!state.history || state.history.length===0){ lancamentosList.innerHTML = '<div class="muted small text-center">Nenhum lançamento ainda.</div>'; return; }
+  lancamentosList.innerHTML = '';
+  state.history.slice(0,200).forEach(it=>{
+    const el = document.createElement('div'); el.className='launch-item';
+    const valueClass = state.valuesHidden ? 'hidden-value' : '';
+    const left = document.createElement('div'); left.style.fontWeight='800'; 
+    left.innerHTML = `${it.category}: ${it.type==='ganho'?'+':'-'} <span class="${valueClass}">${formatBRL(it.value)}</span>`;
+    const right = document.createElement('div');
+    const edit = document.createElement('button'); edit.className='btn-ghost'; edit.textContent='✏️'; edit.style.marginRight='8px';
+    const del = document.createElement('button'); del.className='btn-ghost'; del.textContent='🗑️';
+    right.appendChild(edit); right.appendChild(del);
+    el.appendChild(left); el.appendChild(right);
+    lancamentosList.appendChild(el);
+
+    edit.addEventListener('click', ()=>{
+      const novoStr = prompt('Novo valor (R$):', it.value.toFixed(2));
+      if(novoStr===null) return;
+      const novo = Number(novoStr);
+      if(isNaN(novo) || novo<0){ console.error('Valor inválido'); return; }
+      if(it.type==='ganho'){
+        if(it.category==='Loja') state.ganhosLoja -= it.value;
+        else if(it.category==='Doação') state.totalDoacao -= it.value;
+        else state.ganhosApps -= it.value;
+      } else state.gastos -= it.value;
+      it.value = novo;
+      if(it.type==='ganho'){
+        if(it.category==='Loja') state.ganhosLoja += it.value;
+        else if(it.category==='Doação') state.totalDoacao += it.value;
+        else state.ganhosApps += it.value;
+      } else state.gastos += it.value;
+      saveState(); updateUI();
+    });
+
+    del.addEventListener('click', ()=>{
+      if(!confirm('Excluir lançamento?')) return;
+      state.history = state.history.filter(x=>x.id !== it.id);
+      recalcTotalsFromHistory();
+      saveState(); updateUI();
+    });
+  });
+}
+
+/* rebuild totals from history to avoid drift */
+function recalcTotalsFromHistory(){
+  state.ganhosApps=0; state.ganhosLoja=0; state.totalDoacao=0; state.gastos=0; state.entradasApps=0; state.entradasLoja=0;
+  state.history.forEach(it=>{
+    if(it.type==='ganho'){
+      if(it.category==='Loja'){ state.ganhosLoja += it.value; state.entradasLoja++; }
+      else if(it.category==='Doação'){ state.totalDoacao += it.value; }
+      else { state.ganhosApps += it.value; state.entradasApps++; }
+    } else state.gastos += it.value;
+  });
+}
+
+/* RESUMO CATEGORIAS */
+function renderResumoCategorias(){
+  const totals = {}; const counts = {};
+  state.history.forEach(it => { if(it.type!=='ganho') return; const c = it.category || 'Outros'; totals[c] = (totals[c]||0) + it.value; counts[c] = (counts[c]||0) + 1; });
+  resumoCategorias.innerHTML = '';
+  const valueClass = state.valuesHidden ? 'hidden-value' : '';
+  const order = ['Uber','99','inDriver','Particular','Loja','Doação'];
+  order.forEach(cat=>{ 
+    const val=totals[cat]||0, cnt=counts[cat]||0; 
+    const node=document.createElement('div'); 
+    node.innerHTML=`<div style="font-weight:900;margin-bottom:6px">${cat}</div><div style="font-weight:800" class="${valueClass}">${formatBRL(val)}</div><div class="small muted"><span class="${valueClass}">${cnt}</span> entr.</div>`; 
+    resumoCategorias.appendChild(node); 
+  });
+  Object.keys(totals).forEach(cat=>{ 
+    if(order.includes(cat)) return; 
+    const node=document.createElement('div'); 
+    node.innerHTML=`<div style="font-weight:900;margin-bottom:6px">${cat}</div><div style="font-weight:800" class="${valueClass}">${formatBRL(totals[cat])}</div><div class="small muted"><span class="${valueClass}">${counts[cat]||0}</span> entr.</div>`; 
+    resumoCategorias.appendChild(node); 
+  });
+}
+
+/* METRICS & PROGRESS */
+function updateDerivedMetrics(){
+  const totalBruto = Number(state.ganhosApps||0) + Number(state.ganhosLoja||0) + Number(state.totalDoacao||0);
+  const lucro = totalBruto - Number(state.gastos||0);
+  const tempo = getTempoTotal();
+  const horas = tempo / (1000*60*60) || 0;
+  const mediaBruto = horas>0? totalBruto / horas : 0;
+  const mediaLiq = horas>0? lucro / horas : 0;
+  const lucroKm = getKMRodados()>0? lucro / getKMRodados() : 0;
+
+  metricGanhosApps.textContent = formatBRL(state.ganhosApps);
+  metricGanhosTotal.textContent = formatBRL(totalBruto);
+  metricGastosTotal.textContent = formatBRL(state.gastos);
+  metricLucroTotal.textContent = formatBRL(lucro);
+  metricMediaHoraBrutoTotal.textContent = formatBRL(mediaBruto);
+  metricMediaHoraLiqTotal.textContent = formatBRL(mediaLiq);
+  metricLucroKmTotal.textContent = formatBRL(lucroKm);
+  metricEntradasApps.textContent = state.entradasApps;
+  metricEntradasLoja.textContent = state.entradasLoja;
+  
+  $$('#metricGanhosApps, #metricGanhosTotal, #metricGastosTotal, #metricLucroTotal, #metricMediaHoraBrutoTotal, #metricMediaHoraLiqTotal, #metricLucroKmTotal, #metricEntradasApps, #metricEntradasLoja').forEach(el => {
+    el.classList.toggle('hidden-value', state.valuesHidden);
+  });
+
+  tempoTrabalhado.textContent = formatTime(tempo);
+  kmRodados.textContent = formatKM(getKMRodados());
+  renderResumoFinal();
+  updateProgressBar();
+}
+
+/* progress */
+function updateProgressBar(){
+  const meta = Number(state.meta||0);
+  const atual = state.ganhosApps + state.ganhosLoja;
+  if(meta===0){ progressBar.style.width='0%'; progressText.textContent='0%'; metaMessage.textContent='Defina a meta para acompanhar o progresso.'; return; }
+  const pct = Math.min(100, (atual/meta)*100);
+  progressBar.style.width = pct + '%';
+  progressText.textContent = Math.round(pct) + '%';
+  if(atual < meta){ metaMessage.innerHTML = `Faltam <span class="${state.valuesHidden ? 'hidden-value' : ''}">${formatBRL(meta - atual)}</span> para bater a meta.`; }
+  else { metaMessage.innerHTML = `Meta batida! (+<span class="${state.valuesHidden ? 'hidden-value' : ''}">${formatBRL(atual - meta)}</span>)`; celebrate(); }
+}
+
+/* celebration */
+function celebrate(){
+  if(state.celebrated) return;
+  state.celebrated = true;
+  playVictorySequence();
+  triggerConfetti();
+  saveState();
+}
+
+function playVictorySequence(){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator(); osc.type='sawtooth'; osc.frequency.value=480;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.01, now); g.gain.exponentialRampToValueAtTime(0.9, now+0.05); g.gain.exponentialRampToValueAtTime(0.01, now+1.4);
+    osc.connect(g); g.connect(ctx.destination); osc.start(now); osc.stop(now+1.45);
+    const length = ctx.sampleRate * 4;
+    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<length;i++){ data[i] = (Math.random()*2-1) * (1 - i/length) * 0.8; }
+    const src = ctx.createBufferSource(); src.buffer = buffer; src.connect(ctx.destination); src.start(now+0.6);
+    setTimeout(()=>{ try{ src.stop(); ctx.close(); }catch(e){} }, 5200);
+  }catch(e){ console.warn('celebrate audio failed', e); }
+}
+
+function triggerConfetti(){
+  const colors = ['#10b981','#f97316','#facc15','#ef4444','#ec4899'];
+  for(let i=0;i<80;i++){
+    const el = document.createElement('div'); el.className='c'; el.style.left = Math.random()*100+'%'; el.style.top='-10px';
+    el.style.width = (6+Math.random()*12)+'px'; el.style.height = (10+Math.random()*14)+'px';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)]; confettiRoot.appendChild(el);
+    const dur = 1800 + Math.random()*2200;
+    el.animate([{transform:'translateY(0px) rotate(0deg)',opacity:1},{transform:`translateY(${300 + Math.random()*400}px) rotate(${Math.random()*720}deg)`,opacity:0}],{duration:dur,easing:'ease-out',iterations:1});
+    setTimeout(()=>el.remove(), dur+100);
+  }
+}
+
+/* SAVE / RESET */
+saveAndResetBtn && saveAndResetBtn.addEventListener('click', async ()=>{
+  if(!confirm('Deseja salvar o resumo do dia e resetar todos os dados atuais?')) return;
+  await saveDaySummary();
+  const tempHidden = state.valuesHidden;
+  const tempSavedDays = state.savedDays;
+  state = { meta:0, ganhosApps:0, ganhosLoja:0, totalDoacao:0, entradasApps:0, entradasLoja:0, gastos:0, history:[], kmInicial:0, kmFinal:0, totalTimeWorked:0, lastStartTime:null, status:'stopped', celebrated:false, valuesHidden: tempHidden, savedDays: tempSavedDays };
+  kmInicialEl.value=''; kmFinalEl.value=''; metaInput.value=''; valorEntrada.value=''; valorSaida.value='';
+  toggleStartBtn.textContent='Iniciar Expediente';
+  stopTimer();
+  await saveState();
+  updateUI();
+});
+
+exportBtn && exportBtn.addEventListener('click', ()=>{
+  const data = { state: state };
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='maxrota_export.json'; a.click(); URL.revokeObjectURL(url);
+});
+
+viewHistoryBtn && viewHistoryBtn.addEventListener('click', ()=>{ historyPanel.classList.toggle('hidden'); if(!historyPanel.classList.contains('hidden')) renderHistory(); });
+function renderHistory(){
+  const arr = state.savedDays || [];
+  if(!arr || arr.length===0){ historyPanel.innerHTML = '<div class="muted small">Nenhum dia salvo.</div>'; return; }
+  historyPanel.innerHTML = arr.map(d=>{
+    const date = new Date(d.date);
+    return `<div style="padding:10px;border-bottom:1px solid rgba(255,255,255,0.04)"><div style="font-weight:800">${date.toLocaleString()}</div><div class="small muted">Lucro: ${formatBRL(d.lucro)} · KM: ${d.km} · Média/H: ${formatBRL(d.mediaHora||0)}</div><div style="margin-top:8px"><button class="btn-ghost open-day" data-id="${d.id}">Abrir</button> <button class="btn-ghost del-day" data-id="${d.id}">Excluir</button></div></div>`;
+  }).join('');
+  historyPanel.querySelectorAll('.del-day').forEach(b=>b.addEventListener('click', async ()=>{
+    if(!confirm('Excluir dia?')) return;
+    const id = b.dataset.id;
+    state.savedDays = state.savedDays.filter(x=>x.id !== id);
+    await saveState();
+    renderHistory();
+  }));
+  historyPanel.querySelectorAll('.open-day').forEach(b=>b.addEventListener('click', ()=>{
+    const id = b.dataset.id; const d = state.savedDays.find(x=>x.id===id); if(!d) return console.error('Dia não encontrado.');
+    alert(`Resumo ${new Date(d.date).toLocaleString()}\nLucro: ${formatBRL(d.lucro)}\nKM: ${d.km} km\nTempo: ${formatTime(d.tempo)}\nEntradas App: ${d.entradasApps} · Loja: ${d.entradasLoja}`);
+  }));
+}
+
+/* THEMES */
+let autoMode = true;
+function applyAutoTheme(){ if(!autoMode) return; const hour = new Date().getHours(); const day = hour>=6 && hour<18; document.body.classList.toggle('light-mode', day); autoThemeBtn.textContent = day? 'Modo Dia ☀️' : 'Modo Noite 🌙'; }
+applyAutoTheme(); setInterval(()=>{ if(autoMode) applyAutoTheme(); },60*1000);
+autoThemeBtn && autoThemeBtn.addEventListener('click', ()=>{ autoMode = !autoMode; if(autoMode){ applyAutoTheme(); } else { document.body.classList.toggle('light-mode'); } });
+
+themeDots.forEach(d=>d.addEventListener('click', ()=>{ const acc=d.dataset.accent; document.body.classList.remove('accent-green','accent-orange','accent-yellow','accent-red','accent-pink'); document.body.classList.add('accent-'+acc); localStorage.setItem('maxrota_accent', acc); }));
+const savedAccent = localStorage.getItem('maxrota_accent') || 'green'; document.body.classList.add('accent-'+savedAccent);
+
+/* SET META */
+setMetaBtn && setMetaBtn.addEventListener('click', () => {
+  const v = Number(metaInput.value);
+  if(!isNaN(v) && v > 0){
+    state.meta = v;
+    saveState();
+    updateUI();
+    metaInput.blur();
+  } else { console.error('Meta inválida.'); }
+});
+
+/* RENDER FINAL */
+function renderResumoFinal(){
+  const totalApps = state.ganhosApps;
+  const totalLoja = state.ganhosLoja;
+  const totalDoacao = state.totalDoacao;
+  const totalGeralBruto = totalApps + totalLoja + totalDoacao;
+  const lucroFinal = totalGeralBruto - state.gastos;
+  finalTotalApps.textContent = formatBRL(totalApps);
+  finalTotalLoja.textContent = formatBRL(totalLoja);
+  finalTotalDoacao.textContent = formatBRL(totalDoacao);
+  finalTotalGeral.textContent = formatBRL(lucroFinal);
+  finalTotalApps.classList.toggle('hidden-value', state.valuesHidden);
+  finalTotalLoja.classList.toggle('hidden-value', state.valuesHidden);
+  finalTotalDoacao.classList.toggle('hidden-value', state.valuesHidden);
+  finalTotalGeral.classList.toggle('hidden-value', state.valuesHidden);
+}
+
+/* UPDATE UI */
+function updateUI(){
+  toggleValuesBtn && (toggleValuesBtn.textContent = state.valuesHidden ? 'Mostrar Valores' : 'Esconder Valores');
+  toggleValuesBtn && toggleValuesBtn.setAttribute('aria-pressed', state.valuesHidden);
+  if(document.activeElement !== metaInput) metaInput.value = state.meta || '';
+  if(document.activeElement !== kmInicialEl) kmInicialEl.value = state.kmInicial || '';
+  if(document.activeElement !== kmFinalEl) kmFinalEl.value = state.kmFinal || '';
+  if(state.status==='running') toggleStartBtn.textContent='Pausar';
+  else if(state.status==='paused') toggleStartBtn.textContent='Retomar';
+  else toggleStartBtn.textContent='Iniciar Expediente';
+  renderLancamentos(); renderResumoCategorias(); updateDerivedMetrics(); renderResumoFinal(); 
+}
+
+/* LOAD initial */
+if (state.status === 'running' && state.lastStartTime) startTimer();
+loadLocalState();
+updateUI();
+
+/* Sincronização automática: aguarda auth */
+document.addEventListener("DOMContentLoaded", () => {
+  const check = setInterval(() => {
+    if (window.__USER_UID__) {
+      clearInterval(check);
+      // inicializa dados Firebase e carrega estado do servidor
+      loadState();
+    }
+  }, 300);
+});
+
+// Poll periódico para manter sincronizado (opcional)
+setInterval(async () => {
+  if (!window.__USER_UID__) return;
+  await loadState();
+}, 15000); 
+
+</script>
   </script>
 
   <!-- LOGOUT -->
