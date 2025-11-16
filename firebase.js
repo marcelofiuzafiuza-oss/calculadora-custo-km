@@ -1,29 +1,13 @@
+// ============================
 // firebase.js
-// Módulo para inicializar Firebase (Auth + Firestore) e helpers de leitura/gravação.
-// Substitua as keys se quiser usar outras.
+// Configuração central do Firebase
+// ============================
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import {
-  getFirestore,
-  doc,
-  setDoc,
-  getDoc,
-  onSnapshot,
-  collection,
-  addDoc,
-  serverTimestamp,
-  updateDoc
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// === CONFIG ===
-// Você já enviou esta config; mantive a mesma.
+// CONFIG DO SEU FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyBXkQlm0TbCsCdVGil8-5kGWbtj07SKXwA",
   authDomain: "maxrota.firebaseapp.com",
@@ -34,57 +18,12 @@ const firebaseConfig = {
   measurementId: "G-RBK7LM483D"
 };
 
+// Inicializa Firebase
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
 
-// Helpers
-async function saveUserState(uid, state) {
-  if (!uid) return;
-  try {
-    const ref = doc(db, "users", uid);
-    // grava campo `state` inteiro, mantendo timestamp
-    await setDoc(ref, { state, updatedAt: serverTimestamp() }, { merge: true });
-  } catch (e) {
-    console.error("saveUserState error", e);
-  }
-}
+// Exporta serviços
+export const auth = getAuth(app);
+export const db = getFirestore(app);
 
-function listenUserState(uid, onChange) {
-  if (!uid) return () => {};
-  const ref = doc(db, "users", uid);
-  const unsub = onSnapshot(ref, (snap) => {
-    if (!snap.exists()) {
-      onChange(null);
-      return;
-    }
-    const data = snap.data();
-    onChange(data.state || null);
-  }, (err) => {
-    console.error("listenUserState err", err);
-  });
-  return unsub;
-}
-
-async function saveDayForUser(uid, daySummary) {
-  if (!uid) return;
-  try {
-    const daysCol = collection(db, "users", uid, "days");
-    await addDoc(daysCol, { ...daySummary, createdAt: serverTimestamp() });
-  } catch (e) {
-    console.error("saveDayForUser error", e);
-  }
-}
-
-export {
-  app,
-  auth,
-  db,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  saveUserState,
-  listenUserState,
-  saveDayForUser
-};
+// Disponível globalmente
+window.__FIREBASE__ = { auth, db };
