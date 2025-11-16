@@ -119,20 +119,8 @@
 
 <body class="accent-green">
 
-<!-- AUTH GUARD -->
-<script type="module">
-  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  onAuthStateChanged(window.auth, user => {
-    if (!user) {
-      location.href = "login.html";
-    } else {
-      window.__USER_UID__ = user.uid;
-      console.log("Usuário logado:", user.uid);
-    }
-  });
-</script>
-
+  
 <div class="wrap">
   <!-- HEADER (ALTERADO PARA INCLUIR O BOTÃO) -->
     <header class="card header-card" role="banner" aria-label="Cabeçalho MAX ROTA">
@@ -921,6 +909,32 @@ updateUI();
   }, 15000);
 
 </script>
+<!-- AUTH GUARD (CORRIGIDO — AGORA DEPOIS DO FIREBASE) -->
+<script type="module">
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+  const waitForFirebase = setInterval(() => {
+    if (window.__FIREBASE__ && window.auth) {
+      clearInterval(waitForFirebase);
+
+      onAuthStateChanged(window.auth, user => {
+        if (!user) {
+          console.log("⛔ Nenhum usuário logado — redirecionando");
+          location.href = "login.html";
+          return;
+        }
+
+        console.log("🔐 Usuário logado:", user.uid);
+        window.__USER_UID__ = user.uid;
+
+        // Agora SIM podemos carregar tudo
+        if (window.loadState) {
+          console.log("📡 Carregando dados do Firebase...");
+          window.loadState();
+        }
+      });
+    }
+  }, 200);
+</script>
 </body>
 </html>
