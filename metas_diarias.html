@@ -1,312 +1,137 @@
-<!doctype html><!--force-refresh-->
+<!-- PARTE 1/3 - metas_diarias.html -->
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <!-- FORCE NO-CACHE PARA GARANTIR QUE O GITHUB PAGE SEMPRE PEGUE A ÚLTIMA VERSÃO -->
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-<meta http-equiv="Pragma" content="no-cache" />
-<meta http-equiv="Expires" content="0" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>MAX ROTA DIÁRIO</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <!-- Chart.js (preservado caso queira reabilitar gráficos no futuro) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
-<script>
-  /* 🔄 Limpa cache automaticamente quando você mudar a versão */
-  (function () {
-    const version = "v1.0.7"; 
-    if (localStorage.getItem("maxrota_version") !== version) {
-      localStorage.setItem("maxrota_version", version);
-      window.location.reload(true);
-    }
-  })();
-</script>
+  <style>
+  /* ===========================
+     MAX ROTA – ESTILO GLOBAL
+     =========================== */
+  :root {
+    --accent: #10b981;
+    --bg1: #041226;
+    --bg2: #2a1160;
+    --text: #e6eef6;
+    --muted: #9aa6b2;
+    --card: rgba(255, 255, 255, 0.06);
+    --radius: 14px;
+    --scale: 1.02;
+  }
+  html,body{height:100%;margin:0;padding:0}
+  body{
+    font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    color:var(--text);padding:20px;transform:scale(var(--scale));transform-origin:top left;
+  }
+  .wrap{max-width:1200px;margin:0 auto}
+  .card{background:var(--card);backdrop-filter:blur(6px);border-radius:16px;padding:18px;margin-bottom:18px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 26px rgba(0,0,0,0.35)}
+  .header-card{display:flex;justify-content:space-between;align-items:center; flex-wrap: wrap; gap: 10px;}
+  .logo-img{height:74px;width:auto;border-radius:12px}
+  .theme-controls{display:flex;align-items:center;gap:12px}
+  .theme-btn{background:linear-gradient(120deg,var(--accent),#3b82f6);color:#fff;padding:10px 14px;border-radius:12px;border:none;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,0.3)}
+  .theme-dots{display:flex;gap:10px}
+  .color-dot{width:30px;height:30px;border-radius:999px;border:2px solid rgba(255,255,255,0.12);cursor:pointer;box-shadow:0 6px 14px rgba(0,0,0,0.3)}
+  .radio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .station-btn{padding:14px;border-radius:12px;color:#fff;font-weight:800;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:0.12s;font-size:16px;height:56px}
+  .station-btn.active{box-shadow:0 10px 26px rgba(0,0,0,0.5);transform:translateY(-3px)}
+  .radio-player{margin-top:12px;display:flex;align-items:center;gap:12px}
+  .meta-row{display:flex;gap:12px}
+  .meta-row input{flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);color:var(--text);font-weight:800;font-size:16px}
+  .progress-container{height:44px;border-radius:22px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);overflow:hidden;position:relative}
+  .progress-bar{position:absolute;left:0;top:0;height:100%;background:linear-gradient(120deg,var(--accent),#2563eb);width:0%;animation:waveMove 3.5s linear infinite;background-size:200% 200%}
+  @keyframes waveMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  .progress-text{position:absolute;width:100%;height:100%;line-height:44px;text-align:center;font-weight:900;font-size:15px}
+  .progress-bubbles{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:hidden}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .grid-4 input{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);color:var(--text);font-weight:700;font-size:15px}
+  .big-time{font-size:20px;font-weight:900}
+  .km-actions{margin-top:12px;display:flex;gap:12px;flex-wrap:wrap}
+  .btn{padding:12px 16px;border-radius:12px;background:linear-gradient(120deg,var(--accent),#7c3aed);border:none;font-weight:800;cursor:pointer;color:#fff;font-size:15px;box-shadow:0 8px 20px rgba(0,0,0,0.3)}
+  .btn-ghost{padding:12px 16px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);font-weight:700;cursor:pointer;color:var(--muted)}
+  .grid-2cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .input-row{display:flex;gap:12px}
+  .input-row input{flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);color:var(--text);font-weight:700;font-size:15px}
+  .apps-grid,.gastos-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+  .app-btn,.gasto-btn{padding:12px 14px;border:none;border-radius:12px;cursor:pointer;font-weight:900;color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;min-width:120px}
+  .launch-list{max-height:300px;overflow-y:auto;padding:6px}
+  .launch-item{display:flex;justify-content:space-between;border-bottom:1px dashed rgba(255,255,255,0.06);padding:10px 6px;border-radius:10px}
+  .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+  .metric-col{padding:12px;border-radius:12px;background:rgba(255,255,255,0.04)}
+  .metric-title{font-size:13px;color:var(--muted)}
+  .metric-value{margin-top:8px;font-size:18px;font-weight:900}
+  .resumo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+  .history-panel{background:rgba(255,255,255,0.03);padding:12px;border-radius:12px}
+  .confetti{pointer-events:none;position:fixed;inset:0;overflow:hidden;z-index:9999}
+  .confetti .c{position:absolute;width:10px;height:14px;opacity:0.95}
+  .accent-green{--accent:#10b981}
+  .accent-orange{--accent:#f97316}
+  .accent-yellow{--accent:#facc15}
+  .accent-red{--accent:#ef4444}
+  .accent-pink{--accent:#ec4899}
+  body.light-mode{--bg1:#f5f7fb;--bg2:#e8f0ff;--text:#0b1220;--muted:#566170;--card:rgba(255,255,255,0.9)}
+  .muted{color:var(--muted)}
+  .small{font-size:13px}
+  /* Estilo para valores escondidos, mantém o espaço */
+  .hidden-value-mask {
+    color: transparent;
+    text-shadow: 0 0 8px rgba(0,0,0,0.9);
+    font-size: 10px;
+  }
+  .hidden-value {
+    visibility: hidden;
+    position: relative;
+  }
+  .hidden-value::after {
+    content: '****';
+    visibility: visible;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    color: var(--text);
+    text-align: inherit;
+    line-height: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+  }
+  /* Estilo para o botão no header */
+  .header-actions-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: flex-end;
+  }
+  .toggle-btn {
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 13px;
+    white-space: nowrap;
+    width: fit-content;
+  }
 
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>MAX ROTA DIÁRIO</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
-
-<style>
-
-/* ===============================
-   SISTEMA DE TEMAS COMPLETO
-=============================== */
-
-:root {
-  --accent: #10b981;
-  --accent2: #3b82f6;
-
-  --bg1: #041226;
-  --bg2: #2a1160;
-
-  --card: rgba(255, 255, 255, 0.06);
-  --text: #e6eef6;
-  --muted: #9aa6b2;
-
-  --radius: 16px;
-  --scale: 1.02;
-}
-
-body.light-mode {
-  --bg1: #f7f7f7;
-  --bg2: #d9e4ff;
-
-  --text: #0f172a;
-  --muted: #475569;
-
-  --card: rgba(255,255,255,0.9);
-  --accent: #2563eb;
-  --accent2: #7c3aed;
-}
-
-/* PALETAS PERSONALIZADAS */
-body.accent-green { --accent:#10b981; --accent2:#34d399; }
-body.accent-orange { --accent:#f97316; --accent2:#fb923c; }
-body.accent-yellow { --accent:#facc15; --accent2:#fbbf24; }
-body.accent-red { --accent:#ef4444; --accent2:#f87171; }
-body.accent-pink { --accent:#ec4899; --accent2:#f472b6; }
-
-/* ===============================
-   BASE VISUAL
-=============================== */
-
-html, body { height: 100%; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, var(--bg1), var(--bg2));
-  color: var(--text);
-  padding: 20px;
-  transform: scale(var(--scale));
-  transform-origin: top left;
-  transition: 0.25s ease;
-}
-
-.wrap { max-width: 1200px; margin: 0 auto; }
-
-/* ===============================
-   CARDS
-=============================== */
-
-.card {
-  background: var(--card);
-  backdrop-filter: blur(10px);
-  border-radius: var(--radius);
-  padding: 18px;
-  margin-bottom: 18px;
-  border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 12px 26px rgba(0,0,0,0.32);
-  transition: background 0.25s ease, color 0.25s ease;
-}
-
-/* ===============================
-   HEADER
-=============================== */
-
-.header-card {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.logo-img {
-  height: 80px;
-  width: auto;
-  border-radius: 14px;
-}
-
-/* ===============================
-   BOTÃO DIA / NOITE
-=============================== */
-
-.theme-btn {
-  background: linear-gradient(120deg, var(--accent), var(--accent2));
-  color: #fff;
-  padding: 10px 16px;
-  border-radius: 14px;
-  font-weight: 800;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 10px 26px rgba(0,0,0,0.4);
-  transition: 0.2s ease;
-}
-
-/* ===============================
-   BOLINHAS DE COR
-=============================== */
-
-.theme-dots { display: flex; gap: 10px; }
-
-.color-dot {
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
-  border: 2px solid rgba(255,255,255,0.3);
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-/* ===============================
-   BOTÃO ESCONDER VALORES
-=============================== */
-
-.toggle-btn {
-  padding: 11px 16px;
-  border-radius: 14px;
-  background: linear-gradient(120deg, var(--accent2), var(--accent));
-  color: #fff;
-  border: none;
-  font-weight: 900;
-  cursor: pointer;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.35);
-}
-
-/* ===============================
-   RÁDIOS
-=============================== */
-
-.radio-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-}
-
-.station-btn {
-  padding: 14px;
-  height: 60px;
-  border-radius: 14px;
-  color: #fff;
-  font-weight: 900;
-  border: 0;
-  cursor: pointer;
-  transition: 0.12s;
-  font-size: 15px;
-}
-
-.station-btn.active {
-  box-shadow: 0 14px 32px rgba(0,0,0,0.45);
-  transform: translateY(-3px);
-}
-
-/* ===============================
-   META
-=============================== */
-
-.meta-row input {
-  padding: 14px;
-  font-weight: 900;
-  font-size: 18px;
-  border-radius: 14px;
-  border: 2px solid rgba(255,255,255,0.1);
-}
-
-/* PROGRESS BAR */
-.progress-container {
-  height: 48px;
-  border-radius: 16px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.08);
-  overflow: hidden;
-  position: relative;
-}
-
-.progress-bar {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  background: linear-gradient(120deg, var(--accent), var(--accent2));
-  width: 0%;
-  transition: width 0.3s ease;
-}
-
-.progress-text {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  line-height: 48px;
-  text-align: center;
-  font-weight: 900;
-  font-size: 16px;
-}
-
-/* ===============================
-   TIMER
-=============================== */
-
-.big-time {
-  font-weight: 900;
-  font-size: 22px;
-}
-
-/* ===============================
-   INPUTS GERAIS
-=============================== */
-
-input {
-  background: rgba(255,255,255,0.05);
-  border: 2px solid rgba(255,255,255,0.08);
-  color: var(--text);
-  font-weight: 900;
-  border-radius: 14px;
-  padding: 12px;
-  font-size: 16px;
-}
-
-/* ===============================
-   BOTÕES GERAIS
-=============================== */
-
-.btn {
-  padding: 12px 18px;
-  border-radius: 14px;
-  background: linear-gradient(120deg, var(--accent), var(--accent2));
-  color: #fff;
-  border: none;
-  font-weight: 900;
-  cursor: pointer;
-  box-shadow: 0 12px 26px rgba(0,0,0,0.35);
-}
-
-.btn-ghost {
-  padding: 12px 18px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.05);
-  border: 2px solid rgba(255,255,255,0.1);
-  font-weight: 800;
-  cursor: pointer;
-  color: var(--muted);
-}
-
-/* ===============================
-   ESCONDER VALORES
-=============================== */
-
-.hidden-value {
-  visibility: hidden;
-  position: relative;
-}
-
-.hidden-value::after {
-  content: "****";
-  visibility: visible;
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  color: var(--text);
-  font-weight: 900;
-}
-
-</style>
+  @media(max-width:1000px){body{transform:scale(1.00)}.grid-4{grid-template-columns:repeat(2,1fr)}.grid-2cols{grid-template-columns:1fr}.wrap{padding:8px)}
+  </style>
 </head>
-<body class="accent-green">
-<div class="wrap">
 
-  <!-- HEADER -->
+<body class="accent-green">
+  <div class="wrap">
+ <!-- PARTE 2/3 - corpo dos cards (cole após a abertura do <div class="wrap"> da PARTE 1) -->
+  <!-- HEADER (conteúdo do card) -->
   <header class="card header-card" role="banner" aria-label="Cabeçalho MAX ROTA">
     <div style="display:flex;align-items:center;gap:12px">
-      <img id="logoImg" class="logo-img"
-           src="https://i.postimg.cc/3RWn008g/Chat-GPT-Image-12-de-nov-de-2025-14-32-56.png"
-           alt="MAX ROTA DIÁRIO">
+      <img id="logoImg" class="logo-img" src="https://i.postimg.cc/3RWn008g/Chat-GPT-Image-12-de-nov-de-2025-14-32-56.png" alt="MAX ROTA DIÁRIO">
       <div>
         <h1 style="margin:0;font-size:20px">MAX ROTA DIÁRIO</h1>
         <div class="small muted">Painel do Motorista</div>
@@ -314,116 +139,124 @@ input {
     </div>
 
     <div class="header-actions-container">
-      <!-- Controle de Tema -->
-      <div class="theme-controls">
-        <button id="autoThemeBtn" class="theme-btn" title="Ativar modo automático">Auto 🌗</button>
-
-        <div class="theme-dots" style="margin-left:8px">
-          <button class="color-dot" data-accent="green"  style="background:#10b981"></button>
-          <button class="color-dot" data-accent="orange" style="background:#f97316"></button>
-          <button class="color-dot" data-accent="yellow" style="background:#facc15"></button>
-          <button class="color-dot" data-accent="red"    style="background:#ef4444"></button>
-          <button class="color-dot" data-accent="pink"   style="background:#ec4899"></button>
+      <!-- Controles de Tema/Cor -->
+      <div class="theme-controls" aria-hidden="false">
+        <button id="autoThemeBtn" class="theme-btn" title="Ativar modo automático dia/noite">Auto 🌗</button>
+        <div class="theme-dots" role="toolbar" aria-label="Temas" style="margin-left:8px">
+          <button class="color-dot" data-accent="green" style="background:#10b981" title="Verde"></button>
+          <button class="color-dot" data-accent="orange" style="background:#f97316" title="Laranja"></button>
+          <button class="color-dot" data-accent="yellow" style="background:#facc15" title="Amarelo"></button>
+          <button class="color-dot" data-accent="red" style="background:#ef4444" title="Vermelho"></button>
+          <button class="color-dot" data-accent="pink" style="background:#ec4899" title="Rosa"></button>
         </div>
       </div>
-
-      <!-- Ocultar valores -->
-      <button id="toggleValuesBtn" class="toggle-btn">👁️ Esconder</button>
+      
+      <!-- Botão de Ocultar Valores -->
+      <button id="toggleValuesBtn" class="toggle-btn" aria-pressed="false" title="Mostrar/Esconder valores monetários e de contagem">Esconder Valores</button>
     </div>
   </header>
+  <!-- FIM DO HEADER -->
 
-  <!-- RÁDIOS -->
-  <section class="card radio-card">
-    <div style="display:flex;justify-content:space-between;align-items:center">
+  <!-- RÁDIOS (SEGUNDO CARD) -->
+  <section class="card radio-card" aria-label="Rádios">
+    <div style="display:flex; justify-content: space-between; align-items: center;">
       <h2 style="margin:0;font-size:16px">🎧 Estações</h2>
-      <button onclick="logout()" class="btn btn-small">Sair</button>
+      <button onclick="logout()" class="btn">Sair</button>
     </div>
 
-    <div id="stationButtons" class="radio-grid">
+    <div id="stationButtons" class="radio-grid" role="list" aria-label="Lista de rádios">
+      <button class="station-btn" data-src="https://live.hunter.fm/pop_high" data-name="Hunter Pop" style="background:#10b981">Hunter Pop</button>
+      <button class="station-btn" data-src="https://live.hunter.fm/pop2k_high" data-name="Hunter Pop2K" style="background:#06b6d4">Pop2K</button>
+      <button class="station-btn" data-src="https://ice1.somafm.com/u80s-128-mp3" data-name="Flashback 80s" style="background:#8b5cf6">80s</button>
+      <button class="station-btn" data-src="http://listen.181fm.com/181-power_128k.mp3" data-name="Power 181" style="background:#f97316">Power181</button>
 
-      <!-- Mantive apenas as rádios que funcionam -->
-      <button class="station-btn" data-src="https://live.hunter.fm/pop_high"     style="background:#10b981">Hunter Pop</button>
-      <button class="station-btn" data-src="https://live.hunter.fm/pop2k_high"   style="background:#06b6d4">Pop2K</button>
-      <button class="station-btn" data-src="https://live.hunter.fm/rock_high"   style="background:#ef4444">Rock</button>
-      <button class="station-btn" data-src="https://live.hunter.fm/sertanejo_high"  style="background:#f59e0b">Sertanejo</button>
+      <button class="station-btn" data-src="https://live.hunter.fm/rock_high" data-name="Rock Classic" style="background:#ef4444">Rock</button>
+      <button class="station-btn" data-src="https://live.hunter.fm/sertanejo_high" data-name="Sertanejo" style="background:#f59e0b">Sertanejo</button>
+      <button class="station-btn" data-src="https://live.hunter.fm/hiphop_high" data-name="Hip Hop" style="background:#111827">HipHop</button>
+      <button class="station-btn" data-src="https://live.hunter.fm/gospel_high" data-name="Cristã" style="background:#facc15;color:#111">Cristã</button>
 
-      <button class="station-btn" data-src="https://stream.radioparadise.com/mp3-192" style="background:#111827">RadioParadise</button>
-      <button class="station-btn" data-src="http://listen.181fm.com/181-beat_128k.mp3" style="background:#0ea5e9">181 HipHop</button>
-      <button class="station-btn" data-src="https://ice1.somafm.com/beatblender-128-mp3" style="background:#7c3aed">House</button>
-      <button class="station-btn" data-src="https://ice1.somafm.com/groovesalad-128-mp3" style="background:#2563eb">Eletrônica</button>
+      <button class="station-btn" data-src="https://ice1.somafm.com/groovesalad-128-mp3" data-name="GrooveSalad" style="background:#2563eb">Eletrônica</button>
+      <button class="station-btn" data-src="https://ice1.somafm.com/beatblender-128-mp3" data-name="BeatBlender" style="background:#7c3aed">House / Deep</button>
+      <button class="station-btn" data-src="https://ice1.somafm.com/secretagent-128-mp3" data-name="Surf" style="background:#06b6d4">Surf</button>
+      <button class="station-btn" data-src="https://ice1.somafm.com/dubstep-128-mp3" data-name="Reggae/Dub" style="background:#4ade80">Reggae</button>
 
+      <button class="station-btn" data-src="https://live.hunter.fm/mpb_high" data-name="MPB Brasil" style="background:#1e3a8a">MPB</button>
+      <button class="station-btn" data-src="https://stream.radioparadise.com/mp3-192" data-name="Radio Paradise" style="background:#111827">RadioParadise</button>
+      <button class="station-btn" data-src="http://listen.181fm.com/181-beat_128k.mp3" data-name="181 HipHop" style="background:#0ea5e9">181 HipHop</button>
+      <button class="station-btn" data-src="https://live.hunter.fm/mpb_high" data-name="MPB (alt)" style="background:#8b5cf6">MPB alt</button>
     </div>
 
-    <div class="radio-player mt-4">
-      <audio id="radioPlayer" controls preload="none"></audio>
+    <div class="radio-player mt-4" aria-label="Player de rádio">
+      <audio id="radioPlayer" controls preload="none" class="w-full" aria-label="Player de rádio"></audio>
       <div style="display:flex;flex-direction:column;gap:8px;margin-left:12px">
-        <button id="stopRadioBtn" class="btn-ghost">Parar Rádio</button>
-        <div id="nowPlaying" class="small muted">Nenhuma rádio selecionada.</div>
+        <button id="stopRadioBtn" class="btn-ghost w-36" aria-label="Parar rádio">Parar Rádio</button>
+        <div id="nowPlaying" class="small muted" aria-live="polite">Nenhuma rádio selecionada.</div>
       </div>
     </div>
   </section>
 
   <!-- META -->
-  <section class="card meta-card">
+  <section class="card meta-card" aria-label="Meta diária">
     <h2 style="margin:0 0 8px 0;font-size:16px">🎯 Meta Diária</h2>
 
-    <div class="meta-row mt-3">
-      <input id="metaInput" type="number" placeholder="Ex: 300" />
-      <button id="setMetaBtn" class="btn">Salvar Meta</button>
+    <div class="meta-row mt-3" role="form" aria-label="Definir meta diária">
+      <input id="metaInput" type="number" placeholder="Ex: 300" aria-label="Valor da meta" />
+      <button id="setMetaBtn" class="btn" aria-label="Salvar meta">Salvar Meta</button>
     </div>
 
-    <div class="progress-container mt-4">
-      <div id="progressBar" class="progress-bar"></div>
+    <div class="progress-container mt-4" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div id="progressBar" class="progress-bar" style="width:0%"></div>
+      <div id="progressBubbles" class="progress-bubbles" aria-hidden="true"></div>
       <div id="progressText" class="progress-text">0%</div>
     </div>
 
-    <div id="metaMessage" class="small muted mt-2">Defina a meta para acompanhar o progresso.</div>
+    <div id="metaMessage" class="small muted mt-2" aria-live="polite">Defina a meta para acompanhar o progresso.</div>
   </section>
 
   <!-- KM & TIMER -->
-  <section class="card km-card">
+  <section class="card km-card" aria-label="Jornada e quilometragem">
     <h2 style="margin:0 0 8px 0;font-size:16px">🚗 Jornada e KM</h2>
 
-    <div class="grid-4 mt-3">
+    <div class="grid-4 mt-3" role="group" aria-label="Campos de quilometragem e tempo">
       <div>
-        <label class="small muted">KM Inicial</label>
-        <input id="kmInicial" type="number" placeholder="Ex: 150000">
+        <label class="small muted" for="kmInicial">KM Inicial</label>
+        <input id="kmInicial" type="number" placeholder="Ex: 150000" aria-label="KM inicial" />
       </div>
 
       <div>
-        <label class="small muted">KM Final</label>
-        <input id="kmFinal" type="number" placeholder="Ex: 150250">
+        <label class="small muted" for="kmFinal">KM Final</label>
+        <input id="kmFinal" type="number" placeholder="Ex: 150250" aria-label="KM final" />
       </div>
 
       <div>
         <label class="small muted">Tempo Trabalhado</label>
-        <div id="tempoTrabalhado" class="big-time">00:00:00</div>
+        <div id="tempoTrabalhado" class="big-time" aria-live="polite">00:00:00</div>
       </div>
 
       <div>
         <label class="small muted">KM Rodados</label>
-        <div id="kmRodados" class="big-time">0 km</div>
+        <div id="kmRodados" class="big-time" aria-live="polite">0.0 km</div>
       </div>
     </div>
 
     <div class="km-actions">
-      <button id="toggleStartBtn" class="btn">Iniciar</button>
-      <button id="finalizeBtn" class="btn-ghost">Finalizar Dia</button>
-      <button id="saveKmBtn" class="btn">Salvar KM</button>
+      <button id="toggleStartBtn" class="btn mt-4" aria-pressed="false">Iniciar Expediente</button>
+      <button id="finalizeBtn" class="btn-ghost mt-4">Finalizar Dia</button>
+      <button id="saveKmBtn" class="btn mt-4">Salvar KM</button>
     </div>
   </section>
 
-  <!-- LANÇAMENTOS -->
-  <section class="card lancamentos-card grid-2cols">
+  <!-- LANÇAMENTOS: Entradas / Saídas -->
+  <section class="card lancamentos-card grid-2cols" aria-label="Lançamentos">
     <div>
-      <h3 style="margin:0 0 8px 0;font-size:15px">➕ Entradas</h3>
+      <h3 style="margin:0 0 8px 0;font-size:15px">➕ Entradas (Apps)</h3>
 
-      <div class="input-row mt-2">
-        <input id="valorEntrada" type="number" placeholder="R$">
-        <button id="addEntradaBtn" class="btn">Adicionar</button>
+      <div class="input-row mt-2" role="form" aria-label="Lançar entrada">
+        <input id="valorEntrada" type="number" placeholder="Valor (R$)" aria-label="Valor de entrada" />
+        <button id="addEntradaBtn" class="btn" aria-label="Adicionar entrada">Lançar</button>
       </div>
 
-      <div class="apps-grid mt-2">
+      <div class="apps-grid mt-2" role="list" aria-label="Lista de apps">
         <button class="app-btn" data-cat="Uber" style="background:#000">Uber</button>
         <button class="app-btn" data-cat="99" style="background:#facc15;color:#111">99</button>
         <button class="app-btn" data-cat="inDriver" style="background:#10b981">inDriver</button>
@@ -434,14 +267,14 @@ input {
     </div>
 
     <div>
-      <h3 style="margin:0 0 8px 0;font-size:15px">➖ Saídas</h3>
+      <h3 style="margin:0 0 8px 0;font-size:15px">➖ Saídas (Gastos)</h3>
 
-      <div class="input-row mt-2">
-        <input id="valorSaida" type="number" placeholder="R$">
-        <button id="addSaidaBtn" class="btn">Adicionar</button>
+      <div class="input-row mt-2" role="form" aria-label="Lançar gasto">
+        <input id="valorSaida" type="number" placeholder="Valor (R$)" aria-label="Valor de saída" />
+        <button id="addSaidaBtn" class="btn" aria-label="Adicionar gasto">Lançar</button>
       </div>
 
-      <div class="gastos-grid mt-2">
+      <div class="gastos-grid mt-2" role="list" aria-label="Principais gastos">
         <button class="gasto-btn" data-cat="Combustível" style="background:#ef4444">Combustível</button>
         <button class="gasto-btn" data-cat="Alimentação" style="background:#8b5cf6">Alimentação</button>
         <button class="gasto-btn" data-cat="Manutenção" style="background:#6b7280">Manutenção</button>
@@ -450,225 +283,196 @@ input {
     </div>
   </section>
 
-  <!-- Lançamentos Recentes -->
-  <section class="card recentes-card">
+  <!-- Lançamentos recentes -->
+  <section class="card recentes-card" aria-label="Lançamentos recentes">
     <h3 style="margin:0 0 8px 0;font-size:15px">Lançamentos Recentes</h3>
-    <div id="lancamentosList" class="launch-list">
+    <div id="lancamentosList" class="launch-list mt-2" aria-live="polite">
       <div class="muted small text-center">Nenhum lançamento ainda.</div>
     </div>
   </section>
 
   <!-- Resumo por categoria -->
-  <section class="card resumo-cat">
-    <h3 style="margin:0 0 8px 0;font-size:15px">Resumo por Categoria</h3>
-    <div id="resumoCategorias" class="resumo-grid"></div>
+  <section class="card resumo-cat" aria-label="Resumo por categoria">
+    <h3 style="margin:0 0 8px 0;font-size:15px">Resumo Rápido por Categoria</h3>
+    <div id="resumoCategorias" class="resumo-grid mt-2 small muted" role="list"></div>
   </section>
 
   <!-- MÉTRICAS -->
-  <section class="card metric-card">
+  <section class="card metric-card" aria-label="Métricas">
     <h3 style="margin:0 0 8px 0;font-size:15px">Métricas</h3>
 
     <div class="metric-grid mt-3">
       <div class="metric-col">
-        <div class="metric-title">Bruto Apps</div>
+        <div class="metric-title">Ganhos Brutos — Somente Apps</div>
         <div id="metricGanhosApps" class="metric-value">R$ 0,00</div>
       </div>
 
       <div class="metric-col">
-        <div class="metric-title">Total Bruto</div>
+        <div class="metric-title">Ganhos Brutos — Apps + Loja</div>
         <div id="metricGanhosTotal" class="metric-value">R$ 0,00</div>
       </div>
 
       <div class="metric-col">
-        <div class="metric-title">Gastos</div>
+        <div class="metric-title">Gastos Totais</div>
         <div id="metricGastosTotal" class="metric-value">R$ 0,00</div>
       </div>
 
       <div class="metric-col">
-        <div class="metric-title">Lucro</div>
+        <div class="metric-title">Lucro Líquido</div>
         <div id="metricLucroTotal" class="metric-value">R$ 0,00</div>
+      </div>
+
+      <div class="metric-col">
+        <div class="metric-title">Média/Hora (Bruto)</div>
+        <div id="metricMediaHoraBrutoTotal" class="metric-value">R$ 0,00</div>
+      </div>
+
+      <div class="metric-col">
+        <div class="metric-title">Média/Hora (Líquido)</div>
+        <div id="metricMediaHoraLiqTotal" class="metric-value">R$ 0,00</div>
+      </div>
+
+      <div class="metric-col">
+        <div class="metric-title">Lucro / KM (Líquido)</div>
+        <div id="metricLucroKmTotal" class="metric-value">R$ 0,00</div>
+      </div>
+
+      <div class="metric-col">
+        <div class="metric-title">Entradas Apps</div>
+        <div id="metricEntradasApps" class="metric-value">0</div>
+      </div>
+
+      <div class="metric-col">
+        <div class="metric-title">Entradas Loja</div>
+        <div id="metricEntradasLoja" class="metric-value">0</div>
       </div>
     </div>
   </section>
-  <!-- AÇÕES -->
-  <section class="card actions-card">
+
+  <!-- Actions -->
+  <section class="card actions-card" aria-label="Ações">
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <button id="saveAndResetBtn" class="btn">Salvar Resumo & Resetar Dia</button>
       <button id="exportBtn" class="btn-ghost">Exportar Resumo (JSON)</button>
-      <button id="viewHistoryBtn" class="btn-ghost">Ver Histórico</button>
+      <button id="viewHistoryBtn" class="btn-ghost">Ver Histórico de Dias</button>
     </div>
 
-    <div id="historyPanel" class="history-panel mt-4 hidden"></div>
+    <div id="historyPanel" class="history-panel mt-4 hidden" aria-live="polite"></div>
   </section>
 
-  <!-- RESUMO FINAL -->
-  <section class="card final-resumo">
-    <h3 style="margin:0 0 8px 0;font-size:15px">Resumo Final</h3>
-
+  <!-- Final resumo (mini-cards) -->
+  <section class="card final-resumo" aria-label="Resumo final">
+    <h3 style="margin:0 0 8px 0;font-size:15px">Resumo Final por Categoria</h3>
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px">
-      <div class="mini-card">
-        <div class="muted">Apps</div>
+      <div style="background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03));padding:12px;border-radius:12px;text-align:center">
+        <div class="muted">Total Apps</div>
         <div id="finalTotalApps" class="metric-value">R$ 0,00</div>
       </div>
-
-      <div class="mini-card">
-        <div class="muted">Loja</div>
+      <div style="background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03));padding:12px;border-radius:12px;text-align:center">
+        <div class="muted">Total Loja</div>
         <div id="finalTotalLoja" class="metric-value">R$ 0,00</div>
       </div>
-
-      <div class="mini-card">
-        <div class="muted">Doações</div>
+      <div style="background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03));padding:12px;border-radius:12px;text-align:center">
+        <div class="muted">Total Doações</div>
         <div id="finalTotalDoacao" class="metric-value">R$ 0,00</div>
       </div>
-
-      <div class="mini-card-total">
+      <div style="background:linear-gradient(135deg,var(--accent),#3b82f6);padding:12px;border-radius:12px;text-align:center;color:#fff">
         <div class="muted" style="opacity:0.9">Total Geral</div>
         <div id="finalTotalGeral" class="metric-value">R$ 0,00</div>
       </div>
     </div>
   </section>
 
-  <footer class="small muted" style="text-align:center;margin-top:10px">
-    Sincronizado com Firebase ✔
-  </footer>
+  <footer class="small muted" style="text-align:center;margin-top:10px">Dados armazenados localmente (localStorage). Faça export regularmente.</footer>
 
-</div> <!-- wrap -->
+</div> <!-- FIM .wrap -->
 
-<div id="confettiRoot" class="confetti"></div>
+<!-- confetti holder -->
+<div id="confettiRoot" class="confetti" aria-hidden="true"></div>
 
-<!-- ==============================
-     SCRIPT PRINCIPAL PARTE FINAL
-=================================-->
+<!-- PARTE 3/3 - Firebase + Auth Guard + sync -->
 <script type="module">
+  // FIREBASE CORE (inicializa a app, auth e firestore)
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* ===========================
-   AÇÕES DO HISTÓRICO
-=========================== */
-viewHistoryBtn.addEventListener("click", () => {
-  if (historyPanel.classList.contains("hidden")) {
-    renderHistory();
-    historyPanel.classList.remove("hidden");
-    viewHistoryBtn.textContent = "Ocultar Histórico";
-  } else {
-    historyPanel.classList.add("hidden");
-    viewHistoryBtn.textContent = "Ver Histórico";
-  }
-});
+  // Substitua por sua config caso queira (a mesma usada nas partes anteriores)
+  const firebaseConfig = {
+    apiKey: "AIzaSyBXkQlm0TbCsCdVGil8-5kGWbtj07SKXwA",
+    authDomain: "maxrota.firebaseapp.com",
+    projectId: "maxrota",
+    storageBucket: "maxrota.firebasestorage.app",
+    messagingSenderId: "425002957978",
+    appId: "1:425002957978:web:1e4f38239e552de452f323",
+    measurementId: "G-RBK7LM483D"
+  };
 
-function renderHistory() {
-  if (!state.savedDays?.length) {
-    historyPanel.innerHTML = `<div class="muted small">Nenhum dia salvo.</div>`;
-    return;
-  }
+  // Inicializa Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-  historyPanel.innerHTML = "";
+  // Exporta para o escopo global (os outros scripts acessam window.__FIREBASE__ e window.auth)
+  window.__FIREBASE__ = { auth, db };
+  window.auth = auth;
+  window.db = db;
 
-  state.savedDays.forEach(dia => {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.style.padding = "10px";
-    card.style.marginBottom = "10px";
-
-    const valueClass = state.valuesHidden ? "hidden-value" : "";
-
-    card.innerHTML = `
-      <div><strong>${new Date(dia.date).toLocaleDateString("pt-BR")}</strong></div>
-      <div>Meta: <span class="${valueClass}">${formatBRL(dia.meta)}</span></div>
-      <div>Bruto: <span class="${valueClass}">${formatBRL(dia.ganhosApps + dia.ganhosLoja)}</span></div>
-      <div>Gastos: <span class="${valueClass}">${formatBRL(dia.gastos)}</span></div>
-      <div>Lucro: <span class="${valueClass}">${formatBRL(dia.lucro)}</span></div>
-      <div>KM: <span class="${valueClass}">${dia.km}</span></div>
-    `;
-
-    historyPanel.appendChild(card);
+  // AUTH GUARD — mantém comportamento esperado: redireciona se não estiver logado, carrega estado se logado
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+      // Se a rota atual for a página pública (login.html) não redireciona em loop.
+      // Caso queira sempre forçar login, descomente a linha abaixo.
+      // location.href = "login.html";
+      console.log("Usuário não autenticado.");
+      window.__USER_UID__ = null;
+      // Ainda assim, chama loadState para carregar local fallback (loadState está definido na PARTE 2).
+      if (typeof loadState === 'function') await loadState();
+      return;
+    }
+    // usuário autenticado
+    window.__USER_UID__ = user.uid;
+    console.log("Usuário autenticado:", user.uid);
+    // carrega estado do Firebase (loadState deve existir na PARTE 2)
+    if (typeof loadState === 'function') await loadState();
   });
-}
 
-/* ===========================
-   SALVAR META
-=========================== */
-setMetaBtn.addEventListener("click", () => {
-  const v = Number(metaInput.value);
-  if (!v || v <= 0) return alert("Digite uma meta válida.");
+  // LOGOUT — expõe window.logout (PARTE 2 usa logout() no botão)
+  window.logout = async function() {
+    try {
+      await signOut(auth);
+      window.__USER_UID__ = null;
+      // limpa qualquer estado sensível local e redireciona para login
+      // (descomente se quiser forçar a limpeza)
+      // localStorage.removeItem('maxrota_state');
+      location.href = "login.html";
+    } catch (e) {
+      console.error("Erro durante logout:", e);
+      alert("Não foi possível sair no momento.");
+    }
+  };
 
-  state.meta = v;
-  state.celebrated = false;
+  // SINCRONIZAÇÃO PERIÓDICA (toque leve) — recarrega do Firebase a cada 15s se estiver logado
+  setInterval(() => {
+    if (!window.__USER_UID__) return;
+    if (typeof loadState === 'function') {
+      // loadState cuida de fallback para localStorage se houver erro
+      loadState().catch(err => console.warn("Erro na sincronização periódica:", err));
+    }
+  }, 15000);
 
-  saveState();
-  updateUI();
-});
+  // Antes da janela fechar, salva estado local (garante backup)
+  window.addEventListener('beforeunload', () => {
+    try {
+      if (typeof saveState === 'function') saveState();
+    } catch (e) { /* ignore */ }
+  });
 
-/* ===========================
-   CARGA INICIAL DE ESTADO
-=========================== */
-loadState();
-updateUI();
-
-</script>
-
-
-<!-- ===========================================
-       FIREBASE CORE
-===========================================-->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBXkQlm0TbCsCdVGil8-5kGWbtj07SKXwA",
-  authDomain: "maxrota.firebaseapp.com",
-  projectId: "maxrota",
-  storageBucket: "maxrota.firebasestorage.app",
-  messagingSenderId: "425002957978",
-  appId: "1:425002957978:web:1e4f38239e552de452f323",
-  measurementId: "G-RBK7LM483D"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-window.__FIREBASE__ = { auth, db };
-window.auth = auth;
-</script>
-
-<!-- ===========================================
-       AUTH GUARD
-===========================================-->
-<script type="module">
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-onAuthStateChanged(window.auth, user => {
-  if (!user) {
-    location.href = "login.html";
-    return;
+  // Se precisar forçar uma primeira tentativa de carregamento quando o script for inserido
+  // tenta carregar o estado local imediatamente (loadLocalState já foi chamada na PARTE 2).
+  if (typeof loadState === 'function' && window.__USER_UID__) {
+    loadState().catch(e => console.warn('loadState inicial falhou:', e));
   }
-  window.__USER_UID__ = user.uid;
-  window.loadState();
-});
 </script>
-
-<!-- ===========================================
-       LOGOUT
-===========================================-->
-<script type="module">
-import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-window.logout = async () => {
-  await signOut(window.auth);
-  location.href = "login.html";
-};
-</script>
-
-<!-- ===========================================
-      SYNC EM TEMPO REAL (15s)
-===========================================-->
-<script type="module">
-setInterval(() => {
-  if (window.__USER_UID__) window.loadState();
-}, 15000);
-</script>
-
-</body>
-</html>
+```0
+    
