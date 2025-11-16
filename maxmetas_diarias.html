@@ -1,1009 +1,826 @@
 <!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>MAX ROTA DIÁRIO</title>
-
-  <!-- Tailwind CDN for quick styling -->
-  <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 
   <style>
-    :root{
-      --bg1:#041226;
-      --bg2:#2a1160;
-      --card: rgba(255,255,255,0.03);
-      --accent:#6EE7B7;
-      --accent2:#7C3AED;
-      --muted:#9AA6B2;
-      --highlight-border: rgba(110,231,183,0.9);
-      --highlight-border-2: rgba(124,58,237,0.9);
-      --blankHighlight: rgba(59,59,59,0.65);
-    }
-    html,body{height:100%}
-    body{
-      font-family:'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-      margin:0;color:#e6eef6;
-      -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
-      padding:18px;
-      background: linear-gradient(0deg,var(--bg1), var(--bg2));
-      background-size: 400% 400%;
-      animation: gradientShift 14s ease infinite;
-    }
-    @keyframes gradientShift {
-      0%{background-position:0% 50%}
-      50%{background-position:100% 50%}
-      100%{background-position:0% 50%}
-    }
-    .wrap{max-width:1200px;margin:0 auto}
-    .card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03)); border-radius:12px; padding:16px; box-shadow:0 10px 30px rgba(2,6,23,0.6);}
-    .header-logo{display:flex;align-items:center;gap:14px}
-    .logo-img{height:68px;width:auto;border-radius:8px;box-shadow:0 8px 26px rgba(0,0,0,0.4)}
-    h1{font-size:20px;margin:0}
-    .small{font-size:13px;color:var(--muted)}
-    /* Buttons and inputs highlight */
-    .btn { padding:10px 14px;border-radius:10px;background:linear-gradient(90deg,var(--accent), var(--accent2));color:#012;font-weight:700;border:0;cursor:pointer;box-shadow:0 6px 18px rgba(124,58,237,0.08);transition:transform .12s, box-shadow .12s;}
-    .btn:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(124,58,237,0.16)}
-    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);padding:10px 12px;border-radius:10px;cursor:pointer}
-    input[type="number"], input[type="text"], select, textarea{
-      background:rgba(255,255,255,0.02);border:2px solid rgba(255,255,255,0.04);padding:10px;border-radius:8px;color:inherit;transition:border-color .12s, box-shadow .12s;
-    }
-    input[type="number"]:focus, input[type="text"]:focus, select:focus, textarea:focus{
-      outline:none;border-color:var(--highlight-border);box-shadow:0 6px 20px rgba(110,231,183,0.08);
-    }
-    .important-field{border-color:var(--highlight-border-2);box-shadow:0 8px 30px rgba(124,58,237,0.06)}
-    .station-btn{transition:all .16s ease;border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:2px solid transparent}
-    .station-btn:hover{transform:translateY(-2px);border-color:rgba(255,255,255,0.06)}
-    .active-btn{box-shadow:0 10px 28px rgba(124,58,237,0.18);transform:translateY(-3px);border:1px solid rgba(124,58,237,0.28);}
-    .eq-bar{display:inline-block;margin:0 1px;vertical-align:middle;opacity:0.95;}
-    .nowPlaying{font-size:13px;color:var(--muted);text-align:center;margin-top:10px;}
-    .metric-app-blank{background:var(--blankHighlight);padding:6px;border-radius:6px;color:#e6eef6}
-    .list-item{display:flex;justify-content:space-between;align-items:center;padding:8px;border-radius:8px}
-    .muted-text{color:var(--muted);font-size:13px}
-    .pill{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.03);font-weight:600}
-    .icon-btn{background:transparent;border:0;color:var(--muted);cursor:pointer;padding:6px;border-radius:6px}
-    .icon-btn:hover{background:rgba(255,255,255,0.02);color:#fff}
-    table.min-w-full td, table.min-w-full th { padding:8px 6px; border-collapse:collapse; }
-    @media (max-width:900px){ .grid-cols-4-mobile{grid-template-columns:repeat(2,1fr);} .logo-img{height:56px} }
+  /* ===========================
+     MAX ROTA – ESTILO GLOBAL
+     =========================== */
+  :root {
+    --accent: #10b981;
+    --bg1: #041226;
+    --bg2: #2a1160;
+    --text: #e6eef6;
+    --muted: #9aa6b2;
+    --card: rgba(255, 255, 255, 0.06);
+    --radius: 14px;
+    --scale: 1.02;
+  }
+  html,body{height:100%;margin:0;padding:0}
+  body{
+    font-family:'Inter',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    color:var(--text);padding:20px;transform:scale(var(--scale));transform-origin:top left;
+  }
+  .wrap{max-width:1200px;margin:0 auto}
+  .card{background:var(--card);backdrop-filter:blur(6px);border-radius:16px;padding:18px;margin-bottom:18px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 26px rgba(0,0,0,0.35)}
+  .header-card{display:flex;justify-content:space-between;align-items:center; flex-wrap: wrap; gap: 10px;} /* Ajustado para melhor responsividade e acomodar o botão */
+  .logo-img{height:74px;width:auto;border-radius:12px}
+  .theme-controls{display:flex;align-items:center;gap:12px}
+  .theme-btn{background:linear-gradient(120deg,var(--accent),#3b82f6);color:#fff;padding:10px 14px;border-radius:12px;border:none;font-weight:700;cursor:pointer;box-shadow:0 6px 20px rgba(0,0,0,0.3)}
+  .theme-dots{display:flex;gap:10px}
+  .color-dot{width:30px;height:30px;border-radius:999px;border:2px solid rgba(255,255,255,0.12);cursor:pointer;box-shadow:0 6px 14px rgba(0,0,0,0.3)}
+  .radio-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .station-btn{padding:14px;border-radius:12px;color:#fff;font-weight:800;border:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:0.12s;font-size:16px;height:56px}
+  .station-btn.active{box-shadow:0 10px 26px rgba(0,0,0,0.5);transform:translateY(-3px)}
+  .radio-player{margin-top:12px;display:flex;align-items:center;gap:12px}
+  .meta-row{display:flex;gap:12px}
+  .meta-row input{flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);color:var(--text);font-weight:800;font-size:16px}
+  .progress-container{height:44px;border-radius:22px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);overflow:hidden;position:relative}
+  .progress-bar{position:absolute;left:0;top:0;height:100%;background:linear-gradient(120deg,var(--accent),#2563eb);width:0%;animation:waveMove 3.5s linear infinite;background-size:200% 200%}
+  @keyframes waveMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+  .progress-text{position:absolute;width:100%;height:100%;line-height:44px;text-align:center;font-weight:900;font-size:15px}
+  .progress-bubbles{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:hidden}
+  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .grid-4 input{width:100%;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);color:var(--text);font-weight:700;font-size:15px}
+  .big-time{font-size:20px;font-weight:900}
+  .km-actions{margin-top:12px;display:flex;gap:12px;flex-wrap:wrap}
+  .btn{padding:12px 16px;border-radius:12px;background:linear-gradient(120deg,var(--accent),#7c3aed);border:none;font-weight:800;cursor:pointer;color:#fff;font-size:15px;box-shadow:0 8px 20px rgba(0,0,0,0.3)}
+  .btn-ghost{padding:12px 16px;border-radius:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);font-weight:700;cursor:pointer;color:var(--muted)}
+  .grid-2cols{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .input-row{display:flex;gap:12px}
+  .input-row input{flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.03);color:var(--text);font-weight:700;font-size:15px}
+  .apps-grid,.gastos-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+  .app-btn,.gasto-btn{padding:12px 14px;border:none;border-radius:12px;cursor:pointer;font-weight:900;color:#fff;font-size:15px;display:flex;align-items:center;justify-content:center;min-width:120px}
+  .launch-list{max-height:300px;overflow-y:auto;padding:6px}
+  .launch-item{display:flex;justify-content:space-between;border-bottom:1px dashed rgba(255,255,255,0.06);padding:10px 6px;border-radius:10px}
+  .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+  .metric-col{padding:12px;border-radius:12px;background:rgba(255,255,255,0.04)}
+  .metric-title{font-size:13px;color:var(--muted)}
+  .metric-value{margin-top:8px;font-size:18px;font-weight:900}
+  .resumo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+  .history-panel{background:rgba(255,255,255,0.03);padding:12px;border-radius:12px}
+  .confetti{pointer-events:none;position:fixed;inset:0;overflow:hidden;z-index:9999}
+  .confetti .c{position:absolute;width:10px;height:14px;opacity:0.95}
+  .accent-green{--accent:#10b981}
+  .accent-orange{--accent:#f97316}
+  .accent-yellow{--accent:#facc15}
+  .accent-red{--accent:#ef4444}
+  .accent-pink{--accent:#ec4899}
+  body.light-mode{--bg1:#f5f7fb;--bg2:#e8f0ff;--text:#0b1220;--muted:#566170;--card:rgba(255,255,255,0.9)}
+  .muted{color:var(--muted)}
+  .small{font-size:13px}
+  /* Estilo para valores escondidos, mantém o espaço */
+  .hidden-value-mask {
+    color: transparent;
+    text-shadow: 0 0 8px rgba(0,0,0,0.9); /* Adiciona uma sombra para criar o efeito de "escondido" */
+    font-size: 10px; /* Reduz o tamanho para a máscara ser menor, mas visível */
+  }
+  .hidden-value {
+    visibility: hidden;
+    position: relative;
+  }
+  .hidden-value::after {
+    content: '****';
+    visibility: visible;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    color: var(--text);
+    text-align: inherit;
+    line-height: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+  }
+  /* Estilo para o botão no header */
+  .header-actions-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px; /* Espaço entre o controle de tema e o botão de toggle */
+      align-items: flex-end; /* Alinha o botão de toggle à direita */
+  }
+  .toggle-btn {
+    padding: 6px 10px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.08);
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text);
+    font-size: 13px;
+    white-space: nowrap; /* Não quebra a linha do texto do botão */
+    width: fit-content; /* Largura do conteúdo */
+  }
+
+  @media(max-width:1000px){body{transform:scale(1.00)}.grid-4{grid-template-columns:repeat(2,1fr)}.grid-2cols{grid-template-columns:1fr}.wrap{padding:8px}}
   </style>
 </head>
 
-<body>
-  <div class="wrap">
-    <!-- Header -->
-    <header class="mb-6">
-      <div class="card header-logo">
-        <img src="https://i.postimg.cc/3RWn008g/Chat-GPT-Image-12-de-nov-de-2025-14-32-56.png" alt="MAX ROTA DIÁRIO" class="logo-img" />
+<body class="accent-green">
+  <script type="module" src="auth-guard.js"></script> <div class="wrap">
+
+    <header class="card header-card" role="banner" aria-label="Cabeçalho MAX ROTA">
+      <div style="display:flex;align-items:center;gap:12px">
+        <img id="logoImg" class="logo-img" src="https://i.postimg.cc/3RWn008g/Chat-GPT-Image-12-de-nov-de-2025-14-32-56.png" alt="MAX ROTA DIÁRIO">
         <div>
-          <h1 class="text-xl font-bold text-white m-0">MAX ROTA DIÁRIO</h1>
-          <p class="small">Painel do Motorista</p>
+          <h1 style="margin:0;font-size:20px">MAX ROTA DIÁRIO</h1>
+          <div class="small muted">Painel do Motorista</div>
         </div>
+      </div>
+
+      <div class="header-actions-container">
+        <div class="theme-controls" aria-hidden="false">
+          <button id="autoThemeBtn" class="theme-btn" title="Ativar modo automático dia/noite">Auto 🌗</button>
+          <div class="theme-dots" role="toolbar" aria-label="Temas" style="margin-left:8px">
+            <button class="color-dot" data-accent="green" style="background:#10b981" title="Verde"></button>
+            <button class="color-dot" data-accent="orange" style="background:#f97316" title="Laranja"></button>
+            <button class="color-dot" data-accent="yellow" style="background:#facc15" title="Amarelo"></button>
+            <button class="color-dot" data-accent="red" style="background:#ef4444" title="Vermelho"></button>
+            <button class="color-dot" data-accent="pink" style="background:#ec4899" title="Rosa"></button>
+          </div>
+        </div>
+        
+        <button id="toggleValuesBtn" class="toggle-btn" aria-pressed="false" title="Mostrar/Esconder valores monetários e de contagem">Esconder Valores</button>
       </div>
     </header>
+    <section class="card radio-card" aria-label="Rádios">
+      <div style="display:flex; justify-content: space-between; align-items: center;">
+        <h2 style="margin:0;font-size:16px">🎧 Estações</h2>
+        <button onclick="logout()" class="btn">Sair</button> </div>
 
-    <!-- Rádio -->
-    <section class="card mb-6">
-      <h2 class="text-lg font-semibold mb-2 text-cyan-100">🎧 Estações MAX ROTA</h2>
-      <p class="small mb-3">Escolha a estação e toque no player. (Removi os botões de volume para evitar conflito com o player.)</p>
+      <div id="stationButtons" class="radio-grid" role="list" aria-label="Lista de rádios">
+        <button class="station-btn" data-src="https://live.hunter.fm/pop_high" data-name="Hunter Pop" style="background:#10b981">Hunter Pop</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/pop2k_high" data-name="Hunter Pop2K" style="background:#06b6d4">Pop2K</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/u80s-128-mp3" data-name="Flashback 80s" style="background:#8b5cf6">80s</button>
+        <button class="station-btn" data-src="http://listen.181fm.com/181-power_128k.mp3" data-name="Power 181" style="background:#f97316">Power181</button>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="md:col-span-2">
-          <div id="stationButtons" class="grid grid-cols-4 gap-3 grid-cols-4-mobile">
-            <button class="station-btn bg-sky-700 text-white" data-src="https://live.hunter.fm/pop_high" data-name="Pop Hits">Pop Hits</button>
-            <button class="station-btn bg-indigo-700 text-white" data-src="https://ice1.somafm.com/u80s-128-mp3" data-name="Flashback 80s">Flashback 80s</button>
-            <button class="station-btn bg-rose-600 text-white" data-src="https://live.hunter.fm/rock_high" data-name="Rock Classic">Rock Classic</button>
-            <button class="station-btn bg-amber-600 text-black" data-src="https://live.hunter.fm/sertanejo_high" data-name="Sertanejo">Sertanejo</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/rock_high" data-name="Rock Classic" style="background:#ef4444">Rock</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/sertanejo_high" data-name="Sertanejo" style="background:#f59e0b">Sertanejo</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/hiphop_high" data-name="Hip Hop" style="background:#111827">HipHop</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/gospel_high" data-name="Cristã" style="background:#facc15;color:#111">Cristã</button>
 
-            <button class="station-btn bg-teal-700 text-white" data-src="https://live.hunter.fm/hiphop_high" data-name="Hip Hop">Hip Hop</button>
-            <!-- Mega Latina (substituição estável) -->
-            <button class="station-btn bg-red-600 text-white" data-src="https://live.hunter.fm/latinpop_high" data-name="Mega Latina">Mega Latina</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/groovesalad-128-mp3" data-name="GrooveSalad" style="background:#2563eb">Eletrônica</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/beatblender-128-mp3" data-name="BeatBlender" style="background:#7c3aed">House / Deep</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/secretagent-128-mp3" data-name="Surf" style="background:#06b6d4">Surf</button>
+        <button class="station-btn" data-src="https://ice1.somafm.com/dubstep-128-mp3" data-name="Reggae/Dub" style="background:#4ade80">Reggae</button>
 
-            <!-- Eletrônica (SomaFM GrooveSalad) -->
-            <button class="station-btn bg-lime-700 text-white" data-src="https://ice1.somafm.com/groovesalad-128-mp3" data-name="Eletrônica">Eletrônica</button>
-            <!-- Surf/Alternative (SomaFM Secret Agent used as 'surf vibe') -->
-            <button class="station-btn bg-emerald-700 text-white" data-src="https://ice1.somafm.com/secretagent-128-mp3" data-name="Surf / Alternative">Surf</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/mpb_high" data-name="MPB Brasil" style="background:#1e3a8a">MPB</button>
+        <button class="station-btn" data-src="https://stream.radioparadise.com/mp3-192" data-name="Radio Paradise" style="background:#111827">RadioParadise</button>
+        <button class="station-btn" data-src="http://listen.181fm.com/181-beat_128k.mp3" data-name="181 HipHop" style="background:#0ea5e9">181 HipHop</button>
+        <button class="station-btn" data-src="https://live.hunter.fm/mpb_high" data-name="MPB (alt)" style="background:#8b5cf6">MPB alt</button>
+      </div>
 
-            <!-- Reggae-like / Dub -->
-            <button class="station-btn bg-orange-700 text-white" data-src="https://ice1.somafm.com/dubstep-128-mp3" data-name="Reggae / Dub">Reggae</button>
-            <!-- Pop2K substituindo 2000s -->
-            <button class="station-btn bg-cyan-700 text-white" data-src="https://live.hunter.fm/pop2k_high" data-name="Pop2K 2000s">2000s Hits</button>
-
-            <button class="station-btn bg-slate-600 text-white" data-src="https://live.hunter.fm/gospel_high" data-name="Cristã">Cristã</button>
-            <button class="station-btn bg-pink-700 text-white" data-src="https://live.hunter.fm/mpb_high" data-name="MPB Brasil">MPB Brasil</button>
-          </div>
-        </div>
-
-        <div class="md:col-span-1">
-          <audio id="radioPlayer" controls preload="none" class="w-full" crossorigin="anonymous"></audio>
-          <div class="mt-3">
-            <button id="stopRadioBtn" class="btn-ghost w-full">Parar Rádio</button>
-          </div>
-          <p id="nowPlaying" class="nowPlaying mt-3">Nenhuma rádio selecionada.</p>
+      <div class="radio-player mt-4" aria-label="Player de rádio">
+        <audio id="radioPlayer" controls preload="none" class="w-full" aria-label="Player de rádio"></audio>
+        <div style="display:flex;flex-direction:column;gap:8px;margin-left:12px">
+          <button id="stopRadioBtn" class="btn-ghost w-36" aria-label="Parar rádio">Parar Rádio</button>
+          <div id="nowPlaying" class="small muted" aria-live="polite">Nenhuma rádio selecionada.</div>
         </div>
       </div>
     </section>
 
-    <!-- Navigation Tabs -->
-    <div class="flex space-x-2 mb-6 overflow-x-auto whitespace-nowrap pb-2">
-      <button id="tab-painel-btn" class="tab-button py-3 px-4 rounded-lg font-bold transition-colors duration-200 ativo bg-cyan-700">Painel Diário</button>
-      <button id="tab-calculadora-btn" class="tab-button py-3 px-4 rounded-lg font-bold transition-colors duration-200 bg-gray-600 hover:bg-gray-700">Calculadora</button>
-      <button id="tab-desempenho-btn" class="tab-button py-3 px-4 rounded-lg font-bold transition-colors duration-200 bg-gray-600 hover:bg-gray-700">Desempenho</button>
-    </div>
+    <section class="card meta-card" aria-label="Meta diária">
+      <h2 style="margin:0 0 8px 0;font-size:16px">🎯 Meta Diária</h2>
 
-    <!-- Painel Diário -->
-    <div id="tab-painel-content" class="mb-6">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-cyan-300">Controle Diário</h2>
-        <button id="togglePrivacyBtn" class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-lg text-sm">Ocultar</button>
+      <div class="meta-row mt-3" role="form" aria-label="Definir meta diária">
+        <input id="metaInput" type="number" placeholder="Ex: 300" aria-label="Valor da meta" />
+        <button id="setMetaBtn" class="btn" aria-label="Salvar meta">Salvar Meta</button>
       </div>
 
-      <!-- Meta -->
-      <div class="mb-6 card">
-        <label for="metaDiaria" class="block text-sm font-medium text-gray-300 mb-2">Meta diaria (R$)</label>
-        <div class="flex gap-3">
-          <input type="number" id="metaDiaria" step="10" placeholder="Ex: 300" class="flex-1 p-3 text-white important-field" />
-          <button id="salvarMetaBtn" class="btn">Definir</button>
-        </div>
-        <div class="w-full bg-gray-600 rounded-full h-4 mt-4 overflow-hidden">
-          <div id="progressBar" class="bg-green-500 h-4 rounded-full progress-bar-fill" style="width:0%"></div>
-        </div>
-        <p id="resumoFaltando" class="small mt-2">Defina uma meta para começar.</p>
+      <div class="progress-container mt-4" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div id="progressBar" class="progress-bar" style="width:0%"></div>
+        <div id="progressBubbles" class="progress-bubbles" aria-hidden="true"></div>
+        <div id="progressText" class="progress-text">0%</div>
       </div>
 
-      <!-- Odômetro e Jornada -->
-      <div class="card mb-6">
-        <div class="grid md:grid-cols-4 gap-4">
-          <div>
-            <label class="small mb-1 block">KM Inicial</label>
-            <input id="kmInicial" type="number" placeholder="Ex: 150000" class="w-full p-2 important-field" />
-            <button id="salvarKmInicialBtn" class="btn mt-2 w-full">Salvar Inicial</button>
-          </div>
-          <div>
-            <label class="small mb-1 block">KM Final</label>
-            <input id="kmFinal" type="number" placeholder="Ex: 150250" class="w-full p-2 important-field" />
-            <button id="salvarKmFinalBtn" class="btn mt-2 w-full">Salvar Final</button>
-          </div>
-          <div>
-            <label class="small mb-1 block">Tempo Trabalhado</label>
-            <p id="tempoTrabalhado" class="text-xl font-semibold">00:00:00</p>
-          </div>
-          <div>
-            <label class="small mb-1 block">KM Rodados</label>
-            <p id="kmRodados" class="text-xl font-semibold">0.0 km</p>
-          </div>
+      <div id="metaMessage" class="small muted mt-2" aria-live="polite">Defina a meta para acompanhar o progresso.</div>
+    </section>
+
+    <section class="card km-card" aria-label="Jornada e quilometragem">
+      <h2 style="margin:0 0 8px 0;font-size:16px">🚗 Jornada e KM</h2>
+
+      <div class="grid-4 mt-3" role="group" aria-label="Campos de quilometragem e tempo">
+        <div>
+          <label class="small muted" for="kmInicial">KM Inicial</label>
+          <input id="kmInicial" type="number" placeholder="Ex: 150000" aria-label="KM inicial" />
         </div>
 
-        <div class="grid md:grid-cols-4 gap-3 mt-4">
-          <button id="iniciarDiaBtn" class="btn col-span-2">Iniciar Dia</button>
-          <button id="pausarDiaBtn" class="btn-ghost hidden important-field">Pausar</button>
-          <button id="retomarDiaBtn" class="btn-ghost hidden important-field">Retomar</button>
-          <button id="encerrarDiaBtn" class="btn-ghost hidden important-field">Encerrar Dia</button>
+        <div>
+          <label class="small muted" for="kmFinal">KM Final</label>
+          <input id="kmFinal" type="number" placeholder="Ex: 150250" aria-label="KM final" />
+        </div>
+
+        <div>
+          <label class="small muted">Tempo Trabalhado</label>
+          <div id="tempoTrabalhado" class="big-time" aria-live="polite">00:00:00</div>
+        </div>
+
+        <div>
+          <label class="small muted">KM Rodados</label>
+          <div id="kmRodados" class="big-time" aria-live="polite">0.0 km</div>
         </div>
       </div>
 
-      <!-- Lançamentos -->
-      <div class="grid md:grid-cols-2 gap-4">
-        <div class="card">
-          <h3 class="text-lg font-semibold text-gray-200 mb-3">Lançar Ganhos</h3>
-          <input type="number" id="valorCorrida" step="0.5" placeholder="12.50" class="w-full p-3 mb-3 important-field" />
-          <div class="mb-2 small">Categoria</div>
-          <div id="ganhoButtons" class="grid grid-cols-3 gap-2 mb-2">
-            <button data-category="Uber" class="ganho-btn bg-[#111827] text-white py-3 rounded-lg important-field">Uber</button>
-            <button data-category="99" class="ganho-btn bg-yellow-500 text-black py-3 rounded-lg important-field">99</button>
-            <button data-category="inDriver" class="ganho-btn bg-green-600 text-white py-3 rounded-lg important-field">inDriver</button>
-            <button data-category="Particular" class="ganho-btn bg-blue-600 text-white py-3 rounded-lg important-field">Particular</button>
-            <button data-category="Doação" class="ganho-btn bg-pink-500 text-white py-3 rounded-lg important-field">Doação</button>
-            <button data-category="Loja" class="ganho-btn bg-teal-600 text-white py-3 rounded-lg important-field">Loja</button>
-          </div>
-          <p id="erroInput" class="text-red-400 text-center text-sm mt-2 hidden">Valor inválido.</p>
+      <div class="km-actions">
+        <button id="toggleStartBtn" class="btn mt-4" aria-pressed="false">Iniciar Expediente</button>
+        <button id="finalizeBtn" class="btn-ghost mt-4">Finalizar Dia</button>
+        <button id="saveKmBtn" class="btn mt-4">Salvar KM</button>
+      </div>
+    </section>
 
-          <hr class="my-4 border-gray-700">
+    <section class="card lancamentos-card grid-2cols" aria-label="Lançamentos">
+      <div>
+        <h3 style="margin:0 0 8px 0;font-size:15px">➕ Entradas (Apps)</h3>
 
-          <h3 class="text-lg font-semibold text-gray-200 mb-3">Lançar Gastos</h3>
-          <input type="number" id="valorGasto" step="0.5" placeholder="50.00" class="w-full p-3 mb-3 important-field" />
-          <div id="gastoButtons" class="grid grid-cols-2 gap-2">
-            <button data-category="Combustível" class="gasto-btn bg-red-600 text-white py-3 rounded-lg important-field">Combustível</button>
-            <button data-category="Alimentação" class="gasto-btn bg-purple-600 text-white py-3 rounded-lg important-field">Alimentação</button>
-            <button data-category="Manutenção" class="gasto-btn bg-gray-500 text-white py-3 rounded-lg important-field">Manutenção</button>
-            <button data-category="Outros" class="gasto-btn bg-gray-900 text-white py-3 rounded-lg important-field">Outros</button>
-          </div>
-          <p id="erroGasto" class="text-red-400 text-center text-sm mt-2 hidden">Valor inválido.</p>
+        <div class="input-row mt-2" role="form" aria-label="Lançar entrada">
+          <input id="valorEntrada" type="number" placeholder="Valor (R$)" aria-label="Valor de entrada" />
+          <button id="addEntradaBtn" class="btn" aria-label="Adicionar entrada">Lançar</button>
         </div>
 
-        <div class="card">
-          <h3 class="text-lg font-semibold text-gray-200 mb-3">Lançamentos Recentes</h3>
-          <div id="lancamentosList" class="space-y-2 h-64 overflow-y-auto">
-            <p class="text-gray-400 text-center">Nenhum lançamento ainda.</p>
-          </div>
-
-          <hr class="my-3 border-gray-700">
-
-          <div class="text-sm text-gray-400 mb-2">Resumo rápido por categoria</div>
-          <div id="resumoCategorias" class="grid grid-cols-2 gap-2 text-sm">
-            <!-- preenchido via JS -->
-          </div>
+        <div class="apps-grid mt-2" role="list" aria-label="Lista de apps">
+          <button class="app-btn" data-cat="Uber" style="background:#000">Uber</button>
+          <button class="app-btn" data-cat="99" style="background:#facc15;color:#111">99</button>
+          <button class="app-btn" data-cat="inDriver" style="background:#10b981">inDriver</button>
+          <button class="app-btn" data-cat="Particular" style="background:#6b7280">Particular</button>
+          <button class="app-btn" data-cat="Loja" style="background:#1e3a8a">Loja</button>
+          <button class="app-btn" data-cat="Doação" style="background:#8b5cf6">Doação</button>
         </div>
       </div>
 
-      <!-- Resumo e Métricas -->
-      <div class="card mt-6">
-        <div class="flex flex-col items-center mb-4">
-          <p class="text-sm text-gray-400 mb-1">Lucro Líquido (Total)</p>
-          <p id="lucroLiquido" class="text-4xl font-bold text-cyan-400">R$ 0,00</p>
+      <div>
+        <h3 style="margin:0 0 8px 0;font-size:15px">➖ Saídas (Gastos)</h3>
+
+        <div class="input-row mt-2" role="form" aria-label="Lançar gasto">
+          <input id="valorSaida" type="number" placeholder="Valor (R$)" aria-label="Valor de saída" />
+          <button id="addSaidaBtn" class="btn" aria-label="Adicionar gasto">Lançar</button>
         </div>
 
-        <div class="grid md:grid-cols-3 gap-4">
-          <div class="p-4 bg-gray-900 rounded-lg">
-            <div class="flex justify-between"><span class="text-gray-400">Ganhos Brutos</span><span id="totalGanhos" class="text-green-400">R$ 0,00</span></div>
-            <div class="flex justify-between mt-2"><span class="text-gray-400">Gastos</span><span id="totalGastos" class="text-red-400">R$ 0,00</span></div>
-          </div>
-
-          <div class="p-4 bg-gray-900 rounded-lg">
-            <div class="text-sm text-gray-400 mb-2">Detalhamento das Métricas</div>
-            <div class="grid grid-cols-3 gap-2 text-center text-sm font-semibold text-gray-400 mb-3">
-              <span class="text-left">Métrica</span>
-              <span>Somente Apps</span>
-              <span class="text-cyan-400">Apps + Loja</span>
-            </div>
-
-            <div class="grid grid-cols-3 gap-2 text-center py-2 border-b border-gray-600">
-              <span class="text-left text-sm text-gray-300">Ganhos Brutos</span>
-              <span id="metricGanhosApps" class="font-semibold text-lg metric-app-value">R$ 0,00</span>
-              <span id="metricGanhosTotal" class="font-semibold text-lg text-cyan-400">R$ 0,00</span>
-            </div>
-
-            <div class="grid grid-cols-3 gap-2 text-center py-2 border-b border-gray-600">
-              <span class="text-left text-sm text-gray-300">Lucro Líquido</span>
-              <span id="metricLucroApps" class="font-semibold text-lg metric-app-value">R$ 0,00</span>
-              <span id="metricLucroTotal" class="font-semibold text-lg text-cyan-400">R$ 0,00</span>
-            </div>
-
-            <div class="grid grid-cols-3 gap-2 text-center py-2 border-b border-gray-600">
-              <span class="text-left text-sm text-gray-300">Média / Hora (Bruto)</span>
-              <span id="metricMediaHoraBrutoApps" class="font-semibold text-lg metric-app-value">R$ 0,00</span>
-              <span id="metricMediaHoraBrutoTotal" class="font-semibold text-lg text-cyan-400">R$ 0,00</span>
-            </div>
-
-            <div class="grid grid-cols-3 gap-2 text-center py-2">
-              <span class="text-left text-sm text-gray-300">Lucro / KM (Líquido)</span>
-              <span id="metricLucroKmApps" class="font-semibold text-lg metric-app-value">R$ 0,00</span>
-              <span id="metricLucroKmTotal" class="font-semibold text-lg text-cyan-400">R$ 0,00</span>
-            </div>
-
-          </div>
-
-          <div class="p-4 bg-gray-900 rounded-lg">
-            <div class="text-sm text-gray-400 mb-2">Entradas & Resumo</div>
-            <div class="grid grid-cols-2 gap-4 text-center mt-2">
-              <div>
-                <p class="text-sm text-gray-400">Entradas (Apps)</p>
-                <p id="totalEntradasApps" class="text-2xl font-semibold">0</p>
-              </div>
-              <div>
-                <p class="text-sm text-gray-400">Entradas (Loja)</p>
-                <p id="totalEntradasLoja" class="text-2xl font-semibold">0</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Histórico Lançamentos -->
-      <div class="mb-6">
-        <h3 class="text-lg font-semibold mb-3 text-gray-300">Últimos Lançamentos</h3>
-        <div id="historicoLista" class="card h-32 overflow-y-auto">
-          <p class="text-gray-400 text-center">Nenhum lançamento ainda.</p>
-        </div>
-      </div>
-
-      <div class="grid md:grid-cols-2 gap-3">
-        <button id="resetarDiaBtn" class="btn w-full">Salvar Resumo e Resetar Dia</button>
-        <button id="exportBtn" class="btn-ghost w-full">Exportar Resumo (JSON)</button>
-      </div>
-
-      <div class="card mt-6">
-        <button id="verHistoricoBtn" class="btn w-full">Ver Histórico de Dias Salvos</button>
-        <div id="historicoDiasLista" class="mt-4 space-y-3 hidden"></div>
-        <button id="limparHistoricoBtn" class="btn-ghost w-full mt-3 hidden">Limpar Histórico de Dias</button>
-      </div>
-    </div>
-
-    <!-- Calculadora -->
-    <div id="tab-calculadora-content" class="hidden">
-      <div class="card max-w-2xl mx-auto">
-        <h2 class="text-2xl font-bold text-indigo-300 text-center mb-4">Calcular Preço da Corrida</h2>
-        <label class="small">Custo por KM (R$)</label>
-        <input id="custoKm" type="number" step="0.01" class="w-full p-3 mb-3" placeholder="Ex: 0.85" />
-        <label class="small">Alvo por Hora (R$)</label>
-        <input id="valorHora_calc" type="number" step="1" value="50" class="w-full p-3 mb-3" />
-        <hr class="my-4 border-gray-700" />
-        <label class="small">Distância (KM)</label>
-        <input id="distanciaKm" type="number" step="0.1" class="w-full p-3 mb-3" />
-        <label class="small">Tempo (min)</label>
-        <input id="tempoViagem" type="number" class="w-full p-3 mb-3" />
-        <label class="small">Margem (%)</label>
-        <input id="margemLucro_calc" type="number" class="w-full p-3 mb-3" value="0" />
-        <button id="calcularBtn" class="btn w-full">Calcular Preço</button>
-        <p id="mensagemErro" class="text-red-400 text-center mt-3 hidden"></p>
-        <div id="resultadoDiv" class="mt-6 p-4 bg-gray-800 rounded-lg hidden">
-          <h3 id="veredictoTitulo" class="text-lg font-bold text-green-400 text-center mb-2">Preço Final Sugerido</h3>
-          <p id="resultadoPrecoFinal" class="text-4xl font-bold text-center mb-3">R$ 0,00</p>
-          <div class="text-sm">
-            <div class="flex justify-between"><span class="text-gray-400">Custo KM:</span><span id="breakdownCustoKm">R$ 0,00</span></div>
-            <div class="flex justify-between"><span class="text-gray-400" id="labelValorTempo">Valor do Tempo:</span><span id="breakdownValorTempo">R$ 0,00</span></div>
-            <hr class="my-2 border-gray-700">
-            <div class="flex justify-between"><span class="text-gray-300 font-bold">Preço Base:</span><span id="breakdownPrecoBase" class="text-cyan-300 font-bold">R$ 0,00</span></div>
-            <div class="flex justify-between"><span class="text-gray-400" id="labelMargem">Margem:</span><span id="breakdownMargem">R$ 0,00</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Desempenho -->
-    <div id="tab-desempenho-content" class="hidden">
-      <div class="card">
-        <h2 class="text-2xl font-bold text-yellow-300 text-center mb-4">Análise de Desempenho</h2>
-        <p class="small text-center mb-4">Gráficos baseados nos últimos dias salvos</p>
-        <div class="grid md:grid-cols-2 gap-4">
-          <div class="p-4 bg-gray-800 rounded-lg">
-            <canvas id="lucroChart"></canvas>
-          </div>
-          <div class="p-4 bg-gray-800 rounded-lg">
-            <canvas id="mediaHoraChart"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SUMÁRIO FINAL (card separado no final) -->
-    <section class="card mt-6">
-      <h2 class="text-xl font-bold mb-3 text-cyan-200">📦 Resumo Final por Categoria</h2>
-      <div id="finalResumo" class="grid md:grid-cols-4 gap-4">
-        <div class="p-4 bg-gray-900 rounded-lg text-center">
-          <div class="muted-text">Total Apps</div>
-          <div id="finalTotalApps" class="text-2xl font-bold mt-2">R$ 0,00</div>
-        </div>
-        <div class="p-4 bg-gray-900 rounded-lg text-center">
-          <div class="muted-text">Total Loja</div>
-          <div id="finalTotalLoja" class="text-2xl font-bold mt-2">R$ 0,00</div>
-        </div>
-        <div class="p-4 bg-gray-900 rounded-lg text-center">
-          <div class="muted-text">Total Doações</div>
-          <div id="finalTotalDoacao" class="text-2xl font-bold mt-2">R$ 0,00</div>
-        </div>
-        <div class="p-4 bg-cyan-800 rounded-lg text-center">
-          <div class="muted-text">Total Geral</div>
-          <div id="finalTotalGeral" class="text-2xl font-bold mt-2">R$ 0,00</div>
+        <div class="gastos-grid mt-2" role="list" aria-label="Principais gastos">
+          <button class="gasto-btn" data-cat="Combustível" style="background:#ef4444">Combustível</button>
+          <button class="gasto-btn" data-cat="Alimentação" style="background:#8b5cf6">Alimentação</button>
+          <button class="gasto-btn" data-cat="Manutenção" style="background:#6b7280">Manutenção</button>
+          <button class="gasto-btn" data-cat="Outros" style="background:#374151">Outros</button>
         </div>
       </div>
     </section>
 
-    <footer class="small mt-6 text-center text-gray-400">Dados armazenados localmente (localStorage). Faça export regularmente.</footer>
+    <section class="card recentes-card" aria-label="Lançamentos recentes">
+      <h3 style="margin:0 0 8px 0;font-size:15px">Lançamentos Recentes</h3>
+      <div id="lancamentosList" class="launch-list mt-2" aria-live="polite">
+        <div class="muted small text-center">Nenhum lançamento ainda.</div>
+      </div>
+    </section>
+
+    <section class="card resumo-cat" aria-label="Resumo por categoria">
+      <h3 style="margin:0 0 8px 0;font-size:15px">Resumo Rápido por Categoria</h3>
+      <div id="resumoCategorias" class="resumo-grid mt-2 small muted" role="list"></div>
+    </section>
+
+    <section class="card metric-card" aria-label="Métricas">
+      <h3 style="margin:0 0 8px 0;font-size:15px">Métricas</h3>
+
+      <div class="metric-grid mt-3">
+        <div class="metric-col">
+          <div class="metric-title">Ganhos Brutos — Somente Apps</div>
+          <div id="metricGanhosApps" class="metric-value text-green-400">R$ 0,00</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Ganhos Brutos — Apps + Loja</div>
+          <div id="metricGanhosTotal" class="metric-value text-cyan-300">R$ 0,00</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Gastos Totais</div>
+          <div id="metricGastosTotal" class="metric-value text-red-400">R$ 0,00</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Lucro Líquido</div>
+          <div id="metricLucroTotal" class="metric-value">R$ 0,00</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Média/Hora (Bruto)</div>
+          <div id="metricMediaHoraBrutoTotal" class="metric-value">R$ 0,00</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Média/Hora (Líquido)</div>
+          <div id="metricMediaHoraLiqTotal" class="metric-value">R$ 0,00</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Lucro / KM (Líquido)</div>
+          <div id="metricLucroKmTotal" class="metric-value">R$ 0,00</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Entradas Apps</div>
+          <div id="metricEntradasApps" class="metric-value">0</div>
+        </div>
+
+        <div class="metric-col">
+          <div class="metric-title">Entradas Loja</div>
+          <div id="metricEntradasLoja" class="metric-value">0</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card actions-card" aria-label="Ações">
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button id="saveAndResetBtn" class="btn">Salvar Resumo & Resetar Dia</button>
+        <button id="exportBtn" class="btn-ghost">Exportar Resumo (JSON)</button>
+        <button id="viewHistoryBtn" class="btn-ghost">Ver Histórico de Dias</button>
+      </div>
+
+      <div id="historyPanel" class="history-panel mt-4 hidden" aria-live="polite"></div>
+    </section>
+
+    <section class="card final-resumo" aria-label="Resumo final">
+      <h3 style="margin:0 0 8px 0;font-size:15px">Resumo Final por Categoria</h3>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:8px">
+        <div style="background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03));padding:12px;border-radius:12px;text-align:center">
+          <div class="muted">Total Apps</div>
+          <div id="finalTotalApps" class="metric-value">R$ 0,00</div>
+        </div>
+        <div style="background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03));padding:12px;border-radius:12px;text-align:center">
+          <div class="muted">Total Loja</div>
+          <div id="finalTotalLoja" class="metric-value">R$ 0,00</div>
+        </div>
+        <div style="background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03));padding:12px;border-radius:12px;text-align:center">
+          <div class="muted">Total Doações</div>
+          <div id="finalTotalDoacao" class="metric-value">R$ 0,00</div>
+        </div>
+        <div style="background:linear-gradient(135deg,var(--accent),#3b82f6);padding:12px;border-radius:12px;text-align:center;color:#fff">
+          <div class="muted" style="opacity:0.9">Total Geral</div>
+          <div id="finalTotalGeral" class="metric-value">R$ 0,00</div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="small muted" style="text-align:center;margin-top:10px">Dados armazenados localmente (localStorage). Faça export regularmente.</footer>
   </div>
 
-  <!-- Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
-
+  <div id="confettiRoot" class="confetti" aria-hidden="true"></div>
   <script>
-  /**********************************************************
-   * MAX ROTA DIÁRIO — script completo
-   **********************************************************/
+/* ===========================
+   MAX ROTA — SCRIPT COMPLETO
+   Com adição do botão de Esconder Valores
+   =========================== */
 
-  // Tab handling
-  const tabPainelBtn = document.getElementById('tab-painel-btn');
-  const tabCalculadoraBtn = document.getElementById('tab-calculadora-btn');
-  const tabDesempenhoBtn = document.getElementById('tab-desempenho-btn');
-  const tabPainelContent = document.getElementById('tab-painel-content');
-  const tabCalculadoraContent = document.getElementById('tab-calculadora-content');
-  const tabDesempenhoContent = document.getElementById('tab-desempenho-content');
-  const tabButtons = [tabPainelBtn, tabCalculadoraBtn, tabDesempenhoBtn];
+/* UTIL */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const uid = () => Math.random().toString(36).slice(2,9);
 
-  function switchTab(activeBtn, activeContent){
-    tabButtons.forEach(b=>{ b.classList.remove('ativo','bg-cyan-700'); b.classList.add('bg-gray-600'); });
-    [tabPainelContent, tabCalculadoraContent, tabDesempenhoContent].forEach(c=>c.classList.add('hidden'));
-    activeBtn.classList.add('ativo','bg-cyan-700');
-    if(activeContent) activeContent.classList.remove('hidden');
-    if(activeBtn === tabDesempenhoBtn) renderizarGraficos();
-  }
-  tabPainelBtn.addEventListener('click', ()=> switchTab(tabPainelBtn, tabPainelContent));
-  tabCalculadoraBtn.addEventListener('click', ()=> switchTab(tabCalculadoraBtn, tabCalculadoraContent));
-  tabDesempenhoBtn.addEventListener('click', ()=> switchTab(tabDesempenhoBtn, tabDesempenhoContent));
+function formatBRL(v){ return Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+function formatKM(v){ return Number(v||0).toFixed(1) + ' km'; }
+function formatTime(ms){ if(!ms||ms<=0) return '00:00:00'; const s=Math.floor(ms/1000); const h=Math.floor(s/3600); const m=Math.floor((s%3600)/60); const sec=s%60; return [h,m,sec].map(n=>String(n).padStart(2,'0')).join(':'); }
 
-  // Radio player (without volume buttons)
-  const radioPlayer = document.getElementById('radioPlayer');
-  const stationButtons = document.querySelectorAll('.station-btn');
-  const nowPlaying = document.getElementById('nowPlaying');
-  const stopRadioBtn = document.getElementById('stopRadioBtn');
+/* STATE */
+let state = {
+  meta: 0,
+  ganhosApps: 0,
+  ganhosLoja: 0,
+  totalDoacao: 0,
+  entradasApps: 0,
+  entradasLoja: 0,
+  gastos: 0,
+  history: [],
+  kmInicial: 0,
+  kmFinal: 0,
+  totalTimeWorked: 0,
+  lastStartTime: null,
+  status: 'stopped',
+  celebrated: false,
+  valuesHidden: false // NOVO: Estado para ocultar/mostrar valores
+};
 
-  function setActiveButton(btn){
-    stationButtons.forEach(b=>{
-      b.classList.remove('active-btn');
-      const eq = b.querySelector('.eq-wrapper'); if(eq) eq.remove();
+function saveState(){ localStorage.setItem('maxrota_state', JSON.stringify(state)); }
+function loadState(){
+  try{
+    const s = localStorage.getItem('maxrota_state');
+    if(s){ Object.assign(state, JSON.parse(s)); }
+    const savedMeta = localStorage.getItem('maxrota_meta');
+    if(savedMeta !== null) state.meta = Number(savedMeta);
+    const savedKmIni = localStorage.getItem('maxrota_kmInicial');
+    const savedKmFim = localStorage.getItem('maxrota_kmFinal');
+    if(savedKmIni !== null) state.kmInicial = Number(savedKmIni);
+    if(savedKmFim !== null) state.kmFinal = Number(savedKmFim);
+    
+    // NOVO: Carregar estado de valores ocultos
+    const savedHidden = localStorage.getItem('maxrota_valuesHidden');
+    if(savedHidden !== null) state.valuesHidden = savedHidden === 'true';
+
+  }catch(e){ console.warn(e); }
+}
+loadState();
+
+/* REFS */
+const metaInput = $('#metaInput'), setMetaBtn = $('#setMetaBtn'), progressBar = $('#progressBar'), progressText = $('#progressText'), metaMessage = $('#metaMessage'), progressBubbles = $('#progressBubbles');
+const kmInicialEl = $('#kmInicial'), kmFinalEl = $('#kmFinal'), tempoTrabalhado = $('#tempoTrabalhado'), kmRodados = $('#kmRodados'), toggleStartBtn = $('#toggleStartBtn'), finalizeBtn = $('#finalizeBtn'), saveKmBtn = $('#saveKmBtn');
+const valorEntrada = $('#valorEntrada'), valorSaida = $('#valorSaida'), lancamentosList = $('#lancamentosList');
+const appBtns = $$('.app-btn'), gastoBtns = $$('.gasto-btn');
+const stationButtons = $$('#stationButtons .station-btn'), radioPlayer = $('#radioPlayer'), nowPlaying = $('#nowPlaying'), stopRadioBtn = $('#stopRadioBtn');
+const metricGanhosApps = $('#metricGanhosApps'), metricGanhosTotal = $('#metricGanhosTotal'), metricGastosTotal = $('#metricGastosTotal'), metricLucroTotal = $('#metricLucroTotal');
+const metricMediaHoraBrutoTotal = $('#metricMediaHoraBrutoTotal'), metricMediaHoraLiqTotal = $('#metricMediaHoraLiqTotal'), metricLucroKmTotal = $('#metricLucroKmTotal');
+const metricEntradasApps = $('#metricEntradasApps'), metricEntradasLoja = $('#metricEntradasLoja');
+const finalTotalApps = $('#finalTotalApps'), finalTotalLoja = $('#finalTotalLoja'), finalTotalDoacao = $('#finalTotalDoacao'), finalTotalGeral = $('#finalTotalGeral');
+const confettiRoot = $('#confettiRoot'), saveAndResetBtn = $('#saveAndResetBtn'), exportBtn = $('#exportBtn'), viewHistoryBtn = $('#viewHistoryBtn'), historyPanel = $('#historyPanel');
+const autoThemeBtn = $('#autoThemeBtn'), themeDots = $$('.color-dot');
+const resumoCategorias = $('#resumoCategorias');
+const toggleValuesBtn = $('#toggleValuesBtn'); // NOVO: Referência ao botão
+
+/* NOVO: FUNÇÃO DE TOGGLE VALORES */
+function toggleValuesVisibility(){
+  state.valuesHidden = !state.valuesHidden;
+  localStorage.setItem('maxrota_valuesHidden', state.valuesHidden);
+  toggleValuesBtn.textContent = state.valuesHidden ? 'Mostrar Valores' : 'Esconder Valores';
+  toggleValuesBtn.setAttribute('aria-pressed', state.valuesHidden);
+  updateUI();
+}
+toggleValuesBtn.addEventListener('click', toggleValuesVisibility);
+
+/* RADIO */
+function setActiveStation(btn){ stationButtons.forEach(b=>b.classList.remove('active')); if(btn) btn.classList.add('active'); }
+stationButtons.forEach(btn=>btn.addEventListener('click', async ()=>{
+  try{ radioPlayer.pause(); }catch{} radioPlayer.src='';
+  const url = btn.dataset.src; const name = btn.dataset.name || 'Rádio';
+  setActiveStation(btn); nowPlaying.textContent = 'Carregando: ' + name;
+  try{ radioPlayer.src = url; radioPlayer.load(); await radioPlayer.play(); nowPlaying.textContent = 'Tocando: ' + name; }catch(err){ console.warn('Erro tocar',err); nowPlaying.textContent = 'Falha ao tocar ' + name; setActiveStation(null); }
+}));
+stopRadioBtn.addEventListener('click', ()=>{ try{ radioPlayer.pause(); radioPlayer.removeAttribute('src'); radioPlayer.load(); }catch(e){} nowPlaying.textContent='Nenhuma rádio selecionada.'; setActiveStation(null); });
+radioPlayer.addEventListener('error', ()=>{ nowPlaying.textContent='Erro ao carregar a estação.'; setActiveStation(null); });
+
+/* TIMER & KM */
+let timerInterval = null;
+function getTempoTotal(){ let t = Number(state.totalTimeWorked || 0); if(state.status==='running' && state.lastStartTime) t += (Date.now() - state.lastStartTime); return t; }
+function getKMRodados(){ const ini=Number(state.kmInicial||0), fim=Number(state.kmFinal||0); return (fim>ini)?(fim-ini):0; }
+
+function startTimer(){ stopTimer(); if(!state.lastStartTime) state.lastStartTime = Date.now(); timerInterval = setInterval(()=>{ tempoTrabalhado.textContent = formatTime(getTempoTotal()); updateDerivedMetrics(); },1000); }
+function stopTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } }
+
+toggleStartBtn.addEventListener('click', ()=>{
+  if(state.status==='stopped'){ state.status='running'; state.lastStartTime=Date.now(); toggleStartBtn.textContent='Pausar'; startTimer(); }
+  else if(state.status==='running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); state.lastStartTime=null; state.status='paused'; toggleStartBtn.textContent='Retomar'; stopTimer(); }
+  else if(state.status==='paused'){ state.status='running'; state.lastStartTime=Date.now(); toggleStartBtn.textContent='Pausar'; startTimer(); }
+  saveState(); updateUI();
+});
+
+finalizeBtn.addEventListener('click', ()=>{
+  if(state.status==='running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); state.lastStartTime=null; }
+  const tempoFinal = getTempoTotal(); const kmDia = getKMRodados();
+  state.status='stopped'; stopTimer();
+  // remove previous resumo if exists
+  const existing = finalizeBtn.parentElement.querySelector('.day-resume-card'); if(existing) existing.remove();
+  // small summary card
+  const resumoCard = document.createElement('div'); resumoCard.className='day-resume-card'; resumoCard.style.padding='10px'; resumoCard.style.marginTop='10px'; resumoCard.style.borderRadius='10px'; resumoCard.style.background='rgba(255,255,255,0.06)';
+  resumoCard.innerHTML = `<b>Dia Finalizado</b><br>Tempo Trabalhado: ${formatTime(tempoFinal)}<br>KM Rodado: ${formatKM(kmDia)}`;
+  finalizeBtn.parentElement.appendChild(resumoCard);
+  // zero timer totals (as requested)
+  state.totalTimeWorked = 0;
+  state.lastStartTime = null;
+  saveState(); updateUI();
+});
+
+saveKmBtn.addEventListener('click', ()=>{
+  // read user inputs (but avoid overwriting while typing - this is a user action, so ok)
+  state.kmInicial = Number(kmInicialEl.value) || 0;
+  state.kmFinal = Number(kmFinalEl.value) || 0;
+  localStorage.setItem("maxrota_kmInicial", state.kmInicial);
+  localStorage.setItem("maxrota_kmFinal", state.kmFinal);
+  saveState(); updateUI();
+});
+
+/* LANÇAMENTOS */
+function addLancamento({type,value,category}){
+  const item = { id: uid(), type, value: Number(value), category, date: new Date().toISOString() };
+  if(type==='ganho'){
+    if(category==='Loja'){ state.ganhosLoja += item.value; state.entradasLoja++; }
+    else if(category==='Doação'){ state.totalDoacao += item.value; }
+    else { state.ganhosApps += item.value; state.entradasApps++; }
+  } else { state.gastos += item.value; }
+  state.history.unshift(item);
+  saveState(); updateUI();
+  // after adding, ensure input cleared for quick next entry
+  valorEntrada.value=''; valorSaida.value='';
+}
+
+$('#addEntradaBtn').addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'ganho',value:v,category:'Particular'}); });
+$('#addSaidaBtn').addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'gasto',value:v,category:'Outros'}); });
+
+appBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorEntrada.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } const cat=b.dataset.cat; addLancamento({type:'ganho',value:v,category:cat}); }));
+gastoBtns.forEach(b=>b.addEventListener('click', ()=>{ const v=Number(valorSaida.value); if(isNaN(v)||v<=0){ alert('Valor inválido'); return; } addLancamento({type:'gasto',value:v,category:b.dataset.cat}); }));
+
+/* RENDER LANÇAMENTOS */
+function renderLancamentos(){
+  if(!state.history || state.history.length===0){ lancamentosList.innerHTML = '<div class="muted small text-center">Nenhum lançamento ainda.</div>'; return; }
+  lancamentosList.innerHTML = '';
+  state.history.slice(0,200).forEach(it=>{
+    const el = document.createElement('div'); el.className='launch-item';
+    
+    // Aplica a classe de ocultação/máscara se os valores estiverem escondidos
+    const valueClass = state.valuesHidden ? 'hidden-value' : '';
+
+    const left = document.createElement('div'); left.style.fontWeight='800'; 
+    left.innerHTML = `${it.category}: ${it.type==='ganho'?'+':'-'} <span class="${valueClass}">${formatBRL(it.value)}</span>`;
+    
+    const right = document.createElement('div');
+    const edit = document.createElement('button'); edit.className='btn-ghost'; edit.textContent='✏️'; edit.style.marginRight='8px';
+    const del = document.createElement('button'); del.className='btn-ghost'; del.textContent='🗑️';
+    right.appendChild(edit); right.appendChild(del);
+    el.appendChild(left); el.appendChild(right);
+    lancamentosList.appendChild(el);
+
+    edit.addEventListener('click', ()=>{
+      const novoStr = prompt('Novo valor (R$):', it.value.toFixed(2));
+      if(novoStr===null) return;
+      const novo = Number(novoStr);
+      if(isNaN(novo) || novo<0){ alert('Valor inválido'); return; }
+      // revert old
+      if(it.type==='ganho'){
+        if(it.category==='Loja') state.ganhosLoja -= it.value;
+        else if(it.category==='Doação') state.totalDoacao -= it.value;
+        else state.ganhosApps -= it.value;
+      } else state.gastos -= it.value;
+      // apply new
+      it.value = novo;
+      if(it.type==='ganho'){
+        if(it.category==='Loja') state.ganhosLoja += it.value;
+        else if(it.category==='Doação') state.totalDoacao += it.value;
+        else state.ganhosApps += it.value;
+      } else state.gastos += it.value;
+      saveState(); updateUI();
     });
-    if(btn){
-      btn.classList.add('active-btn');
-      const wr = document.createElement('span'); wr.className = 'eq-wrapper flex items-center ml-2';
-      for(let i=0;i<3;i++){
-        const bar = document.createElement('span');
-        bar.className = 'eq-bar';
-        bar.style.marginRight = '4px';
-        bar.style.display = 'inline-block';
-        bar.style.width = '6px';
-        bar.style.height = `${10 + Math.round(Math.random()*16)}px`;
-        bar.style.background = 'linear-gradient(180deg,#6EE7B7,#7C3AED)';
-        bar.style.borderRadius = '2px';
-        bar.style.animation = `eq ${700 + i*150}ms infinite ease-in-out`;
-        wr.appendChild(bar);
-      }
-      btn.appendChild(wr);
-    }
-  }
 
-  document.getElementById('stationButtons').addEventListener('click', async (e)=>{
-    const btn = e.target.closest('.station-btn');
-    if(!btn) return;
-    const src = btn.dataset.src;
-    const name = btn.dataset.name || 'Rádio';
-    try{ radioPlayer.pause(); } catch(e){}
-    radioPlayer.src = '';
-    setActiveButton(btn);
-    nowPlaying.textContent = `Carregando: ${name} ...`;
-    radioPlayer.crossOrigin = 'anonymous';
-    radioPlayer.src = src;
-    try{
-      radioPlayer.load();
-      await radioPlayer.play();
-      nowPlaying.textContent = `Tocando agora: ${name}`;
-    }catch(err){
-      console.warn('Erro ao tocar', err);
-      nowPlaying.textContent = `Falha ao tocar ${name}. Clique no ▶ do player para tentar.`;
-      setActiveButton(null);
-    }
+    del.addEventListener('click', ()=>{
+      if(!confirm('Excluir lançamento?')) return;
+      state.history = state.history.filter(x=>x.id !== it.id);
+      // rebuild totals cleanly
+      recalcTotalsFromHistory();
+      saveState(); updateUI();
+    });
+  });
+}
+
+/* rebuild totals from history to avoid drift */
+function recalcTotalsFromHistory(){
+  state.ganhosApps=0; state.ganhosLoja=0; state.totalDoacao=0; state.gastos=0; state.entradasApps=0; state.entradasLoja=0;
+  state.history.forEach(it=>{
+    if(it.type==='ganho'){
+      if(it.category==='Loja'){ state.ganhosLoja += it.value; state.entradasLoja++; }
+      else if(it.category==='Doação'){ state.totalDoacao += it.value; }
+      else { state.ganhosApps += it.value; state.entradasApps++; }
+    } else state.gastos += it.value;
+  });
+}
+
+/* RESUMO CATEGORIAS */
+function renderResumoCategorias(){
+  const totals = {}; const counts = {};
+  state.history.forEach(it => { if(it.type!=='ganho') return; const c = it.category || 'Outros'; totals[c] = (totals[c]||0) + it.value; counts[c] = (counts[c]||0) + 1; });
+  resumoCategorias.innerHTML = '';
+
+  // Aplica a classe de ocultação/máscara se os valores estiverem escondidos
+  const valueClass = state.valuesHidden ? 'hidden-value' : '';
+
+  const order = ['Uber','99','inDriver','Particular','Loja','Doação'];
+  order.forEach(cat=>{ 
+    const val=totals[cat]||0, cnt=counts[cat]||0; 
+    const node=document.createElement('div'); 
+    node.innerHTML=`<div style="font-weight:900;margin-bottom:6px">${cat}</div><div style="font-weight:800" class="${valueClass}">${formatBRL(val)}</div><div class="small muted"><span class="${valueClass}">${cnt}</span> entr.</div>`; 
+    resumoCategorias.appendChild(node); 
+  });
+  Object.keys(totals).forEach(cat=>{ 
+    if(order.includes(cat)) return; 
+    const node=document.createElement('div'); 
+    node.innerHTML=`<div style="font-weight:900;margin-bottom:6px">${cat}</div><div style="font-weight:800" class="${valueClass}">${formatBRL(totals[cat])}</div><div class="small muted"><span class="${valueClass}">${counts[cat]||0}</span> entr.</div>`; 
+    resumoCategorias.appendChild(node); 
+  });
+}
+
+/* METRICS & PROGRESS */
+function updateDerivedMetrics(){
+  const totalBruto = Number(state.ganhosApps||0) + Number(state.ganhosLoja||0) + Number(state.totalDoacao||0);
+  const lucro = totalBruto - Number(state.gastos||0);
+  const tempo = getTempoTotal();
+  const horas = tempo / (1000*60*60) || 0;
+  const mediaBruto = horas>0? totalBruto / horas : 0;
+  const mediaLiq = horas>0? lucro / horas : 0;
+  const lucroKm = getKMRodados()>0? lucro / getKMRodados() : 0;
+
+  // Aplica a classe de ocultação/máscara se os valores estiverem escondidos
+  const valueClass = state.valuesHidden ? 'hidden-value' : '';
+
+  metricGanhosApps.textContent = formatBRL(state.ganhosApps);
+  metricGanhosTotal.textContent = formatBRL(totalBruto);
+  metricGastosTotal.textContent = formatBRL(state.gastos);
+  metricLucroTotal.textContent = formatBRL(lucro);
+  metricMediaHoraBrutoTotal.textContent = formatBRL(mediaBruto);
+  metricMediaHoraLiqTotal.textContent = formatBRL(mediaLiq);
+  metricLucroKmTotal.textContent = formatBRL(lucroKm);
+  metricEntradasApps.textContent = state.entradasApps;
+  metricEntradasLoja.textContent = state.entradasLoja;
+  
+  // Aplica a classe de ocultação para os valores
+  $$('#metricGanhosApps, #metricGanhosTotal, #metricGastosTotal, #metricLucroTotal, #metricMediaHoraBrutoTotal, #metricMediaHoraLiqTotal, #metricLucroKmTotal, #metricEntradasApps, #metricEntradasLoja').forEach(el => {
+    el.classList.toggle('hidden-value', state.valuesHidden);
   });
 
-  stopRadioBtn.addEventListener('click', ()=>{
-    try{ radioPlayer.pause(); radioPlayer.removeAttribute('src'); radioPlayer.load(); }catch(e){}
-    nowPlaying.textContent = 'Nenhuma rádio selecionada.';
-    setActiveButton(null);
-  });
+  tempoTrabalhado.textContent = formatTime(tempo);
+  kmRodados.textContent = formatKM(getKMRodados());
+  renderResumoFinal();
+  updateProgressBar();
+}
 
-  radioPlayer.addEventListener('error', (ev)=> {
-    console.error('Audio error', ev);
-    nowPlaying.textContent = 'Erro ao carregar a estação. Tente outra.';
-    setActiveButton(null);
-  });
+/* progress */
+function updateProgressBar(){
+  const meta = Number(state.meta||0);
+  const atual = state.ganhosApps + state.ganhosLoja;
+  if(meta===0){ progressBar.style.width='0%'; progressText.textContent='0%'; metaMessage.textContent='Defina a meta para acompanhar o progresso.'; return; }
+  const pct = Math.min(100, (atual/meta)*100);
+  progressBar.style.width = pct + '%';
+  progressText.textContent = Math.round(pct) + '%';
+  
+  // Aplica a classe de ocultação/máscara se os valores estiverem escondidos
+  const valueClass = state.valuesHidden ? 'hidden-value' : '';
+  
+  if(atual < meta){ metaMessage.innerHTML = `Faltam <span class="${valueClass}">${formatBRL(meta - atual)}</span> para bater a meta.`; }
+  else { metaMessage.innerHTML = `Meta batida! (+<span class="${valueClass}">${formatBRL(atual - meta)}</span>)`; celebrate(); }
+}
 
-  // Elements & state
-  const togglePrivacyBtn = document.getElementById('togglePrivacyBtn');
-  const iniciarDiaBtn = document.getElementById('iniciarDiaBtn');
-  const pausarDiaBtn = document.getElementById('pausarDiaBtn');
-  const retomarDiaBtn = document.getElementById('retomarDiaBtn');
-  const encerrarDiaBtn = document.getElementById('encerrarDiaBtn');
-  const kmInicialInput = document.getElementById('kmInicial');
-  const kmFinalInput = document.getElementById('kmFinal');
-  const salvarKmInicialBtn = document.getElementById('salvarKmInicialBtn');
-  const salvarKmFinalBtn = document.getElementById('salvarKmFinalBtn');
-  const metaDiariaInput = document.getElementById('metaDiaria');
-  const salvarMetaBtn = document.getElementById('salvarMetaBtn');
+/* celebration */
+function celebrate(){
+  if(state.celebrated) return;
+  state.celebrated = true;
+  playVictorySequence();
+  triggerConfetti();
+  saveState();
+}
 
-  const valorCorridaInput = document.getElementById('valorCorrida');
-  const ganhoButtons = document.getElementById('ganhoButtons');
-  const erroInput = document.getElementById('erroInput');
-  const valorGastoInput = document.getElementById('valorGasto');
-  const gastoButtons = document.getElementById('gastoButtons');
-  const erroGasto = document.getElementById('erroGasto');
+function playVictorySequence(){
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator(); osc.type='sawtooth'; osc.frequency.value=480;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.01, now); g.gain.exponentialRampToValueAtTime(0.9, now+0.05); g.gain.exponentialRampToValueAtTime(0.01, now+1.4);
+    osc.connect(g); g.connect(ctx.destination); osc.start(now); osc.stop(now+1.45);
+    // applause
+    const length = ctx.sampleRate * 4;
+    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<length;i++){ data[i] = (Math.random()*2-1) * (1 - i/length) * 0.8; }
+    const src = ctx.createBufferSource(); src.buffer = buffer; src.connect(ctx.destination); src.start(now+0.6);
+    setTimeout(()=>{ try{ src.stop(); ctx.close(); }catch(e){} }, 5200);
+  }catch(e){ console.warn('celebrate audio failed', e); }
+}
 
-  const lancamentosList = document.getElementById('lancamentosList');
-  const resumoCategorias = document.getElementById('resumoCategorias');
-
-  const lucroLiquido = document.getElementById('lucroLiquido');
-  const totalGanhos = document.getElementById('totalGanhos');
-  const totalGastos = document.getElementById('totalGastos');
-  const progressBar = document.getElementById('progressBar');
-  const resumoFaltando = document.getElementById('resumoFaltando');
-  const tempoTrabalhado = document.getElementById('tempoTrabalhado');
-
-  const metricGanhosApps = document.getElementById('metricGanhosApps');
-  const metricGanhosTotal = document.getElementById('metricGanhosTotal');
-  const metricLucroApps = document.getElementById('metricLucroApps');
-  const metricLucroTotal = document.getElementById('metricLucroTotal');
-  const metricMediaHoraBrutoApps = document.getElementById('metricMediaHoraBrutoApps');
-  const metricMediaHoraBrutoTotal = document.getElementById('metricMediaHoraBrutoTotal');
-  const metricMediaHoraLiqApps = document.getElementById('metricMediaHoraLiqApps');
-  const metricMediaHoraLiqTotal = document.getElementById('metricMediaHoraLiqTotal');
-  const metricLucroKmApps = document.getElementById('metricLucroKmApps');
-  const metricLucroKmTotal = document.getElementById('metricLucroKmTotal');
-  const totalEntradasApps = document.getElementById('totalEntradasApps');
-  const totalEntradasLoja = document.getElementById('totalEntradasLoja');
-
-  const historicoLista = document.getElementById('historicoLista');
-  const resetarDiaBtn = document.getElementById('resetarDiaBtn');
-  const exportBtn = document.getElementById('exportBtn');
-  const verHistoricoBtn = document.getElementById('verHistoricoBtn');
-  const historicoDiasLista = document.getElementById('historicoDiasLista');
-  const limparHistoricoBtn = document.getElementById('limparHistoricoBtn');
-
-  const finalTotalApps = document.getElementById('finalTotalApps');
-  const finalTotalLoja = document.getElementById('finalTotalLoja');
-  const finalTotalDoacao = document.getElementById('finalTotalDoacao');
-  const finalTotalGeral = document.getElementById('finalTotalGeral');
-
-  // state
-  let state = {
-    meta: 0,
-    ganhosApps: 0,
-    ganhosLoja: 0,
-    totalDoacao: 0,
-    entradasApps: 0,
-    entradasLoja: 0,
-    gastos: 0,
-    history: [], // lançamentos: {id,type,value,category,date}
-    totalTimeWorked: 0,
-    lastStartTime: null,
-    status: 'stopped',
-    privacyMode: false,
-    kmInicial: 0,
-    kmFinal: 0
-  };
-  let timerInterval = null;
-
-  // util
-  function uid(){ return Math.random().toString(36).slice(2,9); }
-  function formatBRL(v){ if(state.privacyMode) return "R$ --,--"; return (v||0).toLocaleString('pt-BR', { style:'currency', currency:'BRL' }); }
-  function formatKM(v){ if(state.privacyMode) return "--,-- km"; return (v||0).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}) + ' km'; }
-  function formatTime(ms){ if(ms<0) ms=0; const tot = Math.floor(ms/1000); const h=Math.floor(tot/3600); const m=Math.floor((tot%3600)/60); const s=tot%60; return [h,m,s].map(n=>String(n).padStart(2,'0')).join(':'); }
-  function getTempoTotal(){ let t = state.totalTimeWorked; if(state.status==='running' && state.lastStartTime) t += (Date.now() - state.lastStartTime); return t; }
-  function getKMRodados(){ const {kmInicial, kmFinal} = state; return (kmFinal>kmInicial)?(kmFinal-kmInicial):0; }
-
-  // timer
-  function startTimer(){ stopTimer(); timerInterval = setInterval(()=>{ const t=getTempoTotal(); tempoTrabalhado.textContent = formatTime(t); atualizarMetricasTempo(t); }, 1000); }
-  function stopTimer(){ if(timerInterval){ clearInterval(timerInterval); timerInterval=null; } }
-
-  // adiciona lancamento
-  function addLancamento(item){
-    // item: { id, type: 'ganho'|'gasto', value, category, date }
-    state.history.unshift(item);
-    if(item.type === 'ganho'){
-      if(item.category === 'Loja'){ state.ganhosLoja += item.value; state.entradasLoja++; }
-      else if(item.category === 'Doação'){ state.totalDoacao += item.value; }
-      else { state.ganhosApps += item.value; state.entradasApps++; }
-    } else {
-      state.gastos += item.value;
-    }
-    saveState(); atualizarInterface();
+function triggerConfetti(){
+  const colors = ['#10b981','#f97316','#facc15','#ef4444','#ec4899'];
+  for(let i=0;i<80;i++){
+    const el = document.createElement('div'); el.className='c'; el.style.left = Math.random()*100+'%'; el.style.top='-10px';
+    el.style.width = (6+Math.random()*12)+'px'; el.style.height = (10+Math.random()*14)+'px';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)]; confettiRoot.appendChild(el);
+    const dur = 1800 + Math.random()*2200;
+    el.animate([{transform:'translateY(0px) rotate(0deg)',opacity:1},{transform:`translateY(${300 + Math.random()*400}px) rotate(${Math.random()*720}deg)`,opacity:0}],{duration:dur,easing:'ease-out',iterations:1});
+    setTimeout(()=>el.remove(), dur+100);
   }
+}
 
-  // excluir lancamento
-  function deleteLancamento(id){
-    const idx = state.history.findIndex(h => h.id === id);
-    if(idx === -1) return;
-    const it = state.history[idx];
-    if(it.type === 'ganho'){
-      if(it.category === 'Loja'){ state.ganhosLoja -= it.value; state.entradasLoja = Math.max(0, state.entradasLoja-1); }
-      else if(it.category === 'Doação'){ state.totalDoacao -= it.value; }
-      else { state.ganhosApps -= it.value; state.entradasApps = Math.max(0, state.entradasApps-1); }
-    } else {
-      state.gastos -= it.value;
-    }
-    state.history.splice(idx,1);
-    saveState(); atualizarInterface();
-  }
+/* SAVE DAY / HISTORY */
+function saveDaySummary(){
+  try{
+    const arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]');
+    const totalBruto = state.ganhosApps + state.ganhosLoja + state.totalDoacao;
+    const lucro = totalBruto - state.gastos;
+    const tempo = getTempoTotal();
+    const km = getKMRodados();
+    const mediaHora = tempo>0? totalBruto / (tempo/(1000*60*60)) : 0;
+    const resumo = { id: new Date().toISOString(), date: new Date().toISOString(), meta: state.meta, kmInicial: state.kmInicial, kmFinal: state.kmFinal, ganhosApps: state.ganhosApps, ganhosLoja: state.ganhosLoja, ganhoDoacao: state.totalDoacao, entradasApps: state.entradasApps, entradasLoja: state.entradasLoja, gastos: state.gastos, lucro, tempo, km, mediaHora, history: state.history.slice(0,500) };
+    arr.unshift(resumo); localStorage.setItem('maxrota_days', JSON.stringify(arr.slice(0,300)));
+  }catch(e){ console.error(e); }
+}
 
-  // editar lancamento (prompt simples)
-  function editLancamento(id){
-    const it = state.history.find(h => h.id === id);
-    if(!it) return;
-    const novoValorStr = prompt(`Editar valor para "${it.category}" (atual ${it.value.toFixed(2)}):`, it.value.toFixed(2));
-    if(novoValorStr === null) return;
-    const novoValor = parseFloat(novoValorStr);
-    if(isNaN(novoValor) || novoValor < 0){ alert('Valor inválido.'); return; }
-    // revert previous
-    if(it.type === 'ganho'){
-      if(it.category === 'Loja'){ state.ganhosLoja -= it.value; }
-      else if(it.category === 'Doação'){ state.totalDoacao -= it.value; }
-      else { state.ganhosApps -= it.value; }
-    } else { state.gastos -= it.value; }
-    // apply new
-    it.value = novoValor;
-    if(it.type === 'ganho'){
-      if(it.category === 'Loja'){ state.ganhosLoja += it.value; }
-      else if(it.category === 'Doação'){ state.totalDoacao += it.value; }
-      else { state.ganhosApps += it.value; }
-    } else { state.gastos += it.value; }
-    saveState(); atualizarInterface();
-  }
+saveAndResetBtn.addEventListener('click', ()=>{
+  if(!confirm('Deseja salvar o resumo do dia e resetar todos os dados atuais?')) return;
+  saveDaySummary();
+  state = { meta:0, ganhosApps:0, ganhosLoja:0, totalDoacao:0, entradasApps:0, entradasLoja:0, gastos:0, history:[], kmInicial:0, kmFinal:0, totalTimeWorked:0, lastStartTime:null, status:'stopped', celebrated:false, valuesHidden: state.valuesHidden }; // Mantém o estado de valuesHidden
+  kmInicialEl.value=''; kmFinalEl.value=''; metaInput.value=''; valorEntrada.value=''; valorSaida.value='';
+  toggleStartBtn.textContent='Iniciar Expediente';
+  stopTimer(); saveState(); updateUI();
+});
 
-  // render lista de lançamentos (com editar/excluir)
-  function renderLancamentos(){
-    if(state.history.length === 0){ lancamentosList.innerHTML = '<p class="text-gray-400 text-center">Nenhum lançamento ainda.</p>'; return; }
-    lancamentosList.innerHTML = '';
-    state.history.slice(0,200).forEach(it=>{
-      const box = document.createElement('div');
-      box.className = 'list-item bg-[rgba(255,255,255,0.02)]';
-      const left = document.createElement('div');
-      left.innerHTML = `<div style="font-weight:700">${it.category} ${it.type==='ganho'?'<span style="color:#6ee7b7">+':'<span style="color:#fb7185">-'} ${formatBRL(it.value)}</span></div><div class="muted-text">${new Date(it.date).toLocaleString()}</div>`;
-      const right = document.createElement('div');
-      right.innerHTML = `<button title="Editar" class="icon-btn edit-btn">✏️</button><button title="Excluir" class="icon-btn del-btn">🗑️</button>`;
-      box.appendChild(left); box.appendChild(right);
-      lancamentosList.appendChild(box);
+exportBtn.addEventListener('click', ()=>{
+  const data = { state, days: JSON.parse(localStorage.getItem('maxrota_days')||'[]') };
+  const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='maxrota_export.json'; a.click(); URL.revokeObjectURL(url);
+});
 
-      right.querySelector('.del-btn').addEventListener('click', ()=> {
-        if(confirm('Excluir lançamento?')) deleteLancamento(it.id);
-      });
-      right.querySelector('.edit-btn').addEventListener('click', ()=> editLancamento(it.id));
-    });
-  }
+viewHistoryBtn.addEventListener('click', ()=>{ historyPanel.classList.toggle('hidden'); if(!historyPanel.classList.contains('hidden')) renderHistory(); });
+function renderHistory(){
+  const arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]');
+  if(!arr || arr.length===0){ historyPanel.innerHTML = '<div class="muted small">Nenhum dia salvo.</div>'; return; }
+  historyPanel.innerHTML = arr.map(d=>{
+    const date = new Date(d.date);
+    // Não aplica a classe de ocultação/máscara no histórico para evitar confusão, apenas no painel principal.
+    return `<div style="padding:10px;border-bottom:1px solid rgba(255,255,255,0.04)"><div style="font-weight:800">${date.toLocaleString()}</div><div class="small muted">Lucro: ${formatBRL(d.lucro)} · KM: ${d.km} · Média/H: ${formatBRL(d.mediaHora||0)}</div><div style="margin-top:8px"><button class="btn-ghost open-day" data-id="${d.id}">Abrir</button> <button class="btn-ghost del-day" data-id="${d.id}">Excluir</button></div></div>`;
+  }).join('');
+  historyPanel.querySelectorAll('.del-day').forEach(b=>b.addEventListener('click', ()=>{
+    if(!confirm('Excluir dia?')) return;
+    const id = b.dataset.id; let arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]'); arr = arr.filter(x=>x.id !== id); localStorage.setItem('maxrota_days', JSON.stringify(arr)); renderHistory();
+  }));
+  historyPanel.querySelectorAll('.open-day').forEach(b=>b.addEventListener('click', ()=>{
+    const id = b.dataset.id; const arr = JSON.parse(localStorage.getItem('maxrota_days')||'[]'); const d = arr.find(x=>x.id===id); if(!d) return alert('Dia não encontrado.');
+    alert(`Resumo ${new Date(d.date).toLocaleString()}\nLucro: ${formatBRL(d.lucro)}\nKM: ${d.km}\nMédia/H: ${formatBRL(d.mediaHora||0)}\nEntradas App: ${d.entradasApps} · Loja: ${d.entradasLoja}`);
+  }));
+}
 
-  // resumo categorias (sidebar) e resumo final (card)
-  function calcularResumoCategorias(){
-    const totals = {}; const counts = {};
-    state.history.forEach(it=>{
-      if(it.type !== 'ganho') return;
-      const cat = it.category || 'Outros';
-      totals[cat] = (totals[cat] || 0) + it.value;
-      counts[cat] = (counts[cat] || 0) + 1;
-    });
-    return { totals, counts };
-  }
-  function renderResumoCategorias(){
-    const { totals, counts } = calcularResumoCategorias();
-    resumoCategorias.innerHTML = '';
-    const order = ['Uber','99','inDriver','Particular','Loja','Doação'];
-    order.forEach(cat=>{
-      const val = totals[cat] || 0;
-      const cnt = counts[cat] || 0;
-      const el = document.createElement('div');
-      el.innerHTML = `<div class="pill">${cat}</div><div style="font-weight:700">${val.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</div><div class="muted-text">${cnt} entradas</div>`;
-      resumoCategorias.appendChild(el);
-    });
-    Object.keys(totals).forEach(cat=>{
-      if(order.includes(cat)) return;
-      const val = totals[cat], cnt = counts[cat];
-      const el = document.createElement('div');
-      el.innerHTML = `<div class="pill">${cat}</div><div style="font-weight:700">${val.toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}</div><div class="muted-text">${cnt} entradas</div>`;
-      resumoCategorias.appendChild(el);
-    });
+/* THEMES */
+let autoMode = true;
+function applyAutoTheme(){ if(!autoMode) return; const hour = new Date().getHours(); const day = hour>=6 && hour<18; document.body.classList.toggle('light-mode', day); autoThemeBtn.textContent = day? 'Modo Dia ☀️' : 'Modo Noite 🌙'; }
+applyAutoTheme(); setInterval(()=>{ if(autoMode) applyAutoTheme(); },60*1000);
+autoThemeBtn.addEventListener('click', ()=>{ autoMode = !autoMode; if(autoMode){ applyAutoTheme(); } else { document.body.classList.toggle('light-mode'); } });
 
-    // final resumo card update
-    const totalApps = state.ganhosApps;
-    const totalLoja = state.ganhosLoja;
-    const totalDoacao = state.totalDoacao;
-    const totalGeral = totalApps + totalLoja + totalDoacao - state.gastos;
-    finalTotalApps.textContent = formatBRL(totalApps);
-    finalTotalLoja.textContent = formatBRL(totalLoja);
-    finalTotalDoacao.textContent = formatBRL(totalDoacao);
-    finalTotalGeral.textContent = formatBRL(totalGeral);
-  }
+themeDots.forEach(d=>d.addEventListener('click', ()=>{ const acc=d.dataset.accent; document.body.classList.remove('accent-green','accent-orange','accent-yellow','accent-red','accent-pink'); document.body.classList.add('accent-'+acc); localStorage.setItem('maxrota_accent', acc); }));
+const savedAccent = localStorage.getItem('maxrota_accent') || 'green'; document.body.classList.add('accent-'+savedAccent);
 
-  // atualizar métricas (média/h, lucros)
-  function atualizarMetricasTempo(t){
-    const ganhosBrutosTotal = state.ganhosApps + state.ganhosLoja + state.totalDoacao;
-    const lucroTotal = ganhosBrutosTotal - state.gastos;
-    const ganhoApps = state.ganhosApps;
-    const horas = t / (1000*60*60);
-    const mediaHoraTotal = horas>0 ? (ganhosBrutosTotal / horas) : 0;
-    const mediaHoraApps = horas>0 ? (ganhoApps / horas) : 0;
-    metricMediaHoraBrutoApps.textContent = formatBRL(mediaHoraApps);
-    metricMediaHoraBrutoTotal.textContent = formatBRL(mediaHoraTotal);
-    const mediaHoraLiqTotal = horas>0 ? ((ganhosBrutosTotal - state.gastos) / horas) : 0;
-    const mediaHoraLiqAppsVal = hoursSafe(horas) ? ((state.ganhosApps - state.gastos) / horas) : 0;
-    if(metricMediaHoraLiqApps) metricMediaHoraLiqApps.textContent = formatBRL(mediaHoraLiqAppsVal);
-    if(metricMediaHoraLiqTotal) metricMediaHoraLiqTotal.textContent = formatBRL(mediaHoraLiqTotal);
-
-    // highlight blank app metrics
-    document.querySelectorAll('.metric-app-value').forEach(el=>{
-      const text = (el.textContent||'').replace(/[^\d,-]/g,'').replace(',','.');
-      const vnum = parseFloat(text) || 0;
-      if(vnum === 0) el.classList.add('metric-app-blank'); else el.classList.remove('metric-app-blank');
-    });
-  }
-
-  function hoursSafe(h){ return typeof h === 'number' && h > 0; }
-
-  function atualizarInterface(){
-    const {meta, gastos} = state;
-    const ganhosBrutosTotal = state.ganhosApps + state.ganhosLoja + state.totalDoacao;
-    const lucroTotal = ganhosBrutosTotal - gastos;
-    const lucroApps = state.ganhosApps - gastos;
-    const t = getTempoTotal();
-    const totalKMRodados = getKMRodados();
-
-    togglePrivacyBtn.textContent = state.privacyMode ? "Mostrar" : "Ocultar";
-    lucroLiquido.textContent = formatBRL(lucroTotal);
-    totalGanhos.textContent = formatBRL(ganhosBrutosTotal);
-    totalGastos.textContent = formatBRL(gastos);
-
-    if(meta>0 && document.activeElement !== metaDiariaInput) metaDiariaInput.value = meta;
-    let pct = 0; if(meta>0) pct = Math.min(100, ((state.ganhosApps + state.ganhosLoja)/meta)*100);
-    progressBar.style.width = pct + '%';
-
-    const faltando = meta - (state.ganhosApps + state.ganhosLoja);
-    if(meta===0) resumoFaltando.textContent = "Defina uma meta de ganhos brutos.";
-    else if(faltando>0) resumoFaltando.textContent = `Faltam ${formatBRL(faltando)} para sua meta.`;
-    else resumoFaltando.textContent = `✅ Meta batida! (${formatBRL(Math.abs(faltando))} extra)`;
-    if(state.privacyMode) resumoFaltando.textContent = `Progresso da Meta`;
-
-    metricGanhosApps.textContent = formatBRL(state.ganhosApps);
-    metricGanhosTotal.textContent = formatBRL(state.ganhosApps + state.ganhosLoja + state.totalDoacao);
-    metricLucroApps.textContent = formatBRL(lucroApps);
-    metricLucroTotal.textContent = formatBRL(lucroTotal);
-
-    const lucroKmTotal = totalKMRodados>0 ? lucroTotal/totalKMRodados : 0;
-    const lucroKmApps = totalKMRodados>0 ? lucroApps/totalKMRodados : 0;
-    metricLucroKmApps.textContent = formatBRL(lucroKmApps);
-    metricLucroKmTotal.textContent = formatBRL(lucroKmTotal);
-
-    tempoTrabalhado.textContent = formatTime(t);
-    kmRodados.textContent = formatKM(totalKMRodados);
-    totalEntradasApps.textContent = state.entradasApps;
-    totalEntradasLoja.textContent = state.entradasLoja;
-
-    if(state.kmInicial>0 && document.activeElement !== kmInicialInput) kmInicialInput.value = state.kmInicial;
-    if(state.kmFinal>0 && document.activeElement !== kmFinalInput) kmFinalInput.value = state.kmFinal;
-
-    if(state.history.length === 0) historicoLista.innerHTML = '<p class="text-gray-400 text-center">Nenhum lançamento ainda.</p>';
-    else {
-      historicoLista.innerHTML = state.history.slice(0,10).map(it=>{
-        const val = (it.value||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-        return it.type==='ganho'?`<div class="text-green-400">+ ${val} (${it.category||'—'})</div>`:`<div class="text-red-400">- ${val} (${it.category||'—'})</div>`;
-      }).join('');
-    }
-
-    iniciarDiaBtn.classList.toggle('hidden', state.status !== 'stopped');
-    pausarDiaBtn.classList.toggle('hidden', state.status !== 'running');
-    retomarDiaBtn.classList.toggle('hidden', state.status !== 'paused');
-    encerrarDiaBtn.classList.toggle('hidden', state.status === 'stopped');
-
-    atualizarMetricasTempo(t);
-    renderLancamentos();
-    renderResumoCategorias();
+/* SET META (fix: safe save and persist) */
+setMetaBtn.addEventListener('click', () => {
+  const v = Number(metaInput.value);
+  if(!isNaN(v) && v > 0){
+    state.meta = v;
+    localStorage.setItem("maxrota_meta", v);
     saveState();
-  }
+    updateUI();
+    metaInput.blur();
+  } else { alert('Meta inválida.'); }
+});
 
-  // persistência
-  function saveState(){ localStorage.setItem('estadoMotoristaAppAvancado', JSON.stringify(state)); }
-  function loadState(){
-    const s = localStorage.getItem('estadoMotoristaAppAvancado');
-    if(s){
-      try{
-        state = JSON.parse(s);
-        state.ganhosApps = state.ganhosApps || 0;
-        state.ganhosLoja = state.ganhosLoja || 0;
-        state.totalDoacao = state.totalDoacao || 0;
-        state.entradasApps = state.entradasApps || 0;
-        state.entradasLoja = state.entradasLoja || 0;
-        state.gastos = state.gastos || 0;
-        state.history = state.history || [];
-        state.totalTimeWorked = state.totalTimeWorked || 0;
-        state.lastStartTime = state.lastStartTime || null;
-        state.status = state.status || 'stopped';
-        state.privacyMode = state.privacyMode || false;
-        state.kmInicial = state.kmInicial || 0;
-        state.kmFinal = state.kmFinal || 0;
-        if(state.status === 'running') startTimer();
-      }catch(e){ console.warn('falha ao carregar estado:', e); }
-    }
-    atualizarInterface();
-  }
+/* RENDER FINAL */
+function renderResumoFinal(){
+  const totalApps = state.ganhosApps;
+  const totalLoja = state.ganhosLoja;
+  const totalDoacao = state.totalDoacao;
+  const totalGeralBruto = totalApps + totalLoja + totalDoacao; // Total bruto para calculo do lucro
+  const lucroFinal = totalGeralBruto - state.gastos; // O Total Geral na verdade é o lucro líquido
+  
+  // Aplica a classe de ocultação/máscara se os valores estiverem escondidos
+  const valueClass = state.valuesHidden ? 'hidden-value' : '';
 
-  // Save day summary
-  function saveDaySummary(){
-    try{
-      const hist = JSON.parse(localStorage.getItem('historicoDiasMotorista')) || [];
-      const ganhosBrutosTotal = state.ganhosApps + state.ganhosLoja + state.totalDoacao;
-      const lucro = ganhosBrutosTotal - state.gastos;
-      const tempoTotalMs = getTempoTotal();
-      const km = getKMRodados();
-      const lucroKm = (km>0)?(lucro/km):0;
-      const mediaHora = (tempoTotalMs>0)?(ganhosBrutosTotal/(tempoTotalMs/(1000*60*60))):0;
-      const resumo = {
-        date: new Date().toISOString(),
-        meta: state.meta,
-        kmInicial: state.kmInicial,
-        kmFinal: state.kmFinal,
-        ganhosApps: state.ganhosApps,
-        ganhosLoja: state.ganhosLoja,
-        ganhoDoacao: state.totalDoacao,
-        entradasApps: state.entradasApps,
-        entradasLoja: state.entradasLoja,
-        gastos: state.gastos,
-        lucro,
-        tempoTrabalhado: tempoTotalMs,
-        kmRodados: km,
-        lucroPorKm: lucroKm,
-        mediaPorHora: mediaHora
-      };
-      hist.unshift(resumo);
-      localStorage.setItem('historicoDiasMotorista', JSON.stringify(hist.slice(0,100)));
-    }catch(e){ console.error('erro salvar resumo:', e); }
-  }
+  finalTotalApps.textContent = formatBRL(totalApps);
+  finalTotalLoja.textContent = formatBRL(totalLoja);
+  finalTotalDoacao.textContent = formatBRL(totalDoacao);
+  finalTotalGeral.textContent = formatBRL(lucroFinal); // Mostra o lucro líquido
 
-  // eventos UI
-  togglePrivacyBtn.addEventListener('click', ()=>{ state.privacyMode = !state.privacyMode; atualizarInterface(); });
+  // Aplica a classe de ocultação
+  finalTotalApps.classList.toggle('hidden-value', state.valuesHidden);
+  finalTotalLoja.classList.toggle('hidden-value', state.valuesHidden);
+  finalTotalDoacao.classList.toggle('hidden-value', state.valuesHidden);
+  finalTotalGeral.classList.toggle('hidden-value', state.valuesHidden);
+}
 
-  iniciarDiaBtn.addEventListener('click', ()=>{ state.status='running'; state.lastStartTime = Date.now(); startTimer(); atualizarInterface(); });
-  pausarDiaBtn.addEventListener('click', ()=>{ stopTimer(); if(state.status==='running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); } state.lastStartTime = null; state.status='paused'; atualizarInterface(); });
-  retomarDiaBtn.addEventListener('click', ()=>{ state.status='running'; state.lastStartTime = Date.now(); startTimer(); atualizarInterface(); });
-  encerrarDiaBtn.addEventListener('click', ()=>{ stopTimer(); if(state.status==='running'){ state.totalTimeWorked += (Date.now() - state.lastStartTime); } state.lastStartTime = null; state.status='stopped'; atualizarInterface(); });
+/* UPDATE UI (focus-safe: não sobrescreve campos enquanto usuário digita) */
+function updateUI(){
+  // NOVO: Atualiza o texto do botão de toggle ao carregar
+  toggleValuesBtn.textContent = state.valuesHidden ? 'Mostrar Valores' : 'Esconder Valores';
+  toggleValuesBtn.setAttribute('aria-pressed', state.valuesHidden);
+  
+  // don't overwrite inputs while user is focused on them
+  if(document.activeElement !== metaInput) metaInput.value = state.meta || '';
+  if(document.activeElement !== kmInicialEl) kmInicialEl.value = state.kmInicial || '';
+  if(document.activeElement !== kmFinalEl) kmFinalEl.value = state.kmFinal || '';
 
-  salvarKmInicialBtn.addEventListener('click', ()=>{ const v=parseFloat(kmInicialInput.value); if(!isNaN(v)&&v>=0){ state.kmInicial = v; atualizarInterface(); } });
-  salvarKmFinalBtn.addEventListener('click', ()=>{ const v=parseFloat(kmFinalInput.value); if(!isNaN(v)&&v>=0){ state.kmFinal = v; atualizarInterface(); } });
+  if(state.status==='running') toggleStartBtn.textContent='Pausar';
+  else if(state.status==='paused') toggleStartBtn.textContent='Retomar';
+  else toggleStartBtn.textContent='Iniciar Expediente';
 
-  salvarMetaBtn.addEventListener('click', ()=>{ const v=parseFloat(metaDiariaInput.value); if(!isNaN(v)&&v>0){ state.meta=v; atualizarInterface(); } else { state.meta=0; metaDiariaInput.value=''; atualizarInterface(); } });
+  renderLancamentos(); renderResumoCategorias(); updateDerivedMetrics(); renderResumoFinal(); saveState();
+}
 
-  ganhoButtons.addEventListener('click', (e)=>{
-    const btn = e.target.closest('.ganho-btn'); if(!btn) return;
-    const category = btn.dataset.category;
-    const val = parseFloat(valorCorridaInput.value);
-    if(isNaN(val) || val<=0){ erroInput.classList.remove('hidden'); erroInput.textContent='Valor inválido.'; return; }
-    erroInput.classList.add('hidden'); valorCorridaInput.value='';
-    const item = { id: uid(), type:'ganho', value: val, category, date: new Date().toISOString() };
-    addLancamento(item);
-  });
+/* LOAD initial */
+if(state.status==='running' && state.lastStartTime) startTimer();
+updateUI();
 
-  gastoButtons.addEventListener('click', (e)=>{
-    const btn = e.target.closest('.gasto-btn'); if(!btn) return;
-    const category = btn.dataset.category;
-    const val = parseFloat(valorGastoInput.value);
-    if(isNaN(val) || val<=0){ erroGasto.classList.remove('hidden'); erroGasto.textContent='Valor inválido.'; return; }
-    erroGasto.classList.add('hidden'); valorGastoInput.value='';
-    const item = { id: uid(), type:'gasto', value: val, category, date: new Date().toISOString() };
-    addLancamento(item);
-  });
+/* IMPORTANT: avoid global frequent UI overwrite - timer handles periodic updates only while running */
+</script>
 
-  resetarDiaBtn.addEventListener('click', ()=>{
-    if(state.ganhosApps>0 || state.ganhosLoja>0 || state.gastos>0 || state.totalTimeWorked>0 || getKMRodados()>0 || state.totalDoacao>0) saveDaySummary();
-    stopTimer();
-    state = { meta:0, ganhosApps:0, ganhosLoja:0, totalDoacao:0, entradasApps:0, entradasLoja:0, gastos:0, history:[], totalTimeWorked:0, lastStartTime:null, status:'stopped', privacyMode: state.privacyMode, kmInicial:0, kmFinal:0 };
-    metaDiariaInput.value=''; kmInicialInput.value=''; kmFinalInput.value='';
-    atualizarInterface();
-  });
+<script type="module">
+import { auth } from "./firebase.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  exportBtn.addEventListener('click', ()=>{
-    const data = JSON.stringify(state, null, 2);
-    const blob = new Blob([data], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'maxrota_resumo.json'; a.click(); URL.revokeObjectURL(url);
-  });
+window.logout = async () => {
+  await signOut(auth);
+  location.href = "login.html";
+};
+</script>
 
-  verHistoricoBtn.addEventListener('click', ()=>{
-    const visible = !historicoDiasLista.classList.contains('hidden');
-    if(visible){ historicoDiasLista.classList.add('hidden'); limparHistoricoBtn.classList.add('hidden'); verHistoricoBtn.textContent='Ver Histórico de Dias Salvos'; return; }
-    historicoDiasLista.classList.remove('hidden'); verHistoricoBtn.textContent='Ocultar Histórico'; renderizarHistorico();
-  });
-
-  function renderizarHistorico(){
-    const hist = JSON.parse(localStorage.getItem('historicoDiasMotorista')) || [];
-    if(hist.length===0){ historicoDiasLista.innerHTML = '<p class="text-gray-400 text-center">Nenhum dia salvo no histórico.</p>'; limparHistoricoBtn.classList.add('hidden'); return; }
-    limparHistoricoBtn.classList.remove('hidden');
-    historicoDiasLista.innerHTML = hist.map(dia=>{
-      const data = new Date(dia.date); const dataFmt = data.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric'});
-      const lucroFmt = (dia.lucro||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-      const kmFmt = ((dia.kmRodados||0).toLocaleString('pt-BR',{maximumFractionDigits:1}) + ' km');
-      const lucroKmFmt = (dia.lucroPorKm||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-      const tempoFmt = formatTime(dia.tempoTrabalhado||0);
-      const entradas = (dia.entradasApps||0) + (dia.entradasLoja||0);
-      const ganhosAppsFmt = (dia.ganhosApps||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-      const ganhosLojaFmt = (dia.ganhosLoja||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-      const gastosFmt = (dia.gastos||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-      const mediaHoraFmt = (dia.mediaPorHora||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-      const metaFmt = (dia.meta||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-      return `<div class="bg-gray-600 p-4 rounded-lg shadow-md">
-        <div class="flex justify-between items-center mb-2">
-          <h4 class="font-bold text-lg text-cyan-300">${dataFmt}</h4>
-          <div class="flex items-center space-x-2"><span class="text-sm text-gray-300">${entradas} entradas</span><button data-id="${dia.date}" class="delete-dia-btn bg-red-800 hover:bg-red-700 text-white text-xs py-1 px-2 rounded">- Excluir</button></div>
-        </div>
-        <hr class="border-gray-500 my-2">
-        <div class="grid grid-cols-3 gap-2 text-sm text-center">
-          <div><span class="text-gray-400">Ganhos (App):</span><strong class="text-green-400">${ganhosAppsFmt}</strong></div>
-          <div><span class="text-gray-400">Ganhos (Loja):</span><strong class="text-green-400">${ganhosLojaFmt}</strong></div>
-          <div><span class="text-gray-400">Gastos:</span><strong class="text-red-400">${gastosFmt}</strong></div>
-          <div class="col-span-3"><hr class="border-gray-500/50 my-1"></div>
-          <div><span class="text-gray-400">Lucro Total:</span><strong class="text-white">${lucroFmt}</strong></div>
-          <div><span class="text-gray-400">Média/H (Liq):</span><strong class="text-white">${mediaHoraFmt}</strong></div>
-          <div><span class="text-gray-400">Lucro/KM:</span><strong class="text-white">${lucroKmFmt}</strong></div>
-        </div>
-        <div class="grid grid-cols-3 gap-2 text-sm text-center border-t border-gray-500/50 mt-2 pt-2">
-          <div><span class="text-gray-400">KM Rodados:</span><strong class="text-white">${kmFmt}</strong></div>
-          <div><span class="text-gray-400">Tempo:</span><strong class="text-white">${tempoFmt}</strong></div>
-          <div><span class="text-gray-400">Meta:</span><strong class="text-white">${metaFmt}</strong></div>
-        </div></div>`;
-    }).join('');
-  }
-
-  limparHistoricoBtn.addEventListener('click', ()=>{ localStorage.removeItem('historicoDiasMotorista'); historicoDiasLista.innerHTML='<p class="text-gray-400 text-center">Histórico limpo.</p>'; limparHistoricoBtn.classList.add('hidden'); verHistoricoBtn.textContent='Ver Histórico de Dias Salvos'; });
-
-  historicoDiasLista.addEventListener('click', (e)=> {
-    const del = e.target.closest('.delete-dia-btn'); if(!del) return;
-    const id = del.dataset.id;
-    try{
-      let hist = JSON.parse(localStorage.getItem('historicoDiasMotorista')) || [];
-      hist = hist.filter(d=> d.date !== id);
-      localStorage.setItem('historicoDiasMotorista', JSON.stringify(hist));
-      renderizarHistorico();
-    }catch(err){ console.error(err); }
-  });
-
-  // Calculadora
-  const custoKmInput = document.getElementById('custoKm');
-  const valorHoraInput = document.getElementById('valorHora_calc');
-  const distanciaKmInput = document.getElementById('distanciaKm');
-  const tempoViagemInput = document.getElementById('tempoViagem');
-  const margemInput = document.getElementById('margemLucro_calc');
-  const calcularBtn = document.getElementById('calcularBtn');
-  const mensagemErro = document.getElementById('mensagemErro');
-  const resultadoDiv = document.getElementById('resultadoDiv');
-  const resultadoPrecoFinal = document.getElementById('resultadoPrecoFinal');
-  const breakdownCustoKm = document.getElementById('breakdownCustoKm');
-  const breakdownValorTempo = document.getElementById('breakdownValorTempo');
-  const breakdownPrecoBase = document.getElementById('breakdownPrecoBase');
-  const breakdownMargem = document.getElementById('breakdownMargem');
-  const labelValorTempo = document.getElementById('labelValorTempo');
-  const labelMargem = document.getElementById('labelMargem');
-
-  function showCalcError(msg){ mensagemErro.textContent = msg; mensagemErro.classList.remove('hidden'); }
-  function hideCalcError(){ mensagemErro.classList.add('hidden'); }
-
-  calcularBtn.addEventListener('click', ()=>{
-    const custoKm = parseFloat(custoKmInput.value);
-    const valorHora = parseFloat(valorHoraInput.value);
-    const distancia = parseFloat(distanciaKmInput.value);
-    const tempo = parseFloat(tempoViagemInput.value);
-    let margem = parseFloat(margemInput.value);
-    if(isNaN(custoKm) || custoKm<=0){ showCalcError('Por favor insira seu custo por KM.'); return; }
-    if(isNaN(valorHora) || valorHora<=0){ showCalcError('Por favor insira seu alvo por hora.'); return; }
-    if(isNaN(distancia) || distancia<=0){ showCalcError('Por favor insira a distância.'); return; }
-    if(isNaN(tempo) || tempo<=0){ showCalcError('Por favor insira o tempo da viagem.'); return; }
-    if(isNaN(margem) || margem<0) margem = 0;
-    hideCalcError();
-
-    const custoKmTotal = custoKm * distancia;
-    const valorTempoTotal = (valorHora/60) * tempo;
-    const precoBase = custoKmTotal + valorTempoTotal;
-    const valorMargem = precoBase * (margem/100);
-    const precoFinal = precoBase + valorMargem;
-
-    resultadoDiv.classList.remove('hidden');
-    resultadoPrecoFinal.textContent = precoFinal.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-    breakdownCustoKm.textContent = custoKmTotal.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-    labelValorTempo.textContent = `Valor do Tempo (base R$${valorHora.toFixed(2).replace('.',',')}/h):`;
-    breakdownValorTempo.textContent = valorTempoTotal.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-    breakdownPrecoBase.textContent = precoBase.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-    breakdownMargem.textContent = valorMargem.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-  });
-
-  // Charts
-  let lucroChart = null; let mediaHoraChart = null;
-  function renderizarGraficos(){
-    if(lucroChart) lucroChart.destroy();
-    if(mediaHoraChart) mediaHoraChart.destroy();
-    const hist = JSON.parse(localStorage.getItem('historicoDiasMotorista')) || [];
-    const ultimos = hist.slice(0,7).reverse();
-    const labels = ultimos.map(d => new Date(d.date).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}));
-    const lucroData = ultimos.map(d => d.lucro || 0);
-    const mediaData = ultimos.map(d => d.mediaPorHora || 0);
-    const lucroColors = lucroData.map(v => v>=0 ? 'rgba(45,212,191,0.8)' : 'rgba(239,68,68,0.8)');
-
-    const ctxL = document.getElementById('lucroChart').getContext('2d');
-    lucroChart = new Chart(ctxL, {
-      type:'bar',
-      data:{ labels, datasets:[{ label:'Lucro Líquido (R$)', data: lucroData, backgroundColor: lucroColors, borderColor: lucroColors.map(c=>c.replace('0.8','1')), borderWidth:1 }]},
-      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ y:{ grid:{color:'rgba(255,255,255,0.1)'}, ticks:{color:'#ccc'}}, x:{ ticks:{color:'#ccc'}}}}
-    });
-
-    const ctxM = document.getElementById('mediaHoraChart').getContext('2d');
-    mediaHoraChart = new Chart(ctxM, {
-      type:'bar',
-      data:{ labels, datasets:[{ label:'Média/Hora (R$)', data: mediaData, backgroundColor:'rgba(59,130,246,0.8)', borderColor:'rgba(59,130,246,1)', borderWidth:1 }]},
-      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ y:{ beginAtZero:true, grid:{color:'rgba(255,255,255,0.1)'}, ticks:{color:'#ccc'}}, x:{ ticks:{color:'#ccc'}}}}
-    });
-  }
-
-  // Inicializa
-  loadState();
-  atualizarInterface();
-
-  </script>
 </body>
 </html>
