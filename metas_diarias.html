@@ -362,7 +362,6 @@ body.light-mode {
       <button id="toggleValuesBtn" class="toggle-btn">Esconder Valores</button>
     </div>
   </header>
-
   <!-- RÁDIOS -->
   <section class="card radio-card">
     <div style="display:flex;justify-content:space-between;align-items:center">
@@ -903,10 +902,15 @@ finalizeBtn.addEventListener("click", () => {
   updateUI();
 });
 
+/* ===========================
+   🔧 AJUSTE: SALVAR KM
+=========================== */
 saveKmBtn.addEventListener("click", () => {
   state.kmInicial = Number(kmInicialEl.value) || 0;
   state.kmFinal = Number(kmFinalEl.value) || 0;
+
   saveState();
+  updateDerivedMetrics();
   updateUI();
 });
 
@@ -1162,6 +1166,39 @@ function updateProgressBar() {
 }
 
 /* ===========================
+   CELEBRATE (SOM + CONFETTI)
+=========================== */
+function celebrate(){
+  if(state.celebrated) return;
+  state.celebrated = true;
+
+  try{
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator(); osc.type='sawtooth'; osc.frequency.value=480;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.01, now); g.gain.exponentialRampToValueAtTime(0.9, now+0.05); g.gain.exponentialRampToValueAtTime(0.01, now+1.4);
+    osc.connect(g); g.connect(ctx.destination); osc.start(now); osc.stop(now+1.45);
+    const length = ctx.sampleRate * 4;
+    const buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for(let i=0;i<length;i++){ data[i] = (Math.random()*2-1) * (1 - i/length) * 0.8; }
+    const src = ctx.createBufferSource(); src.buffer = buffer; src.connect(ctx.destination); src.start(now+0.6);
+    setTimeout(()=>{ try{ src.stop(); ctx.close(); }catch(e){} }, 5200);
+  }catch(e){ console.warn('celebrate audio failed', e); }
+
+  const confettiRoot = document.getElementById('confettiRoot');
+  const colors = ['#10b981','#f97316','#facc15','#ef4444','#ec4899'];
+  for(let i=0;i<80;i++){
+    const el = document.createElement('div'); el.className='c'; el.style.left = Math.random()*100+'%'; el.style.top='-10px';
+    el.style.width = (6+Math.random()*12)+'px'; el.style.height = (10+Math.random()*14)+'px';
+    el.style.background = colors[Math.floor(Math.random()*colors.length)]; confettiRoot.appendChild(el);
+    const dur = 1800 + Math.random()*2200;
+    el.animate([{transform:'translateY(0px) rotate(0deg)',opacity:1},{transform:`translateY(${300 + Math.random()*400}px) rotate(${Math.random()*720}deg)`,opacity:0}],{duration:dur,easing:'ease-out',iterations:1});
+    setTimeout(()=>el.remove(), dur+100);
+  }
+}
+
+/* ===========================
    SALVAR RESUMO DO DIA
 =========================== */
 saveAndResetBtn.addEventListener("click", async () => {
@@ -1188,7 +1225,6 @@ saveAndResetBtn.addEventListener("click", async () => {
 
   alert("Resumo salvo!");
 
-  // reset parcial
   localStorage.removeItem("maxrota_state");
   location.reload();
 });
@@ -1212,7 +1248,6 @@ exportBtn.addEventListener("click", () => {
    UPDATE UI
 =========================== */
 function updateUI() {
-  // meta
   metaInput.value = state.meta || "";
 
   kmInicialEl.value = state.kmInicial || "";
@@ -1297,6 +1332,5 @@ setInterval(() => {
   if (window.__USER_UID__) window.loadState();
 }, 15000);
 </script>
-
 </body>
 </html>
