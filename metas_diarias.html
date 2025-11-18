@@ -1054,46 +1054,5 @@ setInterval(() => {
 </div>
 
 <script>
-// abrir/fechar
-const quickBtn = document.getElementById("quickLaunchBtn");
-const quickPanel = document.getElementById("quickPanel");
-
-quickBtn.onclick = () => {
-  const isOpen = quickPanel.classList.contains("open");
-  if (isOpen) {
-    quickPanel.classList.remove("open");
-    setTimeout(() => quickPanel.style.display = "none", 250);
-  } else {
-    quickPanel.style.display = "block";
-    setTimeout(() => quickPanel.classList.add("open"), 10);
-  }
-};
-
-// Entrada
-document.querySelectorAll("#quickPanel [data-cat]").forEach(btn => {
-  btn.onclick = () => {
-    const v = Number(document.getElementById("quickValue").value);
-    if (!v || v <= 0) return alert("Valor inválido");
-
-    addLancamento({ type: "ganho", value: v, category: btn.dataset.cat });
-
-    document.getElementById("quickValue").value = "";
-    quickPanel.classList.remove("open");
-  };
-});
-
-// Gasto
-document.querySelectorAll("#quickPanel [data-gasto]").forEach(btn => {
-  btn.onclick = () => {
-    const v = Number(document.getElementById("quickValue").value);
-    if (!v || v <= 0) return alert("Valor inválido");
-
-    addLancamento({ type: "gasto", value: v, category: btn.dataset.gasto });
-
-    document.getElementById("quickValue").value = "";
-    quickPanel.classList.remove("open");
-  };
-});
-</script>
 </body>
 </html>
