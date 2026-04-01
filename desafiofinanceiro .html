@@ -2,168 +2,220 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Desafio Financeiro</title>
 
 <style>
 body {
+    margin: 0;
     font-family: Arial;
-    background: #0f0f0f;
+    background: #0b0b0b;
     color: white;
+}
+
+.container {
+    padding: 15px;
+}
+
+h1 {
     text-align: center;
-}
-h1 { color: #00ff88; }
-
-input.meta {
-    width: 120px;
-    text-align: center;
-    font-size: 18px;
-    margin-bottom: 10px;
+    color: #00ff88;
+    font-size: 24px;
 }
 
-table {
-    margin: auto;
-    border-collapse: collapse;
-    width: 95%;
-}
-th, td {
-    border: 1px solid #333;
-    padding: 8px;
+.card {
+    background: #161616;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 15px;
 }
 
-input.valor {
-    width: 70px;
+.meta {
+    width: 100%;
+    font-size: 22px;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
     background: #222;
     color: white;
-    border: none;
     text-align: center;
+}
+
+.resumo {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.resumo div {
+    flex: 1;
+    text-align: center;
+}
+
+.valor-grande {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.barra-container {
+    background: #222;
+    border-radius: 10px;
+    height: 20px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+
+.barra {
+    height: 100%;
+    background: linear-gradient(90deg, #00ff88, #00cc66);
+    width: 0%;
+}
+
+.linha {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #161616;
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+}
+
+.linha span {
+    font-size: 16px;
+}
+
+.input-valor {
+    width: 80px;
+    font-size: 18px;
+    padding: 6px;
+    border-radius: 6px;
+    border: none;
+    background: #222;
+    color: white;
+    text-align: center;
+}
+
+.status {
+    font-size: 20px;
 }
 
 .ok { color: #00ff88; }
 .warn { color: orange; }
 .bad { color: red; }
 
-.barra-container {
-    width: 90%;
-    margin: 20px auto;
-    background: #222;
-    border-radius: 10px;
-}
-.barra {
-    height: 20px;
-    background: #00ff88;
-    width: 0%;
-    border-radius: 10px;
-}
 </style>
 </head>
 
 <body>
 
+<div class="container">
+
 <h1>💰 Desafio Financeiro</h1>
 
-<h3>Meta total:</h3>
-<input class="meta" id="meta" type="number" value="2000" oninput="atualizar()">
-
-<h2 id="total">Total: R$0</h2>
-<h3 id="faltam">Faltam: R$0</h3>
-<h3 id="media">Mínimo por dia: R$0</h3>
-
-<div class="barra-container">
-    <div class="barra" id="barra"></div>
+<div class="card">
+    <div>Meta total</div>
+    <input id="meta" class="meta" type="number" value="2000" oninput="atualizar()">
 </div>
 
-<table id="tabela">
-<tr>
-<th>Dia</th>
-<th>Valor</th>
-<th>Status</th>
-</tr>
-</table>
+<div class="card resumo">
+    <div>
+        <div>Total</div>
+        <div id="total" class="valor-grande">R$0</div>
+    </div>
+    <div>
+        <div>Faltam</div>
+        <div id="faltam" class="valor-grande">R$0</div>
+    </div>
+    <div>
+        <div/Dia</div>
+        <div id="media" class="valor-grande">R$0</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="barra-container">
+        <div class="barra" id="barra"></div>
+    </div>
+</div>
+
+<div id="lista"></div>
+
+</div>
 
 <script>
-let total = 0;
-
 function salvar() {
     let dados = [];
-    document.querySelectorAll(".valor").forEach(input => {
-        dados.push(input.value);
-    });
-
-    let meta = document.getElementById("meta").value;
-
+    document.querySelectorAll(".valor").forEach(i => dados.push(i.value));
     localStorage.setItem("dados", JSON.stringify(dados));
-    localStorage.setItem("meta", meta);
+    localStorage.setItem("meta", document.getElementById("meta").value);
 }
 
 function carregar() {
     let dados = JSON.parse(localStorage.getItem("dados")) || [];
     let meta = localStorage.getItem("meta");
-
-    if (meta) document.getElementById("meta").value = meta;
+    if(meta) document.getElementById("meta").value = meta;
 
     document.querySelectorAll(".valor").forEach((input, i) => {
-        if (dados[i]) input.value = dados[i];
+        if(dados[i]) input.value = dados[i];
     });
 
     atualizar();
 }
 
 function atualizar() {
-    total = 0;
-
-    let inputs = document.querySelectorAll(".valor");
     let meta = parseFloat(document.getElementById("meta").value) || 0;
+    let total = 0;
+    let dias = 0;
 
-    let diasPreenchidos = 0;
-
-    inputs.forEach(input => {
+    document.querySelectorAll(".valor").forEach((input, i) => {
         let valor = parseFloat(input.value) || 0;
         total += valor;
 
-        if (valor > 0) diasPreenchidos++;
+        let status = document.querySelectorAll(".status")[i];
 
-        let status = input.parentElement.nextElementSibling;
+        if(valor > 0) dias++;
 
-        if (valor == 0) {
+        if(valor == 0){
             status.innerHTML = "❌";
-            status.className = "bad";
+            status.className = "status bad";
+        } else if(valor < meta/30){
+            status.innerHTML = "⚠️";
+            status.className = "status warn";
         } else {
-            status.innerHTML = "✅";
-            status.className = "ok";
+            status.innerHTML = "🔥";
+            status.className = "status ok";
         }
     });
 
     let faltam = meta - total;
-    let diasRestantes = 30 - diasPreenchidos;
+    let diasRestantes = 30 - dias;
+    let media = diasRestantes > 0 ? faltam / diasRestantes : 0;
 
-    let media = diasRestantes > 0 ? (faltam / diasRestantes) : 0;
+    document.getElementById("total").innerText = "R$" + total.toFixed(2);
+    document.getElementById("faltam").innerText = "R$" + faltam.toFixed(2);
+    document.getElementById("media").innerText = "R$" + media.toFixed(2);
 
-    document.getElementById("total").innerText = "Total: R$" + total.toFixed(2);
-    document.getElementById("faltam").innerText = "Faltam: R$" + faltam.toFixed(2);
-    document.getElementById("media").innerText = "Mínimo por dia: R$" + media.toFixed(2);
-
-    let progresso = meta > 0 ? (total / meta) * 100 : 0;
+    let progresso = meta > 0 ? (total/meta)*100 : 0;
     document.getElementById("barra").style.width = progresso + "%";
 
     salvar();
 }
 
-// Criar tabela
-let tabela = document.getElementById("tabela");
+// Criar lista estilo app
+let lista = document.getElementById("lista");
 
-for (let i = 1; i <= 30; i++) {
-    let row = tabela.insertRow();
+for(let i=1;i<=30;i++){
+    let div = document.createElement("div");
+    div.className = "linha";
 
-    row.insertCell(0).innerText = "Dia " + i;
+    div.innerHTML = `
+        <span>Dia ${i}</span>
+        <input type="number" class="valor input-valor" oninput="atualizar()">
+        <span class="status">❌</span>
+    `;
 
-    let inputCell = row.insertCell(1);
-    let input = document.createElement("input");
-    input.type = "number";
-    input.className = "valor";
-    input.oninput = atualizar;
-    inputCell.appendChild(input);
-
-    row.insertCell(2).innerText = "❌";
+    lista.appendChild(div);
 }
 
 carregar();
