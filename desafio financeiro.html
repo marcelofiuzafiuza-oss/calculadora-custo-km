@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Desafio Financeiro</title>
+
+<style>
+body {
+    font-family: Arial;
+    background: #0f0f0f;
+    color: white;
+    text-align: center;
+}
+h1 { color: #00ff88; }
+
+input.meta {
+    width: 120px;
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+table {
+    margin: auto;
+    border-collapse: collapse;
+    width: 95%;
+}
+th, td {
+    border: 1px solid #333;
+    padding: 8px;
+}
+
+input.valor {
+    width: 70px;
+    background: #222;
+    color: white;
+    border: none;
+    text-align: center;
+}
+
+.ok { color: #00ff88; }
+.warn { color: orange; }
+.bad { color: red; }
+
+.barra-container {
+    width: 90%;
+    margin: 20px auto;
+    background: #222;
+    border-radius: 10px;
+}
+.barra {
+    height: 20px;
+    background: #00ff88;
+    width: 0%;
+    border-radius: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>💰 Desafio Financeiro</h1>
+
+<h3>Meta total:</h3>
+<input class="meta" id="meta" type="number" value="2000" oninput="atualizar()">
+
+<h2 id="total">Total: R$0</h2>
+<h3 id="faltam">Faltam: R$0</h3>
+<h3 id="media">Mínimo por dia: R$0</h3>
+
+<div class="barra-container">
+    <div class="barra" id="barra"></div>
+</div>
+
+<table id="tabela">
+<tr>
+<th>Dia</th>
+<th>Valor</th>
+<th>Status</th>
+</tr>
+</table>
+
+<script>
+let total = 0;
+
+function salvar() {
+    let dados = [];
+    document.querySelectorAll(".valor").forEach(input => {
+        dados.push(input.value);
+    });
+
+    let meta = document.getElementById("meta").value;
+
+    localStorage.setItem("dados", JSON.stringify(dados));
+    localStorage.setItem("meta", meta);
+}
+
+function carregar() {
+    let dados = JSON.parse(localStorage.getItem("dados")) || [];
+    let meta = localStorage.getItem("meta");
+
+    if (meta) document.getElementById("meta").value = meta;
+
+    document.querySelectorAll(".valor").forEach((input, i) => {
+        if (dados[i]) input.value = dados[i];
+    });
+
+    atualizar();
+}
+
+function atualizar() {
+    total = 0;
+
+    let inputs = document.querySelectorAll(".valor");
+    let meta = parseFloat(document.getElementById("meta").value) || 0;
+
+    let diasPreenchidos = 0;
+
+    inputs.forEach(input => {
+        let valor = parseFloat(input.value) || 0;
+        total += valor;
+
+        if (valor > 0) diasPreenchidos++;
+
+        let status = input.parentElement.nextElementSibling;
+
+        if (valor == 0) {
+            status.innerHTML = "❌";
+            status.className = "bad";
+        } else {
+            status.innerHTML = "✅";
+            status.className = "ok";
+        }
+    });
+
+    let faltam = meta - total;
+    let diasRestantes = 30 - diasPreenchidos;
+
+    let media = diasRestantes > 0 ? (faltam / diasRestantes) : 0;
+
+    document.getElementById("total").innerText = "Total: R$" + total.toFixed(2);
+    document.getElementById("faltam").innerText = "Faltam: R$" + faltam.toFixed(2);
+    document.getElementById("media").innerText = "Mínimo por dia: R$" + media.toFixed(2);
+
+    let progresso = meta > 0 ? (total / meta) * 100 : 0;
+    document.getElementById("barra").style.width = progresso + "%";
+
+    salvar();
+}
+
+// Criar tabela
+let tabela = document.getElementById("tabela");
+
+for (let i = 1; i <= 30; i++) {
+    let row = tabela.insertRow();
+
+    row.insertCell(0).innerText = "Dia " + i;
+
+    let inputCell = row.insertCell(1);
+    let input = document.createElement("input");
+    input.type = "number";
+    input.className = "valor";
+    input.oninput = atualizar;
+    inputCell.appendChild(input);
+
+    row.insertCell(2).innerText = "❌";
+}
+
+carregar();
+</script>
+
+</body>
+</html>
