@@ -14,26 +14,28 @@ body {
 }
 
 .container {
+    max-width: 420px;
+    margin: auto;
     padding: 15px;
 }
 
 h1 {
     text-align: center;
     color: #00ff88;
-    font-size: 24px;
+    font-size: 22px;
 }
 
 .card {
     background: #161616;
     padding: 15px;
-    border-radius: 12px;
+    border-radius: 10px;
     margin-bottom: 15px;
 }
 
 .meta {
     width: 100%;
     font-size: 22px;
-    padding: 10px;
+    padding: 12px;
     border-radius: 8px;
     border: none;
     background: #222;
@@ -44,31 +46,29 @@ h1 {
 .resumo {
     display: flex;
     justify-content: space-between;
-    gap: 10px;
+    text-align: center;
 }
 
 .resumo div {
     flex: 1;
-    text-align: center;
 }
 
-.valor-grande {
-    font-size: 20px;
+.valor {
+    font-size: 18px;
     font-weight: bold;
+}
+
+.barra {
+    height: 12px;
+    background: #00ff88;
+    border-radius: 10px;
+    width: 0%;
 }
 
 .barra-container {
     background: #222;
     border-radius: 10px;
-    height: 20px;
     overflow: hidden;
-    margin-top: 10px;
-}
-
-.barra {
-    height: 100%;
-    background: linear-gradient(90deg, #00ff88, #00cc66);
-    width: 0%;
 }
 
 .linha {
@@ -81,14 +81,14 @@ h1 {
     margin-bottom: 8px;
 }
 
-.linha span {
-    font-size: 16px;
+.dia {
+    width: 60px;
 }
 
-.input-valor {
-    width: 80px;
+.input {
+    width: 90px;
     font-size: 18px;
-    padding: 6px;
+    padding: 8px;
     border-radius: 6px;
     border: none;
     background: #222;
@@ -97,12 +97,10 @@ h1 {
 }
 
 .status {
+    width: 40px;
+    text-align: center;
     font-size: 20px;
 }
-
-.ok { color: #00ff88; }
-.warn { color: orange; }
-.bad { color: red; }
 
 </style>
 </head>
@@ -114,28 +112,28 @@ h1 {
 <h1>💰 Desafio Financeiro</h1>
 
 <div class="card">
-    <div>Meta total</div>
+    <div>Meta</div>
     <input id="meta" class="meta" type="number" value="2000" oninput="atualizar()">
 </div>
 
 <div class="card resumo">
     <div>
         <div>Total</div>
-        <div id="total" class="valor-grande">R$0</div>
+        <div id="total" class="valor">R$0</div>
     </div>
     <div>
         <div>Faltam</div>
-        <div id="faltam" class="valor-grande">R$0</div>
+        <div id="faltam" class="valor">R$0</div>
     </div>
     <div>
-        <div/Dia</div>
-        <div id="media" class="valor-grande">R$0</div>
+        <div>Dia</div>
+        <div id="media" class="valor">R$0</div>
     </div>
 </div>
 
 <div class="card">
     <div class="barra-container">
-        <div class="barra" id="barra"></div>
+        <div id="barra" class="barra"></div>
     </div>
 </div>
 
@@ -144,31 +142,31 @@ h1 {
 </div>
 
 <script>
-function salvar() {
+function salvar(){
     let dados = [];
-    document.querySelectorAll(".valor").forEach(i => dados.push(i.value));
+    document.querySelectorAll(".input").forEach(i => dados.push(i.value));
     localStorage.setItem("dados", JSON.stringify(dados));
     localStorage.setItem("meta", document.getElementById("meta").value);
 }
 
-function carregar() {
+function carregar(){
     let dados = JSON.parse(localStorage.getItem("dados")) || [];
     let meta = localStorage.getItem("meta");
     if(meta) document.getElementById("meta").value = meta;
 
-    document.querySelectorAll(".valor").forEach((input, i) => {
-        if(dados[i]) input.value = dados[i];
+    document.querySelectorAll(".input").forEach((i, idx)=>{
+        if(dados[idx]) i.value = dados[idx];
     });
 
     atualizar();
 }
 
-function atualizar() {
+function atualizar(){
     let meta = parseFloat(document.getElementById("meta").value) || 0;
     let total = 0;
     let dias = 0;
 
-    document.querySelectorAll(".valor").forEach((input, i) => {
+    document.querySelectorAll(".input").forEach((input, i)=>{
         let valor = parseFloat(input.value) || 0;
         total += valor;
 
@@ -178,13 +176,10 @@ function atualizar() {
 
         if(valor == 0){
             status.innerHTML = "❌";
-            status.className = "status bad";
         } else if(valor < meta/30){
             status.innerHTML = "⚠️";
-            status.className = "status warn";
         } else {
             status.innerHTML = "🔥";
-            status.className = "status ok";
         }
     });
 
@@ -202,7 +197,6 @@ function atualizar() {
     salvar();
 }
 
-// Criar lista estilo app
 let lista = document.getElementById("lista");
 
 for(let i=1;i<=30;i++){
@@ -210,9 +204,9 @@ for(let i=1;i<=30;i++){
     div.className = "linha";
 
     div.innerHTML = `
-        <span>Dia ${i}</span>
-        <input type="number" class="valor input-valor" oninput="atualizar()">
-        <span class="status">❌</span>
+        <div class="dia">Dia ${i}</div>
+        <input type="number" class="input" oninput="atualizar()">
+        <div class="status">❌</div>
     `;
 
     lista.appendChild(div);
