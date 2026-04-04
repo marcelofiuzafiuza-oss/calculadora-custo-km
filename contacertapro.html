@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CONTA CERTA - ESTRATEGISTA PRO</title>
+    <title>CONTA CERTA | Estrategista Pro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -13,6 +13,16 @@
             --orange: #f59e0b;
             --text: #f8fafc; --border: rgba(255,255,255,0.08);
         }
+
+        /* TELA INICIAL (SPLASH SCREEN) */
+        #splash {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 1000;
+            transition: 0.8s ease-out;
+        }
+        .logo-anim { font-size: 2.5rem; font-weight: 800; color: white; margin-bottom: 20px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
 
         body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 100px; }
         .blur { filter: blur(8px); }
@@ -31,9 +41,13 @@
         .label { font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
         .val { font-size: 1.5rem; font-weight: 800; margin-top: 8px; }
         
-        /* CAMPO DIAS AJUSTADO PARA SER MAIOR E VISÍVEL */
-        .input-dias-container { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.15); padding: 8px 15px; border-radius: 12px; border: 1.5px solid #fff; margin-left: 10px; }
-        .days-input { width: 70px; background: none; color: white; border: none; font-weight: 900; font-size: 1.2rem; text-align: center; outline: none; }
+        /* CAMPO DIAS GRANDE E FÁCIL DE DIGITAR */
+        .input-dias-container { 
+            display: flex; align-items: center; gap: 10px; 
+            background: rgba(255,255,255,0.15); padding: 8px 15px; 
+            border-radius: 12px; border: 1.5px solid #fff; margin-left: 10px;
+        }
+        .days-input { width: 80px; background: none; color: white; border: none; font-weight: 900; font-size: 1.3rem; text-align: center; outline: none; }
 
         .progress-container { background: rgba(255,255,255,0.05); height: 10px; border-radius: 10px; margin-top: 15px; overflow: hidden; }
         .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 1s; box-shadow: 0 0 15px var(--accent); }
@@ -50,8 +64,8 @@
         .main-btn { width: 100%; padding: 16px; border-radius: 14px; border: none; background: var(--accent); color: white; font-weight: 800; cursor: pointer; }
 
         .km-result-card { color: white; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 12px; }
-        .blue-card { background: var(--blue); box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3); }
-        .orange-card { background: var(--orange); box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3); }
+        .blue-card { background: var(--blue); }
+        .orange-card { background: var(--orange); }
 
         .history-list { margin-top: 20px; background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); }
         .history-item { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.85rem; align-items: center; }
@@ -63,10 +77,16 @@
 </head>
 <body>
 
+<div id="splash">
+    <div class="logo-anim">CONTA CERTA</div>
+    <div style="color:var(--accent); font-weight: 700; letter-spacing: 2px;">ESTRATEGISTA PRO</div>
+    <button onclick="entrarApp()" class="main-btn" style="width: 200px; margin-top: 40px; background:white; color:black;">ENTRAR</button>
+</div>
+
 <header>
     <div style="font-weight: 800;">CONTA CERTA <span style="color:var(--accent)">PRO</span></div>
     <div style="display:flex; gap:10px; align-items:center;">
-        <button onclick="togglePrivacy()" style="background:none; border:none; font-size:1.2rem;">👁️</button>
+        <button onclick="togglePrivacy()" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">👁️</button>
         <select id="mesReferencia" onchange="render()" style="background:none; color:white; border:1px solid var(--accent); border-radius:8px; padding:5px;"></select>
     </div>
 </header>
@@ -84,17 +104,17 @@
             </div>
             <div class="val priv-data" id="valMetaDiaria">R$ 0,00</div>
             <div class="progress-container"><div class="progress-bar" id="barraQuitacao"></div></div>
-            <div class="sub" id="txtQuitacao">Calculando...</div>
+            <div class="sub" id="txtQuitacao">Aguardando dados...</div>
         </div>
         <div class="card">
             <div class="label">Faturamento Hoje</div>
             <div class="val priv-data" id="valSaldoHoje">R$ 0,00</div>
-            <div class="sub" id="statusHoje">Aguardando dados...</div>
+            <div class="sub" id="statusHoje">Aguardando...</div>
         </div>
         <div class="card">
             <div class="label">Sobras (Acumulado Mês)</div>
             <div class="val priv-data" id="valSaldoLivre" style="color:var(--green)">R$ 0,00</div>
-            <div class="sub">Saldo livre em conta</div>
+            <div class="sub">Saldo em conta</div>
         </div>
     </div>
 
@@ -114,7 +134,7 @@
 
     <div id="p-fixo" class="form-panel">
         <label>Vencimento</label><input type="date" id="f_data">
-        <input type="text" id="f_nome" placeholder="Descrição (Ex: MEI, Seguro)">
+        <input type="text" id="f_nome" placeholder="Descrição (Ex: MEI, Parcela)">
         <label>Número de Parcelas</label><input type="number" id="f_parcelas" value="1">
         <input type="number" id="f_valor" placeholder="Valor da Parcela R$">
         <button class="main-btn" onclick="adicionar('fixos')" style="background: var(--blue)">Agendar Fixa</button>
@@ -124,7 +144,7 @@
         <label>Data</label><input type="date" id="d_data">
         <select id="d_cat"><option>Combustível</option><option>Alimentação</option><option>Lavagem</option><option>Outros</option></select>
         <input type="number" id="d_valor" placeholder="Valor R$">
-        <textarea id="d_obs" placeholder="Observação (Escreva 'app' para somar no Custo KM)"></textarea>
+        <textarea id="d_obs" placeholder="Observação (Ex: 'app' para somar no KM)"></textarea>
         <button class="main-btn" onclick="adicionar('diarias')" style="background: var(--red)">Lançar Gasto Rua</button>
     </div>
 
@@ -132,21 +152,21 @@
         <div class="km-result-card blue-card">
             <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Custo Real por KM</div>
             <div style="font-size: 2.2rem; font-weight: 900;" id="valCustoKM">R$ 0,00</div>
-            <div style="font-size: 0.65rem; opacity: 0.9;">Fixo + Combustível + Manutenção</div>
+            <div style="font-size: 0.65rem; opacity: 0.9;">Total (Fixo + Trabalho)</div>
         </div>
 
         <div class="km-result-card orange-card">
             <div style="font-size: 0.75rem; font-weight: 800; text-transform: uppercase;">Custo Fixo por KM</div>
             <div style="font-size: 1.6rem; font-weight: 900;" id="valCustoFixoKM">R$ 0,00</div>
-            <div style="font-size: 0.65rem; opacity: 0.9;">Carro Parado (Estrutura + Amortizações)</div>
+            <div style="font-size: 0.65rem; opacity: 0.9;">Estrutura (Sem Combustível)</div>
         </div>
 
         <div class="maintenance-entry">
-            <label>KM Estimado p/ o Mês</label>
+            <label>KM Total Mensal</label>
             <input type="number" id="v_km_mes" placeholder="Ex: 4000" oninput="salvarVeiculo()">
             <div class="grid-2">
                 <div><label>Pró-labore</label><input type="number" id="v_prolabore" placeholder="R$" oninput="salvarVeiculo()"></div>
-                <div><label>Parcela Carro</label><input type="number" id="v_aluguel" placeholder="R$" oninput="salvarVeiculo()"></div>
+                <div><label>Aluguel/Parcela</label><input type="number" id="v_aluguel" placeholder="R$" oninput="salvarVeiculo()"></div>
                 <div><label>Seguro Mensal</label><input type="number" id="v_seguro" placeholder="R$" oninput="salvarVeiculo()"></div>
                 <div><label>Internet</label><input type="number" id="v_internet" placeholder="R$" oninput="salvarVeiculo()"></div>
                 <div><label>Higienização</label><input type="number" id="v_higienizacao" placeholder="R$" oninput="salvarVeiculo()"></div>
@@ -156,10 +176,9 @@
         </div>
 
         <div class="maintenance-entry">
-            <label>Manutenção Amortizada</label>
             <div class="grid-2">
-                <div><label>Custo Óleo (2m)</label><input type="number" id="v_custo_oleo" placeholder="R$" oninput="salvarVeiculo()"></div>
-                <div><label>4 Pneus (4m)</label><input type="number" id="v_custo_pneu" placeholder="R$" oninput="salvarVeiculo()"></div>
+                <div><label>Óleo (2m)</label><input type="number" id="v_custo_oleo" placeholder="R$" oninput="salvarVeiculo()"></div>
+                <div><label>Pneus (4m)</label><input type="number" id="v_custo_pneu" placeholder="R$" oninput="salvarVeiculo()"></div>
             </div>
         </div>
     </div>
@@ -176,7 +195,7 @@
 
 <div class="bottom-nav">
     <a href="#" class="nav-link" onclick="exportar()">💾<br>Backup</a>
-    <a href="#" class="nav-link" onclick="location.reload()">🔄<br>Início</a>
+    <a href="#" class="nav-link" onclick="importar()">📂<br>Importar</a>
     <a href="#" class="nav-link" onclick="limpar()" style="color: var(--red);">🗑️<br>Reset</a>
 </div>
 
@@ -185,10 +204,14 @@
     const hojeObj = new Date();
     const hojeISO = hojeObj.toISOString().split('T')[0];
 
+    function entrarApp() {
+        document.getElementById('splash').style.opacity = '0';
+        setTimeout(() => { document.getElementById('splash').style.display = 'none'; }, 800);
+    }
+
     function resetDates() {
         document.querySelectorAll('input[type="date"]').forEach(i => i.value = hojeISO);
     }
-    resetDates();
 
     const sel = document.getElementById('mesReferencia');
     for(let i = -2; i <= 6; i++){
@@ -198,7 +221,7 @@
         sel.add(opt);
     }
 
-    let db = JSON.parse(localStorage.getItem('cc_pro_v110')) || { meses: {}, veiculo: {} };
+    let db = JSON.parse(localStorage.getItem('cc_pro_v120')) || { meses: {}, veiculo: {} };
 
     function togglePrivacy() { document.querySelectorAll('.priv-data').forEach(el => el.classList.toggle('blur')); }
 
@@ -221,7 +244,7 @@
             let k = `${d.getFullYear()}-${d.getMonth()}`;
             if(!db.meses[k]) db.meses[k] = { receitas: [], fixos: [], diarias: [] };
             let item = { id: Date.now() + i, valor: v, data: d.toISOString().split('T')[0] };
-            if(tipo === 'receitas') { item.nome = document.getElementById('g_nome').value || 'Ganho'; db.meses[k].receitas.push(item); }
+            if(tipo === 'receitas') { item.nome = document.getElementById('g_nome').value || 'App'; db.meses[k].receitas.push(item); }
             else if(tipo === 'fixos') { item.nome = document.getElementById('f_nome').value || 'Fixo'; db.meses[k].fixos.push(item); }
             else { item.cat = document.getElementById('d_cat').value; item.obs = (document.getElementById('d_obs').value || '').toLowerCase(); db.meses[k].diarias.push(item); }
         }
@@ -241,12 +264,12 @@
             oleo: Number(document.getElementById('v_custo_oleo').value),
             pneu: Number(document.getElementById('v_custo_pneu').value)
         };
-        localStorage.setItem('cc_pro_v110', JSON.stringify(db));
+        localStorage.setItem('cc_pro_v120', JSON.stringify(db));
         render();
     }
 
     function salvar() {
-        localStorage.setItem('cc_pro_v110', JSON.stringify(db));
+        localStorage.setItem('cc_pro_v120', JSON.stringify(db));
         render();
         document.querySelectorAll('#p-ganho input:not([type="date"]), #p-fixo input:not([type="date"]), #p-diario input:not([type="date"]), textarea').forEach(i => i.value = '');
         resetDates();
@@ -262,11 +285,9 @@
         const totF = d.fixos.reduce((a,b) => a + b.valor, 0);
         const totD = d.diarias.reduce((a,b) => a + b.valor, 0);
         
-        // CORREÇÃO: META DIÁRIA (PONTO DE EQUILÍBRIO)
         const diasInput = Number(document.getElementById('inputDias').value) || 1;
-        const metaDiariaCalculada = (totF + totD) / diasInput;
-        document.getElementById('valMetaDiaria').innerText = `R$ ${metaDiariaCalculada.toFixed(2)}`;
-        
+        const metaCalculada = (totF + totD) / diasInput;
+        document.getElementById('valMetaDiaria').innerText = `R$ ${metaCalculada.toFixed(2)}`;
         document.getElementById('valSaldoLivre').innerText = `R$ ${(totR - totF - totD).toFixed(2)}`;
 
         const rHj = d.receitas.filter(i => i.data === hojeISO).reduce((a,b) => a + b.valor, 0);
@@ -275,9 +296,8 @@
 
         const porc = (totF + totD) > 0 ? (totR / (totF + totD)) * 100 : 0;
         document.getElementById('barraQuitacao').style.width = Math.min(porc, 100) + '%';
-        document.getElementById('txtQuitacao').innerText = porc >= 100 ? "Lucro Real! 🚀" : `${porc.toFixed(0)}% das despesas pagas`;
+        document.getElementById('txtQuitacao').innerText = porc >= 100 ? "Lucro Real! 🚀" : `${porc.toFixed(0)}% das metas pagas`;
 
-        // CORREÇÃO: CUSTOS KM
         const v = db.veiculo || {};
         const kmTotal = Number(v.km) || 1;
         const estruturais = (v.pro||0) + (v.alu||0) + (v.seg||0) + (v.net||0) + (v.hig||0) + (v.doc||0) + (v.dep||0) + ((v.oleo||0)/2) + ((v.pneu||0)/4);
@@ -286,15 +306,12 @@
             .filter(item => item.cat === 'Combustível' || (item.obs && item.obs.includes('app')))
             .reduce((a, b) => a + b.valor, 0);
 
-        const custoFixoKM = (estruturais + totF) / kmTotal;
-        const custoRealKM = (estruturais + totF + gastoTrabalhoRua) / kmTotal;
-
-        document.getElementById('valCustoFixoKM').innerText = `R$ ${custoFixoKM.toFixed(2)}`;
-        document.getElementById('valCustoKM').innerText = `R$ ${custoRealKM.toFixed(2)}`;
+        document.getElementById('valCustoFixoKM').innerText = `R$ ${((estruturais + totF) / kmTotal).toFixed(2)}`;
+        document.getElementById('valCustoKM').innerText = `R$ ${((estruturais + totF + gastoTrabalhoRua) / kmTotal).toFixed(2)}`;
 
         const lista = document.getElementById('lista');
         lista.innerHTML = '<div class="label" style="padding:15px">Histórico Recente</div>';
-        const todos = [...d.fixos.map(i=>({...i,t:'f'})),...d.receitas.map(i=>({...i,t:'r'})),...d.diarias.map(i=>({...i,t:'d'}))].sort((a,b)=>b.id-a.id).slice(0,10);
+        const todos = [...d.fixos.map(i=>({...i,t:'f'})),...d.receitas.map(i=>({...i,t:'r'})),...d.diarias.map(i=>({...i,t:'d'}))].sort((a,b)=>b.id-a.id).slice(0,8);
         todos.forEach(i => {
             const cor = i.t === 'r' ? 'var(--green)' : 'var(--red)';
             lista.innerHTML += `<div class="history-item">
@@ -310,7 +327,6 @@
         const dL = Array.from({length: 31}, (_, i) => i + 1);
         const gD = dL.map(dia => d.diarias.filter(x => new Date(x.data + 'T12:00:00').getDate() === dia).reduce((a,b) => a + b.valor, 0));
         gerarChart('chartDiarioMes', 'bar', dL, gD, '#ef4444');
-
         const labs = [], dataR = [], dataD = [];
         Array.from(sel.options).slice(0, 5).reverse().forEach(o => {
             labs.push(o.text.split(' ')[0]);
@@ -319,7 +335,6 @@
             dataD.push(m.fixos.reduce((a,b)=>a+b.valor,0) + m.diarias.reduce((a,b)=>a+b.valor,0));
         });
         gerarChart('chartEvolucao', 'line', labs, dataR, '#22c55e', dataD, '#ef4444');
-
         const cM = {}; d.diarias.forEach(x => cM[x.cat] = (cM[x.cat] || 0) + x.valor);
         gerarChart('chartCategorias', 'pie', Object.keys(cM), Object.values(cM), ['#ef4444', '#f59e0b', '#3b82f6', '#22c55e']);
         const rM = {}; d.receitas.forEach(r => rM[r.nome] = (rM[r.nome] || 0) + r.valor);
@@ -335,8 +350,25 @@
 
     function exportar() {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db));
-        const a = document.createElement('a'); a.href = dataStr; a.download = "contacerta_estrategista_pro.json"; a.click();
+        const a = document.createElement('a'); a.href = dataStr; a.download = "contacerta_backup.json"; a.click();
     }
+    
+    function importar() {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.onchange = e => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.readAsText(file,'UTF-8');
+            reader.onload = readerEvent => {
+                db = JSON.parse(readerEvent.target.result);
+                localStorage.setItem('cc_pro_v120', JSON.stringify(db));
+                location.reload();
+            }
+        }
+        input.click();
+    }
+
     function limpar() { if(confirm("Deseja apagar tudo?")) { localStorage.clear(); location.reload(); } }
     
     window.onload = () => {
@@ -353,6 +385,7 @@
             document.getElementById('v_custo_oleo').value = v.oleo || '';
             document.getElementById('v_custo_pneu').value = v.pneu || '';
         }
+        resetDates();
         render();
     };
 </script>
