@@ -12,46 +12,63 @@
             --green: #22c55e; --red: #ef4444; --blue: #3b82f6;
             --orange: #f59e0b; --text: #f8fafc; --border: rgba(255,255,255,0.08);
         }
-
         #splash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; transition: 0.8s; }
         body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); color: var(--text); padding-bottom: 100px; }
         header { padding: 15px 20px; background: rgba(18, 24, 38, 0.9); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
         .container { padding: 15px; max-width: 1000px; margin: auto; }
+        
         .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 20px; }
-        .card { background: var(--card); padding: 18px; border-radius: 20px; border: 1px solid var(--border); }
+        .card { background: var(--card); padding: 18px; border-radius: 20px; border: 1px solid var(--border); transition: 0.3s; }
         .card-highlight { border: 1px solid var(--accent); background: linear-gradient(135deg, #1e1b4b, #121826); grid-column: span 2; }
         .label { font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
         .val { font-size: 1.4rem; font-weight: 800; margin-top: 5px; }
-        .input-dias-container { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 10px; border: 1px solid #fff; }
-        .days-input { width: 60px; background: none; color: white; border: none; font-weight: 800; font-size: 1.1rem; text-align: center; outline: none; }
+        .sub { font-size: 0.7rem; color: #94a3b8; margin-top: 5px; }
+        
         .progress-container { background: rgba(255,255,255,0.05); height: 8px; border-radius: 10px; margin-top: 10px; overflow: hidden; }
         .progress-bar { height: 100%; background: var(--accent); width: 0%; transition: width 1s; }
+        
+        .blur { filter: blur(10px) !important; user-select: none; pointer-events: none; }
+
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+
+        .input-dias-container { display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 10px; border: 1px solid #fff; }
+        .days-input { width: 50px; background: none; color: white; border: none; font-weight: 800; font-size: 1.1rem; text-align: center; outline: none; }
+
         .tabs { display: flex; background: var(--card); padding: 4px; border-radius: 14px; margin: 20px 0; border: 1px solid var(--border); overflow-x: auto; }
         .tab-btn { flex: 1; padding: 12px; border: none; background: none; color: #94a3b8; font-weight: 700; font-size: 0.65rem; border-radius: 10px; cursor: pointer; white-space: nowrap; }
         .tab-btn.active { background: var(--accent); color: white; }
         .form-panel { display: none; }
         .form-panel.active { display: block; }
-        input, select, textarea { width: 100%; background: #0f1420; border: 1px solid var(--border); padding: 12px; border-radius: 12px; color: white; margin-bottom: 10px; box-sizing: border-box; font-family: inherit; }
+        
+        input, select, textarea { width: 100%; background: #0f1420; border: 1px solid var(--border); padding: 14px; border-radius: 12px; color: white; margin-bottom: 10px; box-sizing: border-box; font-size: 1rem; }
         .main-btn { width: 100%; padding: 16px; border-radius: 14px; border: none; background: var(--accent); color: white; font-weight: 800; cursor: pointer; }
+        
         .km-result-card { color: white; padding: 20px; border-radius: 15px; text-align: center; margin-bottom: 12px; }
-        .blue-card { background: var(--blue); box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3); }
-        .orange-card { background: var(--orange); box-shadow: 0 5px 15px rgba(245, 158, 11, 0.3); }
-        .history-list { margin-top: 20px; background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); }
-        .history-item { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.85rem; align-items: center; }
-        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; margin-top: 20px; }
+        .blue-card { background: var(--blue); }
+        .orange-card { background: var(--orange); }
+        
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; margin-top: 20px; }
         .chart-card { background: var(--card); padding: 15px; border-radius: 20px; border: 1px solid var(--border); }
         .chart-container { height: 250px; position: relative; }
+        
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(18, 24, 38, 0.95); display: flex; justify-content: space-around; padding: 12px; border-top: 1px solid var(--border); }
         .nav-link { color: #94a3b8; text-decoration: none; font-size: 0.65rem; text-align: center; }
-        .btn-edit { background: none; border: 1px solid #475569; color: #94a3b8; border-radius: 5px; padding: 4px 8px; font-size: 0.6rem; cursor: pointer; margin-right: 5px; }
-        .btn-del { background: none; border: 1px solid var(--red); color: var(--red); border-radius: 5px; padding: 4px 8px; font-size: 0.6rem; cursor: pointer; }
-        .priv-data.blur { filter: blur(10px); }
+        
+        .ranking-card { background: var(--card); border-radius: 20px; border: 1px solid var(--border); padding: 15px; margin-top: 15px; }
+        .ranking-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .rank-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .history-list { margin-top: 20px; background: var(--card); border-radius: 20px; overflow: hidden; border: 1px solid var(--border); }
+        .history-item { display: flex; justify-content: space-between; padding: 15px; border-bottom: 1px solid var(--border); font-size: 0.85rem; align-items: center; }
+        .actions { display: flex; gap: 10px; margin-top: 5px; }
+        .btn-edit { background: var(--blue); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; cursor: pointer; }
+        .btn-del { background: var(--red); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div id="splash">
-    <div style="font-size: 2.5rem; font-weight: 800; color: white; margin-bottom: 10px;">CONTA CERTA</div>
+    <div style="font-size: 2.5rem; font-weight: 800; color: white;">CONTA CERTA</div>
     <button onclick="entrarApp()" class="main-btn" style="width: 200px; margin-top: 40px; background:white; color:black;">ENTRAR</button>
 </div>
 
@@ -59,7 +76,7 @@
     <div style="font-weight: 800;">CONTA CERTA <span style="color:var(--accent)">PRO</span></div>
     <div style="display:flex; gap:10px; align-items:center;">
         <button onclick="togglePrivacy()" style="background:none; border:none; font-size:1.2rem; cursor:pointer;">👁️</button>
-        <select id="mesReferencia" onchange="render()" style="background:none; color:white; border:1px solid var(--accent); border-radius:8px; padding:5px;"></select>
+        <select id="mesReferencia" onchange="sincronizarMesERenderizar()" style="background:none; color:white; border:1px solid var(--accent); border-radius:8px; padding:5px;"></select>
     </div>
 </header>
 
@@ -68,17 +85,22 @@
         <div class="card card-highlight">
             <div class="label">
                 <span>Ponto de Equilíbrio</span>
-                <div class="input-dias-container">
-                    <span style="font-size: 0.6rem; color: #fff;">DIAS:</span>
-                    <input type="number" id="inputDias" value="22" class="days-input" oninput="salvar()">
-                </div>
+                <div class="input-dias-container"><span>DIAS:</span><input type="number" id="inputDias" placeholder="0" class="days-input" oninput="salvar()"></div>
             </div>
             <div class="val priv-data" id="valMetaDiaria">R$ 0,00</div>
             <div class="progress-container"><div class="progress-bar" id="barraQuitacao"></div></div>
             <div class="sub" id="txtQuitacao">Calculando...</div>
         </div>
-        <div class="card"><div class="label">Faturamento Hoje</div><div class="val priv-data" id="valSaldoHoje">R$ 0,00</div><div class="sub">Líquido do dia</div></div>
-        <div class="card"><div class="label">Sobras do Mês</div><div class="val priv-data" id="valSaldoLivre" style="color:var(--green)">R$ 0,00</div><div class="sub">Acumulado</div></div>
+        <div class="card" id="cardHoje">
+            <div class="label">Hoje</div>
+            <div class="val priv-data" id="valSaldoHoje">R$ 0,00</div>
+            <div class="sub" id="subHoje">Líquido do dia</div>
+        </div>
+        <div class="card">
+            <div class="label">Sobra do Mês</div>
+            <div class="val priv-data" id="valSaldoLivre" style="color:var(--green)">R$ 0,00</div>
+            <div class="sub">Acumulado livre</div>
+        </div>
     </div>
 
     <div class="tabs">
@@ -86,54 +108,38 @@
         <button class="tab-btn" onclick="openTab(event, 'p-fixo')">FIXAS</button>
         <button class="tab-btn" onclick="openTab(event, 'p-diario')">RUA</button>
         <button class="tab-btn" onclick="openTab(event, 'p-veiculo')" style="color:var(--blue)">VEÍCULO</button>
+        <button class="tab-btn" onclick="openTab(event, 'p-ranking')" style="color:var(--orange)">RANKINGS</button>
     </div>
 
-    <div id="p-ganho" class="form-panel active">
-        <input type="date" id="g_data">
-        <input type="text" id="g_nome" placeholder="Uber, 99...">
-        <input type="number" id="g_valor" placeholder="Valor R$">
-        <button class="main-btn" onclick="adicionar('receitas')">Registrar Ganho</button>
-    </div>
-
+    <div id="p-ganho" class="form-panel active"><input type="date" id="g_data"><input type="text" id="g_nome" placeholder="Uber, 99..."><input type="number" id="g_valor" placeholder="Valor R$" step="0.01"><button class="main-btn" onclick="adicionar('receitas')">Registrar Ganho</button></div>
+    
     <div id="p-fixo" class="form-panel">
-        <input type="date" id="f_data">
-        <input type="text" id="f_nome" placeholder="MEI, Parcela...">
-        <input type="number" id="f_parcelas" value="1">
-        <input type="number" id="f_valor" placeholder="Valor R$">
-        <button class="main-btn" onclick="adicionar('fixos')" style="background: var(--blue)">Agendar Fixa</button>
+        <input type="date" id="f_data"><input type="text" id="f_nome" placeholder="MEI, Seguro, Oficina..."><div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;"><input type="number" id="f_valor" placeholder="Valor R$" step="0.01"><input type="number" id="f_vezes" placeholder="Qtd. Parcelas" value="1"></div><button class="main-btn" onclick="adicionar('fixos')" style="background: var(--blue)">Agendar Despesa</button>
     </div>
 
     <div id="p-diario" class="form-panel">
-        <input type="date" id="d_data">
-        <select id="d_cat"><option>Combustível</option><option>Alimentação</option><option>Lavagem</option><option>Outros</option></select>
-        <input type="number" id="d_valor" placeholder="Valor R$">
-        <textarea id="d_obs" placeholder="Use 'app' para o KM Real"></textarea>
-        <button class="main-btn" onclick="adicionar('diarias')" style="background: var(--red)">Lançar Gasto Rua</button>
+        <input type="date" id="d_data"><select id="d_cat"><option>Combustível</option><option>Alimentação</option><option>Lavagem</option><option>Outros</option></select><input type="number" id="d_valor" placeholder="Valor R$" step="0.01"><textarea id="d_obs" placeholder="Use 'app' p/ KM Real"></textarea><button class="main-btn" onclick="adicionar('diarias')" style="background: var(--red)">Lançar Gasto Rua</button>
+    </div>
+    
+    <div id="p-veiculo" class="form-panel">
+        <div class="km-result-card blue-card"><div class="label" style="color:white">CUSTO REAL KM</div><div class="val priv-data" id="valCustoKM">R$ 0,00</div></div>
+        <div class="km-result-card orange-card"><div class="label" style="color:white">CUSTO FIXO KM</div><div class="val priv-data" id="valCustoFixoKM">R$ 0,00</div></div>
+        <div style="background:rgba(255,255,255,0.02); padding:15px; border-radius:15px; border:1px solid var(--border);">
+            <input type="number" id="v_km" placeholder="KM Rodado Mês" oninput="salvarVeiculo()">
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                <input type="number" id="v_pro" placeholder="Salário" oninput="salvarVeiculo()"><input type="number" id="v_alu" placeholder="Parcela" oninput="salvarVeiculo()"><input type="number" id="v_seg" placeholder="Seguro" oninput="salvarVeiculo()"><input type="number" id="v_net" placeholder="Internet" oninput="salvarVeiculo()"><input type="number" id="v_hig" placeholder="Higiene" oninput="salvarVeiculo()"><input type="number" id="v_doc" placeholder="IPVA/12" oninput="salvarVeiculo()"><input type="number" id="v_dep" placeholder="Depreciação" oninput="salvarVeiculo()"><input type="number" id="v_oleo" placeholder="Custo Óleo" oninput="salvarVeiculo()"><input type="number" id="v_pneu" placeholder="Custo Pneus" oninput="salvarVeiculo()">
+            </div>
+        </div>
     </div>
 
-    <div id="p-veiculo" class="form-panel">
-        <div class="km-result-card blue-card">
-            <div style="font-size: 0.7rem; font-weight: 800;">CUSTO REAL POR KM</div>
-            <div style="font-size: 2rem; font-weight: 900;" id="valCustoKM">R$ 0,00</div>
+    <div id="p-ranking" class="form-panel">
+        <div class="rank-grid">
+            <div class="ranking-card"><div class="label" style="color:var(--green)">🏆 Top 3 Ganhos</div><div id="rankTopGanhos"></div></div>
+            <div class="ranking-card"><div class="label" style="color:var(--red)">📉 Piores 3 Ganhos</div><div id="rankPioresGanhos"></div></div>
         </div>
-        <div class="km-result-card orange-card">
-            <div style="font-size: 0.7rem; font-weight: 800;">CUSTO FIXO POR KM</div>
-            <div style="font-size: 1.5rem; font-weight: 900;" id="valCustoFixoKM">R$ 0,00</div>
-        </div>
-        <div style="background:rgba(255,255,255,0.02); padding:15px; border-radius:15px; border:1px solid var(--border);">
-            <label>KM Total Mensal</label>
-            <input type="number" id="v_km_mes" placeholder="Ex: 4000" oninput="salvarVeiculo()">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
-                <input type="number" id="v_pro" placeholder="Salário" oninput="salvarVeiculo()">
-                <input type="number" id="v_alu" placeholder="Parcela" oninput="salvarVeiculo()">
-                <input type="number" id="v_seg" placeholder="Seguro" oninput="salvarVeiculo()">
-                <input type="number" id="v_net" placeholder="Internet" oninput="salvarVeiculo()">
-                <input type="number" id="v_hig" placeholder="Higiene" oninput="salvarVeiculo()">
-                <input type="number" id="v_doc" placeholder="IPVA/12" oninput="salvarVeiculo()">
-                <input type="number" id="v_dep" placeholder="Depreciação" oninput="salvarVeiculo()">
-                <input type="number" id="v_oleo" placeholder="Óleo" oninput="salvarVeiculo()">
-                <input type="number" id="v_pneu" placeholder="Pneus" oninput="salvarVeiculo()">
-            </div>
+        <div class="rank-grid">
+            <div class="ranking-card"><div class="label" style="color:var(--orange)">⛽ Dias + Gastos</div><div id="rankTopGastos"></div></div>
+            <div class="ranking-card"><div class="label" style="color:var(--blue)">🌱 Dias - Gastos</div><div id="rankMenosGastos"></div></div>
         </div>
     </div>
 
@@ -143,203 +149,146 @@
         <div class="chart-card"><div class="chart-container"><canvas id="chartCategorias"></canvas></div></div>
         <div class="chart-card"><div class="chart-container"><canvas id="chartReceitas"></canvas></div></div>
     </div>
-
     <div class="history-list" id="lista"></div>
 </div>
 
-<div class="bottom-nav">
-    <a href="#" class="nav-link" onclick="exportar()">💾<br>Backup</a>
-    <a href="#" class="nav-link" onclick="location.reload()">🔄<br>Início</a>
-    <a href="#" class="nav-link" onclick="limpar()" style="color: var(--red);">🗑️<br>Reset</a>
-</div>
+<div class="bottom-nav"><a href="#" class="nav-link" onclick="exportar()">💾 Backup</a><a href="#" class="nav-link" onclick="location.reload()">🔄 Início</a><a href="#" class="nav-link" onclick="limpar()" style="color: var(--red);">🗑️ Reset</a></div>
 
 <script>
     const mesesNomes = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-    const hoje = new Date();
-    const hojeISO = hoje.toISOString().split('T')[0];
-
-    let db = JSON.parse(localStorage.getItem('cc_pro_v600')) || { meses: {}, veiculo: {}, diasTrabalho: 22 };
+    const hojeISO = new Date().toISOString().split('T')[0];
+    let db = JSON.parse(localStorage.getItem('CONTA_CERTA_PRO_V16')) || { meses: {}, veiculo: {}, diasTrabalho: "" };
     let charts = {};
 
-    function entrarApp() {
-        document.getElementById('splash').style.opacity = '0';
-        setTimeout(() => { document.getElementById('splash').style.display = 'none'; }, 800);
-        render();
+    function popularMeses() {
+        const sel = document.getElementById('mesReferencia');
+        sel.innerHTML = "";
+        for(let i = -2; i <= 6; i++){
+            let d = new Date(new Date().getFullYear(), new Date().getMonth() + i, 1);
+            let opt = new Option(`${mesesNomes[d.getMonth()]} ${d.getFullYear()}`, `${d.getFullYear()}-${d.getMonth()}`);
+            if(i === 0) opt.selected = true;
+            sel.add(opt);
+        }
     }
 
-    const sel = document.getElementById('mesReferencia');
-    for(let i = -2; i <= 6; i++){
-        let d = new Date(hoje.getFullYear(), hoje.getMonth() + i, 1);
-        let opt = new Option(`${mesesNomes[d.getMonth()]} ${d.getFullYear()}`, `${d.getFullYear()}-${d.getMonth()}`);
-        if(i === 0) opt.selected = true;
-        sel.add(opt);
-    }
-
+    function entrarApp() { document.getElementById('splash').style.opacity = '0'; setTimeout(() => { document.getElementById('splash').style.display='none'; popularMeses(); resetarDatasCampos(); sincronizarMesERenderizar(); }, 400); }
+    function resetarDatasCampos() { document.querySelectorAll('input[type="date"]').forEach(input => { input.value = hojeISO; }); }
     function togglePrivacy() { document.querySelectorAll('.priv-data').forEach(el => el.classList.toggle('blur')); }
-    
-    function openTab(evt, name) {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
-        evt.currentTarget.classList.add('active');
-        document.getElementById(name).classList.add('active');
+    function openTab(evt, name) { document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active')); evt.currentTarget.classList.add('active'); document.getElementById(name).classList.add('active'); }
+
+    function sincronizarMesERenderizar() {
+        const key = document.getElementById('mesReferencia').value;
+        if(!db.meses[key]) db.meses[key] = { receitas: [], fixos: [], diarias: [] };
+        render();
     }
 
     function adicionar(tipo) {
         const dataIn = document.getElementById(tipo==='receitas'?'g_data':(tipo==='fixos'?'f_data':'d_data')).value || hojeISO;
-        const v = Number(document.getElementById(tipo==='receitas'?'g_valor':(tipo==='fixos'?'f_valor':'d_valor')).value);
-        if(v <= 0) return;
-        const parcelas = tipo === 'fixos' ? parseInt(document.getElementById('f_parcelas').value) || 1 : 1;
-
-        for(let i = 0; i < parcelas; i++) {
-            let d = new Date(dataIn + 'T12:00:00'); d.setMonth(d.getMonth() + i);
-            let k = `${d.getFullYear()}-${d.getMonth()}`;
-            if(!db.meses[k]) db.meses[k] = { receitas: [], fixos: [], diarias: [] };
-            let item = { id: Date.now() + i, valor: v, data: d.toISOString().split('T')[0] };
-            if(tipo === 'receitas') item.nome = document.getElementById('g_nome').value || 'App';
-            else if(tipo === 'fixos') item.nome = document.getElementById('f_nome').value || 'Fixo';
-            else { item.cat = document.getElementById('d_cat').value; item.obs = (document.getElementById('d_obs').value || '').toLowerCase(); }
-            db.meses[k][tipo].push(item);
+        const v = parseFloat(document.getElementById(tipo==='receitas'?'g_valor':(tipo==='fixos'?'f_valor':'d_valor')).value);
+        if(isNaN(v) || v <= 0) return;
+        if (tipo === 'fixos') {
+            const vezes = parseInt(document.getElementById('f_vezes').value) || 1;
+            const nomeBase = document.getElementById('f_nome').value || 'Fixa';
+            for (let i = 0; i < vezes; i++) {
+                let dV = new Date(dataIn + 'T12:00:00'); dV.setMonth(dV.getMonth() + i);
+                let mesK = `${dV.getFullYear()}-${dV.getMonth()}`;
+                if (!db.meses[mesK]) db.meses[mesK] = { receitas: [], fixos: [], diarias: [] };
+                db.meses[mesK].fixos.push({ id: Date.now() + Math.random(), valor: v, data: dV.toISOString().split('T')[0], nome: vezes > 1 ? `${nomeBase} (${i+1}/${vezes})` : nomeBase });
+            }
+        } else {
+            const key = document.getElementById('mesReferencia').value;
+            const item = { id: Date.now() + Math.random(), valor: v, data: dataIn };
+            if(tipo==='receitas') item.nome = document.getElementById('g_nome').value || 'App';
+            else { item.cat = document.getElementById('d_cat').value; item.obs = document.getElementById('d_obs').value; }
+            db.meses[key][tipo].push(item);
         }
         salvar();
     }
 
+    function excluir(tipo, id) { if(confirm("Excluir?")) { const key = document.getElementById('mesReferencia').value; db.meses[key][tipo] = db.meses[key][tipo].filter(i => i.id !== id); salvar(); } }
     function editar(tipo, id) {
-        const key = sel.value; const item = db.meses[key][tipo].find(i => i.id === id); if(!item) return;
-        if(tipo === 'receitas') { openTab({currentTarget: document.querySelectorAll('.tab-btn')[0]}, 'p-ganho'); document.getElementById('g_nome').value = item.nome; document.getElementById('g_valor').value = item.valor; }
-        else if(tipo === 'fixos') { openTab({currentTarget: document.querySelectorAll('.tab-btn')[1]}, 'p-fixo'); document.getElementById('f_nome').value = item.nome; document.getElementById('f_valor').value = item.valor; }
-        else { openTab({currentTarget: document.querySelectorAll('.tab-btn')[2]}, 'p-diario'); document.getElementById('d_cat').value = item.cat; document.getElementById('d_valor').value = item.valor; document.getElementById('d_obs').value = item.obs; }
-        deletar(tipo, id);
+        const key = document.getElementById('mesReferencia').value;
+        const item = db.meses[key][tipo].find(i => i.id === id);
+        if(tipo==='receitas') { document.getElementById('g_data').value=item.data; document.getElementById('g_nome').value=item.nome; document.getElementById('g_valor').value=item.valor; openTab({currentTarget:document.querySelectorAll('.tab-btn')[0]},'p-ganho'); }
+        else if(tipo==='fixos') { document.getElementById('f_data').value=item.data; document.getElementById('f_nome').value=item.nome; document.getElementById('f_valor').value=item.valor; openTab({currentTarget:document.querySelectorAll('.tab-btn')[1]},'p-fixo'); }
+        else { document.getElementById('d_data').value=item.data; document.getElementById('d_cat').value=item.cat; document.getElementById('d_valor').value=item.valor; document.getElementById('d_obs').value=item.obs; openTab({currentTarget:document.querySelectorAll('.tab-btn')[2]},'p-diario'); }
+        db.meses[key][tipo] = db.meses[key][tipo].filter(i => i.id !== id); render();
     }
 
-    function deletar(tipo, id) { db.meses[sel.value][tipo] = db.meses[sel.value][tipo].filter(i => i.id !== id); salvar(); }
-    
     function salvarVeiculo() {
-        db.veiculo = { 
-            km: Number(document.getElementById('v_km_mes').value), pro: Number(document.getElementById('v_pro').value),
-            alu: Number(document.getElementById('v_alu').value), seg: Number(document.getElementById('v_seg').value),
-            net: Number(document.getElementById('v_net').value), hig: Number(document.getElementById('v_hig').value),
-            doc: Number(document.getElementById('v_doc').value), dep: Number(document.getElementById('v_dep').value),
-            oleo: Number(document.getElementById('v_oleo').value), pneu: Number(document.getElementById('v_pneu').value)
-        };
+        const ids = ['km','pro','alu','seg','net','hig','doc','dep','oleo','pneu'];
+        ids.forEach(id => db.veiculo[id] = parseFloat(document.getElementById('v_'+id).value) || 0);
         salvar();
     }
 
-    function salvar() {
-        db.diasTrabalho = Number(document.getElementById('inputDias').value) || 22;
-        localStorage.setItem('cc_pro_v600', JSON.stringify(db));
-        render();
-        document.querySelectorAll('input:not(.days-input, #mesReferencia, [type="date"], #p-veiculo input), textarea').forEach(i => i.value = '');
-        document.querySelectorAll('input[type="date"]').forEach(i => i.value = hojeISO);
-    }
+    function salvar() { db.diasTrabalho = document.getElementById('inputDias').value; localStorage.setItem('CONTA_CERTA_PRO_V16', JSON.stringify(db)); render(); document.querySelectorAll('input:not(.days-input, #mesReferencia, [type="date"], #p-veiculo input), textarea').forEach(i => i.value = ''); resetarDatasCampos(); }
 
     function render() {
-        const key = sel.value; const d = db.meses[key] || { receitas: [], fixos: [], diarias: [] };
-        const totR = d.receitas.reduce((a,b) => a + b.valor, 0);
-        const totF = d.fixos.reduce((a,b) => a + b.valor, 0);
-        const totD = d.diarias.reduce((a,b) => a + b.valor, 0);
+        const key = document.getElementById('mesReferencia').value;
+        const d = db.meses[key] || { receitas: [], fixos: [], diarias: [] };
+        const totR = d.receitas.reduce((a,b)=>a+b.valor,0), totF = d.fixos.reduce((a,b)=>a+b.valor,0), totD = d.diarias.reduce((a,b)=>a+b.valor,0);
         
-        document.getElementById('inputDias').value = db.diasTrabalho;
-        document.getElementById('valMetaDiaria').innerText = `R$ ${((totF + totD) / db.diasTrabalho).toFixed(2)}`;
-        document.getElementById('valSaldoLivre').innerText = `R$ ${(totR - totF - totD).toFixed(2)}`;
-        document.getElementById('valSaldoHoje').innerText = `R$ ${(d.receitas.filter(i => i.data === hojeISO).reduce((a,b)=>a+b.valor,0) - d.diarias.filter(i => i.data === hojeISO).reduce((a,b)=>a+b.valor,0)).toFixed(2)}`;
+        const metaD = (totF + totD) / (parseFloat(db.diasTrabalho) || 1);
+        document.getElementById('valMetaDiaria').innerText = `R$ ${metaD.toFixed(2)}`;
+        document.getElementById('valSaldoLivre').innerText = `R$ ${(totR-totF-totD).toFixed(2)}`;
+        
+        const liqH = (d.receitas.filter(i=>i.data===hojeISO).reduce((a,b)=>a+b.valor,0) - d.diarias.filter(i=>i.data===hojeISO).reduce((a,b)=>a+b.valor,0));
+        document.getElementById('valSaldoHoje').innerText = `R$ ${liqH.toFixed(2)}`;
+        const cardH = document.getElementById('cardHoje'), subH = document.getElementById('subHoje');
+        if(liqH >= metaD && metaD > 0) { cardH.style.borderColor = 'var(--green)'; subH.style.color = 'var(--green)'; subH.innerText = "Meta Atingida! 🏆"; }
+        else if(liqH >= metaD*0.8 && metaD > 0) { cardH.style.borderColor = 'var(--orange)'; subH.style.color = 'var(--orange)'; subH.innerText = "Quase lá! ⚠️"; }
+        else { cardH.style.borderColor = 'var(--red)'; subH.style.color = 'var(--red)'; subH.innerText = "Abaixo da meta ❌"; }
 
-        const porc = (totF + totD) > 0 ? (totR / (totF + totD)) * 100 : 0;
-        document.getElementById('barraQuitacao').style.width = Math.min(porc, 100) + '%';
-        document.getElementById('txtQuitacao').innerText = porc >= 100 ? "Lucro Real! 🚀" : `${porc.toFixed(0)}% coberto`;
+        // CÁLCULO VEÍCULO - CORREÇÃO DA OBSERVAÇÃO "APP"
+        const v = db.veiculo || {}, kmT = v.km || 1;
+        const est = (v.pro||0)+(v.alu||0)+(v.seg||0)+(v.net||0)+(v.hig||0)+(v.doc||0)+(v.dep||0)+((v.oleo||0)/2)+((v.pneu||0)/4);
+        document.getElementById('valCustoFixoKM').innerText = `R$ ${(est/kmT).toFixed(2)}`;
+        
+        // SOMA COMBUSTÍVEL + TUDO QUE TIVER "APP" NA OBSERVAÇÃO
+        const gastoRuaApp = d.diarias.filter(i => i.cat === 'Combustível' || (i.obs && i.obs.toLowerCase().includes('app'))).reduce((a, b) => a + b.valor, 0);
+        document.getElementById('valCustoKM').innerText = `R$ ${((est + gastoRuaApp)/kmT).toFixed(2)}`;
 
-        const v = db.veiculo || {}; const kmT = Number(v.km) || 1;
-        const estrut = (v.pro||0)+(v.alu||0)+(v.seg||0)+(v.net||0)+(v.hig||0)+(v.doc||0)+(v.dep||0)+((v.oleo||0)/2)+((v.pneu||0)/4);
-        const gApp = d.diarias.filter(i => i.cat === 'Combustível' || (i.obs && i.obs.includes('app'))).reduce((a, b) => a + b.valor, 0);
+        const bar = (totF+totD)>0 ? (totR/(totF+totD))*100 : 0;
+        document.getElementById('barraQuitacao').style.width = Math.min(bar, 100) + '%';
+        document.getElementById('txtQuitacao').innerText = `${bar.toFixed(0)}% Pago`;
 
-        document.getElementById('valCustoFixoKM').innerText = `R$ ${((estrut + totF) / kmT).toFixed(2)}`;
-        document.getElementById('valCustoKM').innerText = `R$ ${((estrut + totF + gApp) / kmT).toFixed(2)}`;
+        const list = document.getElementById('lista'); list.innerHTML = '<div class="label" style="padding:15px">Histórico</div>';
+        const all = [...d.fixos.map(i=>({...i,t:'fixos'})),...d.receitas.map(i=>({...i,t:'receitas'})),...d.diarias.map(i=>({...i,t:'diarias'}))].sort((a,b)=>new Date(b.data)-new Date(a.data)).slice(0,15);
+        all.forEach(i => { list.innerHTML += `<div class="history-item"><div><b>${i.nome||i.cat}</b><div class="sub">${i.data}</div><div class="actions"><button class="btn-edit" onclick="editar('${i.t}',${i.id})">✏️</button><button class="btn-del" onclick="excluir('${i.t}',${i.id})">🗑️</button></div></div><div style="color:${i.t==='receitas'?'var(--green)':'var(--red)'}; font-weight:800" class="priv-data">R$ ${i.valor.toFixed(2)}</div></div>`; });
 
-        const lista = document.getElementById('lista'); lista.innerHTML = '<div class="label" style="padding:15px">Histórico</div>';
-        const todos = [...d.fixos.map(i=>({...i,t:'fixos'})),...d.receitas.map(i=>({...i,t:'receitas'})),...d.diarias.map(i=>({...i,t:'diarias'}))].sort((a,b)=>b.id-a.id).slice(0,10);
-        todos.forEach(i => {
-            lista.innerHTML += `<div class="history-item"><div><b>${i.nome||i.cat}</b><div class="sub">${i.data}</div></div><div style="text-align:right"><div style="color:${i.t==='receitas'?'var(--green)':'var(--red)'}; font-weight:800">R$ ${i.valor.toFixed(2)}</div><button class="btn-edit" onclick="editar('${i.t}', ${i.id})">Editar</button><button class="btn-del" onclick="deletar('${i.t}', ${i.id})">X</button></div></div>`;
-        });
+        const fmt = (arr) => arr.length ? arr.map(x=>`<div class="ranking-item"><span>${x[0].split('-')[2]}/${x[0].split('-')[1]}</span><b class="priv-data">R$ ${x[1].toFixed(2)}</b></div>`).join('') : "...";
+        const gD = {}; d.receitas.forEach(r => gD[r.data] = (gD[r.data]||0)+r.valor);
+        document.getElementById('rankTopGanhos').innerHTML = fmt(Object.entries(gD).sort((a,b)=>b[1]-a[1]).slice(0,3));
+        document.getElementById('rankPioresGanhos').innerHTML = fmt(Object.entries(gD).sort((a,b)=>a[1]-b[1]).slice(0,3));
+        const sD = {}; d.diarias.forEach(g => sD[g.data] = (sD[g.data]||0)+g.valor);
+        document.getElementById('rankTopGastos').innerHTML = fmt(Object.entries(sD).sort((a,b)=>b[1]-a[1]).slice(0,3));
+        document.getElementById('rankMenosGastos').innerHTML = fmt(Object.entries(sD).sort((a,b)=>a[1]-b[1]).slice(0,3));
         atualizarGraficos(key);
     }
 
     function atualizarGraficos(key) {
         const d = db.meses[key] || { receitas: [], fixos: [], diarias: [] };
-        
-        // 1. Gasto Diário
         const dL = Array.from({length: 31}, (_, i) => i + 1);
-        const gD = dL.map(dia => d.diarias.filter(x => new Date(x.data + 'T12:00:00').getDate() === dia).reduce((a,b) => a + b.valor, 0));
-        gerarChart('chartDiarioMes', 'bar', dL, gD, '#ef4444', null, null, 'Gasto Diário (Rua)');
-
-        // 2. Saúde Financeira (Evolução)
+        gerarChart('chartDiarioMes', 'bar', dL, dL.map(dia => d.diarias.filter(x => parseInt(x.data.split('-')[2]) === dia).reduce((a,b) => a + b.valor, 0)), '#ef4444', null, null, 'Gasto Rua');
         const labs = [], dR = [], dD = []; 
-        Array.from(sel.options).slice(0, 5).reverse().forEach(o => { 
-            labs.push(o.text.split(' ')[0]); 
-            const m = db.meses[o.value] || { receitas: [], fixos: [], diarias: [] }; 
-            dR.push(m.receitas.reduce((a,b)=>a+b.valor,0)); 
-            dD.push(m.fixos.reduce((a,b)=>a+b.valor,0) + m.diarias.reduce((a,b)=>a+b.valor,0)); 
-        });
-        gerarChart('chartEvolucao', 'line', labs, dR, '#22c55e', dD, '#ef4444', 'Saúde Financeira');
-
-        // 3. Categorias
-        const cM = {}; d.diarias.forEach(x => cM[x.cat] = (cM[x.cat] || 0) + x.valor); 
-        gerarChart('chartCategorias', 'pie', Object.keys(cM), Object.values(cM), ['#ef4444', '#f59e0b', '#3b82f6', '#22c55e'], null, null, 'Onde você gastou');
-
-        // 4. Receitas
-        const rM = {}; d.receitas.forEach(r => rM[r.nome] = (rM[r.nome] || 0) + r.valor); 
-        gerarChart('chartReceitas', 'doughnut', Object.keys(rM), Object.values(rM), ['#a855f7', '#3b82f6', '#22c55e', '#f59e0b'], null, null, 'Melhores Fontes');
+        Array.from(document.getElementById('mesReferencia').options).slice(0, 5).reverse().forEach(o => { labs.push(o.text.split(' ')[0]); const m = db.meses[o.value] || { receitas: [], fixos: [], diarias: [] }; dR.push(m.receitas.reduce((a,b)=>a+b.valor,0)); dD.push(m.fixos.reduce((a,b)=>a+b.valor,0) + m.diarias.reduce((a,b)=>a+b.valor,0)); });
+        gerarChart('chartEvolucao', 'line', labs, dR, '#22c55e', dD, '#ef4444', 'Fluxo');
+        const cM = {}; d.diarias.forEach(x => cM[x.cat] = (cM[x.cat]||0)+x.valor);
+        gerarChart('chartCategorias', 'pie', Object.keys(cM), Object.values(cM), ['#ef4444', '#f59e0b', '#3b82f6', '#22c55e'], null, null, 'Gastos');
+        const rM = {}; d.receitas.forEach(r => rM[r.nome] = (rM[r.nome]||0)+r.valor);
+        gerarChart('chartReceitas', 'doughnut', Object.keys(rM), Object.values(rM), ['#a855f7', '#3b82f6', '#22c55e', '#f59e0b'], null, null, 'Apps');
     }
 
     function gerarChart(id, tipo, labels, data, colors, data2, color2, titulo) {
         if(charts[id]) charts[id].destroy();
-        
-        const datasets = [{
-            label: data2 ? 'Entradas' : titulo,
-            data: data,
-            backgroundColor: colors,
-            borderColor: tipo === 'line' ? colors : 'transparent',
-            tension: 0.4
-        }];
-
-        if(data2) {
-            datasets.push({
-                label: 'Saídas',
-                data: data2,
-                backgroundColor: color2,
-                borderColor: color2,
-                tension: 0.4
-            });
-        }
-
-        charts[id] = new Chart(document.getElementById(id), { 
-            type: tipo, 
-            data: { labels, datasets }, 
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    title: { display: true, text: titulo, color: '#f8fafc', font: { size: 14, weight: 'bold' } },
-                    legend: { display: true, position: 'bottom', labels: { color: '#94a3b8', font: { size: 9 } } }
-                }, 
-                scales: (tipo==='line'||tipo==='bar') ? { 
-                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94a3b8' } },
-                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
-                } : {} 
-            } 
-        });
+        const datasets = [{ label: data2 ? 'Ganhos' : titulo, data, backgroundColor: colors, borderColor: colors, tension: 0.4 }];
+        if(data2) datasets.push({ label: 'Gastos', data: data2, backgroundColor: color2, borderColor: color2 });
+        charts[id] = new Chart(document.getElementById(id), { type: tipo, data: { labels, datasets }, options: { responsive: true, maintainAspectRatio: false } });
     }
 
     function exportar() { const a = document.createElement('a'); a.href = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(db)); a.download = "backup.json"; a.click(); }
-    function limpar() { if(confirm("Apagar tudo?")) { localStorage.clear(); location.reload(); } }
-    
-    window.onload = () => {
-        const v = db.veiculo || {};
-        document.getElementById('v_km_mes').value = v.km || ''; document.getElementById('v_pro').value = v.pro || '';
-        document.getElementById('v_alu').value = v.alu || ''; document.getElementById('v_seg').value = v.seg || '';
-        document.getElementById('v_net').value = v.net || ''; document.getElementById('v_hig').value = v.hig || '';
-        document.getElementById('v_doc').value = v.doc || ''; document.getElementById('v_dep').value = v.dep || '';
-        document.getElementById('v_oleo').value = v.oleo || ''; document.getElementById('v_pneu').value = v.pneu || '';
-        document.querySelectorAll('input[type="date"]').forEach(i => i.value = hojeISO);
-    };
+    function limpar() { if(confirm("Reset?")) { localStorage.clear(); location.reload(); } }
+    window.onload = () => { popularMeses(); const v = db.veiculo || {}; ['km','pro','alu','seg','net','hig','doc','dep','oleo','pneu'].forEach(id => { if(v[id]) document.getElementById('v_'+id).value = v[id]; }); document.getElementById('inputDias').value = db.diasTrabalho || ""; sincronizarMesERenderizar(); };
 </script>
 </body>
 </html>
