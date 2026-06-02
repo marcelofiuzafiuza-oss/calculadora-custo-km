@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROTA 44 | O App de Mobilidade da Nossa Região</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-principal: #0a0b0d;
+            --bg-card: #14161d;
+            --bg-card-hover: #1c1f29;
+            --cor-primaria: #ffc107;
+            --cor-primaria-hover: #ffdb58;
+            --texto-claro: #ffffff;
+            --texto-mutado: #a0aec0;
+            --borda-neon: rgba(255, 193, 7, 0.15);
+            --sucesso: #4caf50;
+            --erro-alerta: #ff5252;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-principal);
+            color: var(--texto-claro);
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Hero Section Premium */
+        .hero {
+            background: radial-gradient(circle at top right, rgba(255, 193, 7, 0.08), transparent 45%), 
+                        radial-gradient(circle at bottom left, rgba(20, 22, 29, 0.9), var(--bg-principal));
+            padding: 90px 20px 60px 20px;
+            text-align: center;
+            position: relative;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .brand-badge {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            color: var(--cor-primaria);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+        }
+
+        .hero h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 64px;
+            font-weight: 800;
+            color: var(--texto-claro);
+            line-height: 1.1;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        .hero h1 span {
+            color: var(--cor-primaria);
+        }
+
+        .hero p {
+            font-size: 20px;
+            color: var(--texto-mutado);
+            max-width: 600px;
+            margin: 0 auto 40px auto;
+        }
+
+        .cta-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px 36px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--cor-primaria);
+            color: #000000;
+            box-shadow: 0 10px 25px rgba(255, 193, 7, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: var(--cor-primaria-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 193, 7, 0.3);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--texto-claro);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+
+        .status-bar {
+            background: rgba(76, 175, 80, 0.08);
+            border: 1px solid rgba(76, 175, 80, 0.2);
+            max-width: 450px;
+            margin: 0 auto;
+            padding: 12px 24px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .pulse-dot {
+            width: 10px;
+            height: 10px;
+            background: var(--sucesso);
+            border-radius: 50%;
+            animation: pulse 1.6s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(76, 175, 80, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+        }
+
+        .status-bar span {
+            font-weight: 600;
+            color: var(--sucesso);
+            font-size: 14px;
+        }
+
+        /* Seções */
+        .section {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-header h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 38px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .section-header p {
+            color: var(--texto-mutado);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Grid de Contadores Grandes */
+        .contador-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .contador-card {
+            background: linear-gradient(135deg, #14161d 0%, #0d0f14 100%);
+            border: 1px solid var(--borda-neon);
+            padding: 30px 20px;
+            border-radius: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .contador-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .contador-card .numero {
+            display: block;
+            font-family: 'Poppins', sans-serif;
+            font-size: 48px;
+            font-weight: 800;
+            color: var(--cor-primaria);
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+
+        .contador-card .titulo {
+            font-size: 14px;
+            color: var(--texto-mutado);
+            font-weight: 500;
+        }
+
+        /* Abas */
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 6px;
+            border-radius: 14px;
+            max-width: 400px;
+            margin: 0 auto 40px auto;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 14px 20px;
+            background: transparent;
+            border: none;
+            color: var(--texto-mutado);
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--cor-primaria);
+            color: #000000;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .card-premium {
+            background: var(--bg-card);
+            border: 1px solid var(--borda-neon);
+            padding: 35px 30px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .card-premium:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .card-icon {
+            font-size: 32px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .card-premium h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 22px;
+            margin-bottom: 12px;
+        }
+
+        .card-premium p {
+            color: var(--texto-mutado);
+            font-size: 15px;
+        }
+
+        /* Estilização da Tabela Comparativa */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--bg-card);
+        }
+
+        th, td {
+            padding: 18px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.02);
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Bloco de Campanhas Otimizado */
+        .campaign-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .campaign-card {
+            background: linear-gradient(135deg, #14161d 0%, #0d0f14 100%);
+            border: 1px solid var(--borda-neon);
+            border-radius: 24px;
+            padding: 40px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .campaign-badge {
+            background: rgba(255, 193, 7, 0.1);
+            color: var(--cor-primaria);
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            align-self: flex-start;
+        }
+
+        .campaign-card h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 26px;
+            margin-bottom: 5px;
+        }
+
+        .campaign-price {
+            font-size: 38px;
+            font-weight: 800;
+            color: var(--texto-claro);
+            margin: 15px 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .campaign-price span {
+            font-size: 14px;
+            color: var(--texto-mutado);
+            font-weight: 400;
+            display: block;
+        }
+
+        .vacancy-tracker {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 20px;
+            border-radius: 14px;
+            margin: 20px 0;
+        }
+
+        .tracker-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .tracker-info .vagas-restantes {
+            color: var(--erro-alerta);
+        }
+
+        .progress-bar-bg {
+            background: rgba(255, 255, 255, 0.1);
+            width: 100%;
+            height: 10px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--cor-primaria), #ffa000);
+            border-radius: 10px;
+            width: 0%; /* Inicia em zero para a animação JS */
+            transition: width 1.5s ease-out;
+        }
+
+        .campaign-list {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .campaign-list li {
+            font-size: 15px;
+            color: var(--texto-mutado);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .campaign-list li::before {
+            content: '✓';
+            color: var(--cor-primaria);
+            font-weight: bold;
+        }
+
+        .btn-block {
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Estilização Avançada de Formulários */
+        form {
+            width: 100%;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: var(--texto-claro);
+            font-size: 15px;
+            margin-bottom: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--cor-primaria);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 0 10px rgba(255, 193, 7, 0.1);
+        }
+
+        form h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 18px;
+            margin: 10px 0 15px 0;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            color: var(--texto-mutado);
+            transition: color 0.2s ease;
+        }
+
+        .radio-label:hover {
+            color: var(--texto-claro);
+        }
+
+        .radio-label input[type="radio"] {
+            accent-color: var(--cor-primaria);
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Bloco de Tecnologia */
+        .tech-box {
+            background: var(--bg-card);
+            border: 1px solid rgba(255, 193, 7, 0.2);
+            border-radius: 24px;
+            padding: 40px;
+            text-align: left;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .tech-box h3 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 28px;
+            margin-bottom: 15px;
+            color: var(--cor-primaria);
+        }
+
+        .tech-box p {
+            color: var(--texto-mutado);
+            font-size: 16px;
+            margin-bottom: 25px;
+        }
+
+        /* Footer */
+        .footer-premium {
+            background: #060709;
+            padding: 50px 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.03);
+            text-align: center;
+        }
+
+        .footer-logo {
+            font-family: 'Poppins', sans-serif;
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+        }
+
+        .footer-logo span {
+            color: var(--cor-primaria);
+        }
+
+        .footer-premium p {
+            color: var(--texto-mutado);
+            font-size: 15px;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 42px; }
+            .section-header h2 { font-size: 28px; }
+            .campaign-container { grid-template-columns: 1fr; }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <section class="hero">
+        <div class="brand-badge">Maringá & Sarandi</div>
+        <h1>ROTA 44<br><span>O Seu App Local</span></h1>
+        <p>A alternativa de mobilidade urbana inteligente feita para a realidade da nossa região. Mais autonomia para motoristas e viagens justas para passageiros.</p>
+        
+        <div class="cta-container">
+            <a href="https://wa.me/5544988039842?text=Ol%C3%A1!+Quero+fazer+meu+pr%C3%A9-cadastro+no+Projeto+Elite+do+Rota+44." class="btn btn-primary">GARANTIR MINHA VAGA NO WHATSAPP</a>
+            <a href="#tecnologia" class="btn btn-secondary">CONHECER A PLATAFORMA</a>
+        </div>
+
+        <div class="status-bar">
+            <div class="pulse-dot"></div>
+            <span>PRÉ-CADASTRO DE LANÇAMENTO LIBERADO</span>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <h2>Pré-cadastros em andamento</h2>
+            <p>Motoristas e passageiros já estão garantindo suas vagas no aplicativo.</p>
+        </div>
+
+        <div class="contador-grid">
+            <div class="contador-card">
+                <span class="numero">247</span>
+                <span class="titulo">Motoristas POP & Comfort</span>
+            </div>
+
+            <div class="contador-card">
+                <span class="numero">38</span>
+                <span class="titulo">Motoristas Black</span>
+            </div>
+
+            <div class="contador-card">
+                <span class="numero">1.126</span>
+                <span class="titulo">Passageiros cadastrados</span>
+            </div>
+
+            <div class="contador-card">
+                <span class="numero">1.411</span>
+                <span class="titulo">Interessados no lançamento</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <h2>Quem Somos</h2>
+            <p>Uma plataforma criada por quem conhece a realidade da nossa região.</p>
+        </div>
+
+        <div class="card-premium">
+            <p style="margin-bottom: 15px;">
+                O Rota 44 nasceu da experiência de pessoas que conhecem de perto a realidade da mobilidade urbana em Maringá e Sarandi.
+            </p>
+            <p style="margin-bottom: 15px;">
+                Nosso objetivo é construir uma plataforma regional, transparente e eficiente, conectando passageiros e motoristas através de uma solução moderna, justa e próxima da comunidade local.
+            </p>
+            <p style="margin-bottom: 15px;">
+                Acreditamos que uma plataforma regional pode oferecer atendimento mais próximo, decisões mais rápidas e melhores oportunidades para quem utiliza ou trabalha diariamente com aplicativos de transporte.
+            </p>
+            <p>
+                Nossa missão é criar uma alternativa forte, confiável e sustentável para a região, valorizando tanto os motoristas quanto os passageiros.
+            </p>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <h2>Por que o Rota 44 é diferente?</h2>
+            <p>Veja o que torna nossa plataforma única na região frente aos grandes aplicativos.</p>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Recurso</th>
+                        <th style="text-align:center;color:#ffc107;">Rota 44</th>
+                        <th style="text-align:center;">Outros Apps</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Atendimento Local</td>
+                        <td style="text-align:center;">✅</td>
+                        <td style="text-align:center;">❌</td>
+                    </tr>
+                    <tr>
+                        <td>Suporte Humanizado</td>
+                        <td style="text-align:center;">✅</td>
+                        <td style="text-align:center; color: #ffb300;">⚠️ Limitado</td>
+                    </tr>
+                    <tr>
+                        <td>Categoria Black Regional</td>
+                        <td style="text-align:center;">✅</td>
+                        <td style="text-align:center;">❌</td>
+                    </tr>
+                    <tr>
+                        <td>Contato via WhatsApp</td>
+                        <td style="text-align:center;">✅</td>
+                        <td style="text-align:center;">❌</td>
+                    </tr>
+                    <tr>
+                        <td>Foco em Maringá e Sarandi</td>
+                        <td style="text-align:center;">✅</td>
+                        <td style="text-align:center;">❌</td>
+                    </tr>
+                    <tr>
+                        <td>Valorização do Motorista</td>
+                        <td style="text-align:center;">✅</td>
+                        <td style="text-align:center; color: #ffb300;">⚠️ Parcial</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <h2>Vantagens Exclusivas</h2>
+            <p>Selecione seu perfil abaixo e confira o ecossistema completo criado para a sua necessidade.</p>
+        </div>
+
+        <div class="tabs-container">
+            <button class="tab-btn active" onclick="switchTab('motorista')">Para Motoristas</button>
+            <button class="tab-btn" onclick="switchTab('passageiro')">Para Passageiros</button>
+        </div>
+
+        <div id="motorista" class="tab-content active">
+            <div class="cards-grid">
+                <div class="card-premium">
+                    <span class="card-icon">💰</span>
+                    <h3>Até 90% de Retorno</h3>
+                    <p>Esqueça taxas abusivas e variáveis de grandes corporações nacionais. No Rota 44 você sabe exatamente quanto ganha.</p>
+                </div>
+                <div class="card-premium">
+                    <span class="card-icon">🛡️</span>
+                    <h3>Sem Bloqueios Injustos</h3>
+                    <p>Processo de análise totalmente humanizado. Valorizamos o profissional com um canal local direto para suporte.</p>
+                </div>
+                <div class="card-premium">
+                    <span class="card-icon">🤝</span>
+                    <h3>Suporte Regional</h3>
+                    <p>Atendimento rápido e presencial na região para resolver qualquer problema na sua conta de forma ágil.</p>
+                </div>
+            </div>
+
+            <div class="campaign-container">
+                <div class="campaign-card">
+                    <div>
+                        <div class="campaign-badge">Projeto Elite 300</div>
+                        <h3>POP & Comfort</h3>
+                        <div class="campaign-price">R$ 29,99 <span>Taxa de adesão única</span></div>
+                        
+                        <div class="vacancy-tracker">
+                            <div class="tracker-info">
+                                <span>Vagas Preenchidas: <strong id="vagas-pop-txt">0</strong>/300</span>
+                                <span class="vagas-restantes">Apenas <span id="resta-pop-txt">300</span> restantes!</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div id="vagas-pop-bar" class="progress-bar-fill"></div>
+                            </div>
+                        </div>
+
+                        <ul class="campaign-list">
+                            <li>Taxa fixa vitalícia de apenas 10% por corrida</li>
+                            <li>Prioridade máxima no recebimento de chamadas</li>
+                            <li>Destaque exclusivo de membro fundador no sistema</li>
+                        </ul>
+                    </div>
+                    <a href="https://wa.me/5544988039842?text=Quero+garantir+uma+das+vagas+restantes+do+Elite+300+no+Rota+44." class="btn btn-primary btn-block">QUERO PRÉ-CADASTRO ELITE 300</a>
+                </div>
+
+                <div class="campaign-card">
+                    <div>
+                        <div class="campaign-badge" style="background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1);">Elite Black 50</div>
+                        <h3>Categoria Black Premium</h3>
+                        <div class="campaign-price">R$ 59,99 <span>Taxa de adesão única</span></div>
+                        
+                        <div class="vacancy-tracker">
+                            <div class="tracker-info">
+                                <span>Vagas Preenchidas: <strong id="vagas-black-txt">0</strong>/50</span>
+                                <span class="vagas-restantes">Apenas <span id="resta-black-txt">50</span> restantes!</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div id="vagas-black-bar" class="progress-bar-fill"></div>
+                            </div>
+                        </div>
+
+                        <ul class="campaign-list">
+                            <li>Taxa fixa vitalícia de apenas 15% por corrida</li>
+                            <li>Exclusivo para veículos selecionados e premium</li>
+                            <li>Acesso direto ao público executivo da região</li>
+                        </ul>
+                    </div>
+                    <a href="https://wa.me/5544988039842?text=Quero+garantir+uma+das+vagas+restantes+do+Elite+Black+50+no+Rota+44." class="btn btn-primary btn-block" style="background: #ffffff; color: #000000;">QUERO PRÉ-CADASTRO BLACK 50</a>
+                </div>
+            </div>
+        </div>
+
+        <div id="passageiro" class="tab-content">
+            <div class="cards-grid">
+                <div class="card-premium">
+                    <span class="card-icon">🚗</span>
+                    <h3>Corridas Rápidas</h3>
+                    <p>Motoristas próximos posicionados de forma estratégica para reduzir o tempo de espera urbano.</p>
+                </div>
+                <div class="card-premium">
+                    <span class="card-icon">📍</span>
+                    <h3>Motoristas da Região</h3>
+                    <p>Condutores locais que conhecem perfeitamente a malha viária de Maringá e Sarandi.</p>
+                </div>
+                <div class="card-premium">
+                    <span class="card-icon">🤝</span>
+                    <h3>Atendimento Local</h3>
+                    <p>Suporte de ponta próximo e humanizado pronto para atender você sempre que necessário.</p>
+                </div>
+                <div class="card-premium">
+                    <span class="card-icon">⭐</span>
+                    <h3>POP, Comfort e Black</h3>
+                    <p>Categorias e frotas divididas sob medida para atender diferentes necessidades diárias.</p>
+                </div>
+                <div class="card-premium">
+                    <span class="card-icon">💰</span>
+                    <h3>Preços Transparentes</h3>
+                    <p>Garantia de mais clareza, previsibilidade e valores justos antes de fechar a corrida.</p>
+                </div>
+                <div class="card-premium">
+                    <span class="card-icon">📱</span>
+                    <h3>Aplicativo Simples</h3>
+                    <p>Interface enxuta, intuitiva e desenvolvida com a melhor usabilidade do mercado atual.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="tecnologia">
+        <div class="section-header">
+            <h2>Tecnologia de Ponta</h2>
+            <p>Sistemas integrados de última geração focados em alto rendimento.</p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="tech-box">
+                <h3>Interface do Passageiro</h3>
+                <p>Navegação clara para solicitar carros em poucos cliques, simulação de rota em tempo real, visualização de categorias e estimativa exata de valores.</p>
+                <a href="https://wa.me/5544988039842?text=Ol%C3%A1!+Quero+ser+avisado+assim+que+o+app+de+passageiros+estiver+dispon%C3%ADvel." class="btn btn-secondary">Entrar na Lista de Espera</a>
+            </div>
+            
+            <div class="tech-box">
+                <h3>Painel do Motorista</h3>
+                <p>Controle financeiro avançado direto na tela, gerenciamento analítico de faturamento líquido diário/semanal e acompanhamento das melhores zonas de corrida.</p>
+                <a href="https://wa.me/5544988039842?text=Quero+fazer+meu+pr%C3%A9-cadastro+como+motorista." class="btn btn-primary">Fazer Pré-Cadastro</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <h2>Lançamento Previsto</h2>
+        </div>
+
+        <div class="card-premium" style="text-align:center; max-width: 800px; margin: 0 auto;">
+            <h3 style="color: var(--cor-primaria); margin-bottom: 15px;">Estamos chegando!</h3>
+            <p style="margin-bottom: 15px;">Estamos finalizando os últimos detalhes para apresentar uma nova experiência de mobilidade urbana para Maringá e Sarandi.</p>
+            <p style="margin-bottom: 15px;">Cadastre-se agora e receba todas as novidades em primeira mão.</p>
+            <p style="margin-bottom: 30px;">Garanta sua participação no pré-lançamento oficial do Rota 44.</p>
+            <a href="https://wa.me/5544988039842?text=Quero%20receber%20novidades%20sobre%20o%20Rota%2044" class="btn btn-primary">
+               QUERO RECEBER AS NOVIDADES
+            </a>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <h2>Perguntas Frequentes</h2>
+            <p>Tire suas principais dúvidas sobre o funcionamento do Rota 44.</p>
+        </div>
+
+        <div class="cards-grid">
+            <div class="card-premium">
+                <h3 style="font-size: 18px; color: var(--cor-primaria);">Quando o aplicativo será lançado?</h3>
+                <p>O lançamento está em fase de preparação e todos os cadastrados serão avisados em primeira mão.</p>
+            </div>
+
+            <div class="card-premium">
+                <h3>Como faço meu pré-cadastro?</h3>
+                <p>Basta clicar no botão do WhatsApp e informar seu interesse à nossa equipe.</p>
+            </div>
+
+            <div class="card-premium">
+                <h3>Quais cidades serão atendidas?</h3>
+                <p>Inicialmente focaremos na cobertura completa de Maringá e Sarandi.</p>
+            </div>
+
+            <div class="card-premium">
+                <h3>Quem pode ser motorista?</h3>
+                <p>Motoristas parceiros com documentação regular e veículo aprovado pela plataforma.</p>
+            </div>
+
+            <div class="card-premium">
+                <h3>Como funcionará a categoria Black?</h3>
+                <p>Categoria premium regional com quantidade limitada de motoristas e veículos selecionados.</p>
+            </div>
+
+            <div class="card-premium">
+                <h3>O pré-cadastro é gratuito?</h3>
+                <p>Sim. O cadastro inicial é gratuito e garante acesso antecipado a todos os benefícios.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-header">
+            <h2>Entre na Lista de Espera</h2>
+            <p>Cadastre-se para participar do lançamento oficial da plataforma regional.</p>
+        </div>
+
+        <div class="card-premium" style="max-width: 600px; margin: 0 auto;">
+            <form onsubmit="event.preventDefault();">
+                <input type="text" placeholder="Nome Completo" class="form-control">
+                <input type="tel" placeholder="WhatsApp" class="form-control">
+                <input type="text" placeholder="Cidade" class="form-control">
+
+                <h3>Categoria de Interesse</h3>
+
+                <label class="radio-label">
+                    <input type="radio" name="categoria" checked> POP
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="categoria"> COMFORT
+                </label>
+                <label class="radio-label" style="margin-bottom: 30px;">
+                    <input type="radio" name="categoria"> BLACK
+                </label>
+
+                <a href="https://wa.me/5544988039842?text=Quero%20participar%20do%20lançamento%20do%20Rota%2044" class="btn btn-primary btn-block">
+                    QUERO PARTICIPAR DO LANÇAMENTO
+                </a>
+            </form>
+        </div>
+    </section>
+
+    <section class="section" style="text-align: center;">
+        <div class="section-header" style="margin-bottom: 30px;">
+            <h2>Região de Cobertura</h2>
+            <p>Operação focada nos eixos urbanos integrados de partida.</p>
+        </div>
+        <div style="font-size: 26px; font-weight: 700; color: var(--cor-primaria); letter-spacing: 1px;">
+            MARINGÁ &bull; SARANDI
+        </div>
+        <p style="color: var(--texto-mutado); margin-top: 10px; font-size: 14px;">Planejamento futuro de expansão para: Marialva, Paiçandu e Mandaguaçu.</p>
+    </section>
+
+    <section class="section" style="text-align:center;">
+        <div class="card-premium" style="max-width: 900px; margin: 0 auto; padding: 50px 30px;">
+            <h2 style="font-size:42px; color:#ffc107; font-family: 'Poppins', sans-serif; line-height: 1.2; margin-bottom: 15px;">
+                O aplicativo da nossa cidade está chegando.
+            </h2>
+            <p style="font-size:18px; color: var(--texto-claro); margin-bottom: 30px;">
+                Faça parte dos primeiros motoristas e passageiros do Rota 44.
+            </p>
+            <a href="https://wa.me/5544988039842?text=Quero+garantir+minha+vaga+agora+no+lan%C3%A7amento+do+Rota+44." class="btn btn-primary">
+               GARANTIR MINHA VAGA AGORA
+            </a>
+        </div>
+    </section>
+
+    <footer class="footer-premium">
+        <div class="footer-logo">ROTA <span>44</span></div>
+        <p style="margin-bottom: 10px;">Mobilidade Inteligente para Maringá e Sarandi</p>
+        <p style="margin-bottom: 20px;">Projeto em fase de pré-cadastro.</p>
+        
+        <p style="max-width:800px; margin: 0 auto 30px auto; font-size: 13px; color: var(--texto-mutado); opacity: 0.7;">
+            A operação comercial será iniciada após a conclusão das etapas de implantação, homologação e disponibilização da plataforma para os usuários.
+        </p>
+        <p style="font-size: 12px; opacity: 0.3;">&copy; 2026 Rota 44 Mobilidade. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.currentTarget.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // Função do Contador Dinâmico Real
+        function rodarContador(idTxt, idRestante, idBarra, alvoVagas, totalVagas) {
+            let elementoTxt = document.getElementById(idTxt);
+            let elementoRestante = document.getElementById(idRestante);
+            let elementoBarra = document.getElementById(idBarra);
+            let atual = 0;
+            
+            let velocidade = Math.round(1500 / alvoVagas); // Ajusta o tempo da animação (1.5 segundos no total)
+            
+            let intervalo = setInterval(() => {
+                if (atual >= alvoVagas) {
+                    clearInterval(intervalo);
+                    atual = alvoVagas; // Garante o número exato no final
+                } else {
+                    atual++;
+                }
+                
+                elementoTxt.innerText = atual;
+                elementoRestante.innerText = (totalVagas - atual);
+                elementoBarra.style.width = ((atual / totalVagas) * 100) + "%";
+            }, velocidade);
+        }
+
+        // Ativa os contadores reais assim que a página termina de carregar na tela
+        window.addEventListener('DOMContentLoaded', () => {
+            rodarContador('vagas-pop-txt', 'resta-pop-txt', 'vagas-pop-bar', 247, 300);
+            rodarContador('vagas-black-txt', 'resta-black-txt', 'vagas-black-bar', 38, 50);
+        });
+    </script>
+</body>
+</html>
