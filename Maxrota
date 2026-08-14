@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAX ROTA — Gestão para Motoristas</title>
+  
+  <!-- Tipografia Oficial: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Ícones Lucide -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Chart.js para Gráficos -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* ==========================================================================
+       MAX ROTA — DESIGN SYSTEM V1.0 (TOKENS CSS)
+       ========================================================================== */
+    :root {
+      /* Estrutura */
+      --fundo-max: #F4F7FC;
+      --branco: #FFFFFF;
+      --texto-principal: #111827;
+      --texto-secundario: #667085;
+      --texto-desabilitado: #98A2B3;
+      --linha: #E4E7EC;
+
+      /* Cores da Marca */
+      --max-blue: #2878E8;
+      --max-cyan: #18B8D0;
+      --max-green: #12B981;
+      --max-purple: #7C4DFF;
+      --max-orange: #FF7412;
+      --max-red: #F04444;
+      --max-yellow: #FFC814;
+      --max-navy: #111827;
+
+      /* Gradientes */
+      --grad-principal: linear-gradient(135deg, #12B981 0%, #2878E8 100%);
+      --grad-blue: linear-gradient(135deg, #18B8D0 0%, #2878E8 100%);
+      --grad-purple: linear-gradient(135deg, #8B5CF6 0%, #6750E8 100%);
+      --grad-orange: linear-gradient(135deg, #FF8A00 0%, #FF6500 100%);
+      --grad-sunset: linear-gradient(135deg, #FF7412 0%, #F04444 100%);
+      --grad-green: linear-gradient(135deg, #12B981 0%, #36D399 100%);
+      --grad-dark: linear-gradient(135deg, #111827 0%, #1F2937 100%);
+
+      /* Sombras */
+      --sombra-card: 0 10px 30px rgba(17, 24, 39, 0.08);
+      --sombra-card-elevado: 0 16px 40px rgba(17, 24, 39, 0.12);
+      --sombra-botao-colorido: 0 8px 22px rgba(40, 120, 232, 0.22);
+
+      /* Arredondamentos */
+      --radius-sm: 12px;
+      --radius-md: 16px;
+      --radius-lg: 20px;
+      --radius-card-sm: 22px;
+      --radius-card: 28px;
+      --radius-card-hero: 30px;
+      --radius-botao: 18px;
+      --radius-pill: 999px;
+
+      --fonte-padrao: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--fonte-padrao);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--fundo-max);
+      color: var(--texto-principal);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 16px 16px 80px 16px;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* ==========================================================================
+       CABEÇALHO
+       ========================================================================== */
+    .header-card {
+      background: var(--branco);
+      border-radius: var(--radius-card);
+      padding: 18px 20px;
+      box-shadow: var(--sombra-card);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .header-logo {
+      width: 64px;
+      height: 64px;
+      border-radius: var(--radius-md);
+      background: var(--grad-dark);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--branco);
+      flex-shrink: 0;
+      box-shadow: 0 6px 16px rgba(17, 24, 39, 0.15);
+    }
+
+    .header-logo .logo-brand {
+      font-weight: 800;
+      font-size: 12px;
+      background: var(--grad-principal);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-logo .logo-sub {
+      font-size: 9px;
+      font-weight: 700;
+      color: #94A3B8;
+    }
+
+    .header-title { font-size: 20px; font-weight: 800; line-height: 1.1; }
+    .header-subtitle { font-size: 12px; font-weight: 500; color: var(--texto-secundario); margin-top: 2px; }
+
+    /* ==========================================================================
+       ABAS DE NAVEGAÇÃO DESLIZANTES
+       ========================================================================== */
+    .tabs-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      padding-bottom: 4px;
+    }
+    .tabs-wrapper::-webkit-scrollbar { display: none; }
+
+    .tabs-container {
+      display: inline-flex;
+      background-color: #E2E8F0;
+      padding: 4px;
+      border-radius: var(--radius-pill);
+      gap: 4px;
+      min-width: max-content;
+    }
+
+    .tab-item {
+      padding: 12px 16px;
+      min-height: 44px;
+      border-radius: var(--radius-pill);
+      border: none;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: transparent;
+      color: var(--texto-secundario);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      touch-action: manipulation;
+    }
+
+    .tab-item.active {
+      background: var(--texto-principal);
+      color: var(--branco);
+      box-shadow: 0 4px 12px rgba(17, 24, 39, 0.15);
+    }
+
+    /* ==========================================================================
+       PAINÉIS DE CONTEÚDO
+       ========================================================================== */
+    .tab-content { display: none; flex-direction: column; gap: 18px; }
+    .tab-content.active { display: flex; }
+
+    /* ==========================================================================
+       CARDS E COMPONENTES
+       ========================================================================== */
+    .card-hero {
+      background: var(--branco);
+      border-radius: var(--radius-card-hero);
+      padding: 22px;
+      box-shadow: var(--sombra-card-elevado);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(228, 231, 236, 0.6);
+    }
+
+    .card-hero::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px;
+      background: var(--grad-principal);
+    }
+
+    .card-standard {
+      background: var(--branco);
+      border-radius: var(--radius-card);
+      padding: 20px;
+      box-shadow: var(--sombra-card);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .section-title { font-size: 18px; font-weight: 700; color: var(--texto-principal); }
+    .section-sub { font-size: 12px; color: var(--texto-secundario); margin-top: -8px; }
+
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .card-small {
+      background: var(--branco);
+      border-radius: var(--radius-card-sm);
+      padding: 16px;
+      box-shadow: var(--sombra-card);
+      display: flex; flex-direction: column; gap: 6px;
+    }
+
+    .icon-box {
+      width: 36px; height: 36px; border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center; color: var(--branco);
+    }
+    .icon-box.green { background: var(--grad-green); }
+    .icon-box.orange { background: var(--grad-orange); }
+    .icon-box.blue { background: var(--grad-blue); }
+    .icon-box.purple { background: var(--grad-purple); }
+
+    /* FORMULÁRIOS E BOTÕES */
+    .form-group { display: flex; flex-direction: column; gap: 4px; }
+    .form-label { font-size: 12px; font-weight: 600; color: var(--texto-principal); }
+    .input-field, .select-field {
+      width: 100%; height: 48px; background: var(--branco);
+      border: 1px solid var(--linha); border-radius: var(--radius-md);
+      padding: 0 14px; font-size: 14px; font-weight: 500; color: var(--texto-principal);
+      outline: none; transition: all 0.2s ease;
+    }
+    .input-field:focus, .select-field:focus { border-color: var(--max-blue); box-shadow: 0 0 0 3px rgba(40, 120, 232, 0.10); }
+
+    .btn {
+      width: 100%; height: 50px; border-radius: var(--radius-botao);
+      font-size: 14px; font-weight: 700; display: inline-flex;
+      align-items: center; justify-content: center; gap: 8px;
+      cursor: pointer; border: none; transition: all 0.15s ease;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--grad-principal); color: var(--branco); box-shadow: var(--sombra-botao-colorido); }
+
+    /* ==========================================================================
+       ESTILO DOS BOTÕES ESTILO FOTO (ENTRADAS E SAÍDAS)
+       ========================================================================== */
+    .chips-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 6px;
+    }
+
+    .btn-custom {
+      height: 52px;
+      border: none;
+      border-radius: 18px;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn-custom:active {
+      transform: scale(0.96);
+      opacity: 0.9;
+    }
+
+    /* CORES DE ENTRADAS (IGUAL À FOTO) */
+    .btn-uber { background-color: #0A0D14; color: #FFFFFF; }
+    .btn-99 { background-color: #FCD535; color: #111827; }
+    .btn-indrive { background-color: #00B175; color: #FFFFFF; }
+    .btn-particular { background-color: #5B8BF7; color: #FFFFFF; }
+    .btn-loja { background-color: #0052FF; color: #FFFFFF; }
+    .btn-doacao { background-color: #6C2BD9; color: #FFFFFF; }
+
+    /* CORES DE SAÍDAS (IGUAL À FOTO) */
+    .btn-combustivel { background-color: #FF3B30; color: #FFFFFF; }
+    .btn-alimentacao { background-color: #8B5CF6; color: #FFFFFF; }
+    .btn-manutencao { background-color: #8E9BAE; color: #FFFFFF; }
+    .btn-lavacar { background-color: #0284C7; color: #FFFFFF; }
+    .btn-outros { background-color: #475569; color: #FFFFFF; }
+
+    /* ESTILOS DA TABELA DE HOJE */
+    .tabela-hoje {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .tabela-hoje th {
+      text-align: left;
+      padding: 8px;
+      color: var(--texto-secundario);
+      font-weight: 600;
+      border-bottom: 1px solid var(--linha);
+    }
+
+    .tabela-hoje td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--linha);
+      vertical-align: middle;
+    }
+
+    .btn-delete-row {
+      background: rgba(240, 68, 68, 0.1);
+      color: var(--max-red);
+      border: none;
+      padding: 6px 8px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn-delete-row:hover {
+      background: var(--max-red);
+      color: var(--branco);
+    }
+
+    /* ==========================================================================
+       PLAYER DE RÁDIO (ABA 1)
+       ========================================================================== */
+    .radio-player-card {
+      background: var(--grad-dark);
+      color: white;
+      border-radius: var(--radius-card-hero);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      box-shadow: var(--sombra-card-elevado);
+    }
+
+    .radio-now-playing {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .radio-cover {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-md);
+      background: var(--grad-principal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .radio-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-play {
+      width: 48px; height: 48px; border-radius: 50%;
+      background: var(--max-green); color: white;
+      display: flex; align-items: center; justify-content: center;
+      border: none; cursor: pointer; box-shadow: 0 4px 14px rgba(18, 185, 129, 0.4);
+    }
+
+    .radio-station-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--linha);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .radio-station-item:hover, .radio-station-item.active {
+      border-color: var(--max-blue);
+      background: rgba(40, 120, 232, 0.05);
+    }
+
+    /* LISTAS E TABELAS DE DADOS */
+    .item-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 0; border-bottom: 1px solid var(--linha);
+    }
+    .item-row:last-child { border-bottom: none; }
+
+    .badge {
+      display: inline-flex; padding: 4px 10px; border-radius: var(--radius-pill);
+      font-size: 11px; font-weight: 700;
+    }
+    .badge-blue { background: rgba(40, 120, 232, 0.12); color: var(--max-blue); }
+    .badge-green { background: rgba(18, 185, 129, 0.12); color: var(--max-green); }
+    .badge-orange { background: rgba(255, 116, 18, 0.12); color: var(--max-orange); }
+
+    .chart-box { position: relative; width: 100%; height: 200px; }
+
+    /* BOTÃO FLUTUANTE DE AÇÃO (FAB) */
+    .fab-button {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--grad-blue);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      font-weight: 300;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(24, 184, 208, 0.4);
+      transition: transform 0.2s ease, opacity 0.2s ease;
+      z-index: 100;
+    }
+    .fab-button:active { transform: scale(0.92); }
+
+    /* ========================================================================
+       TELA DE ABERTURA (SPLASH SCREEN)
+       ======================================================================== */
+    .splash-screen {
+      position: fixed;
+      inset: 0;
+      background: #0A0E17;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.6s ease;
+    }
+    .splash-screen.splash-oculto {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .splash-logo-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform: scale(0.25);
+      opacity: 0;
+      animation: splashCresce 1.3s cubic-bezier(0.22, 1.4, 0.36, 1) forwards;
+    }
+    .splash-logo-brand {
+      font-weight: 800;
+      font-size: min(20vw, 90px);
+      line-height: 0.95;
+      background: var(--grad-principal);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: 1px;
+    }
+    .splash-logo-sub {
+      font-weight: 700;
+      font-size: min(9vw, 40px);
+      color: white;
+      letter-spacing: 6px;
+      margin-top: 2px;
+    }
+    .splash-logo-tagline {
+      margin-top: 18px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #6B7280;
+      letter-spacing: 1px;
+      opacity: 0;
+      animation: splashApareceTagline 0.6s ease 1.0s forwards;
+    }
+    @keyframes splashCresce {
+      0%   { transform: scale(0.25); opacity: 0; }
+      60%  { transform: scale(1.08); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes splashApareceTagline {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fab-button.aberto { transform: rotate(45deg); }
+
+    .fab-menu-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.35);
+      z-index: 98;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .fab-menu-overlay.aberto { opacity: 1; pointer-events: auto; }
+
+    .fab-menu {
+      position: fixed;
+      bottom: 92px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 10px;
+      z-index: 99;
+      pointer-events: none; /* fechado, essa área não pode bloquear toques na tela por trás */
+    }
+    .fab-menu.aberto {
+      pointer-events: auto;
+    }
+    .fab-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--fundo-cartao, #fff);
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 10px 16px 10px 14px;
+      box-shadow: 0 6px 18px rgba(15, 23, 42, 0.18);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--texto-principal);
+      cursor: pointer;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      pointer-events: none;
+    }
+    .fab-menu.aberto .fab-menu-item {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .fab-menu-item .icone-fab {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    /* ESTILOS ESPECÍFICOS PARA A ABA DE DESPESAS */
+    .btn-status-pago {
+      border: none;
+      padding: 6px 12px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-status-pago.pago {
+      background: rgba(18, 185, 129, 0.15);
+      color: var(--max-green);
+    }
+    .btn-status-pago.pendente {
+      background: rgba(255, 116, 18, 0.15);
+      color: var(--max-orange);
+    }
+
+    /* BLOQUEIO VISUAL PARA DIA FINALIZADO */
+    .dia-bloqueado {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    /* ALERTA DE CONTAS VENCENDO */
+    .alerta-despesa {
+      background: #FFFBEB;
+      border: 1px solid #FCD34D;
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TELA DE ABERTURA (SPLASH) -->
+  <div class="splash-screen" id="splash-screen">
+    <div class="splash-logo-box">
+      <span class="splash-logo-brand">MAX</span>
+      <span class="splash-logo-sub">ROTA</span>
+      <span class="splash-logo-tagline">GESTÃO PARA MOTORISTAS</span>
+    </div>
+  </div>
+  <script>
+    // Proteção: se algo impedir o carregamento normal, o splash some sozinho depois de 5s
+    setTimeout(() => {
+      const el = document.getElementById('splash-screen');
+      if (el) el.classList.add('splash-oculto');
+    }, 5000);
+  </script>
+
+  <!-- ELEMENTO DE ÁUDIO OCULTO PARA REPRODUÇÃO DA RÁDIO -->
+  <audio id="audio-player" src="https://live.hunter.fm/pop_high"></audio>
+
+  <main class="app-container">
+
+    <!-- CABEÇALHO PRINCIPAL -->
+    <header class="header-card">
+      <div class="header-logo">
+        <i data-lucide="navigation" size="22" style="margin-bottom: 2px;"></i>
+        <span class="logo-brand">MAX</span>
+        <span class="logo-sub">ROTA</span>
+      </div>
+      <div>
+        <h1 class="header-title">MAX ROTA</h1>
+        <p class="header-subtitle">Gestão para Motoristas</p>
+      </div>
+    </header>
+
+    <!-- NAVEGAÇÃO COMPLETA COM AS 7 ABAS -->
+    <div class="tabs-wrapper">
+      <nav class="tabs-container">
+        <button class="tab-item active" onclick="switchTab('radio', this)"><i data-lucide="radio" size="15"></i> Rádio</button>
+        <button class="tab-item" onclick="switchTab('metas', this)"><i data-lucide="target" size="15"></i> Metas</button>
+        <button class="tab-item" onclick="switchTab('hoje', this)"><i data-lucide="layout-dashboard" size="15"></i> Hoje</button>
+        <button class="tab-item" onclick="switchTab('analise', this)"><i data-lucide="line-chart" size="15"></i> Gráficos</button>
+        <button class="tab-item" onclick="switchTab('historico', this)"><i data-lucide="history" size="15"></i> Análise</button>
+        <button class="tab-item" onclick="switchTab('despesas', this)"><i data-lucide="wallet" size="15"></i> Despesas</button>
+        <button class="tab-item" onclick="switchTab('reserva', this)"><i data-lucide="piggy-bank" size="15"></i> Reserva</button>
+        <button class="tab-item" onclick="switchTab('servicos', this)"><i data-lucide="wrench" size="15"></i> Serv. Veículo</button>
+        <button class="tab-item" onclick="switchTab('config-veiculo', this)"><i data-lucide="calculator" size="15"></i> Config. Veículo (Custo/KM)</button>
+      </nav>
+    </div>
+
+    <!-- ==========================================================================
+         ABA 1: RÁDIO MAX ROTA (Sintonizador & Emissoras)
+         ========================================================================== -->
+    <div id="tab-radio" class="tab-content active">
+      
+      <div class="radio-player-card">
+        <div class="radio-now-playing">
+          <div class="radio-cover">
+            <i data-lucide="radio" size="28"></i>
+          </div>
+          <div>
+            <span style="font-size: 11px; color: var(--max-green); font-weight: 700; text-transform: uppercase;">Ao Vivo • Tocando Agora</span>
+            <h3 id="current-radio-title" style="font-size: 18px; font-weight: 800;">Hunter.FM — Top Hits</h3>
+            <p id="current-radio-sub" style="font-size: 12px; color: #94A3B8;">Parceira Oficial MAX ROTA</p>
+          </div>
+        </div>
+
+        <div class="radio-controls">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="volume-2" size="18" style="color: #94A3B8;"></i>
+            <span style="font-size: 12px; color: #94A3B8;">Transmissão Digital</span>
+          </div>
+          <button class="btn-play" id="btn-play-radio" onclick="togglePlayState()">
+            <i data-lucide="play" size="22" style="font-size: 18px; font-style: normal;">▶</i>
+          </button>
+        </div>
+      </div>
+
+      <section class="card-standard">
+        <h2 class="section-title">Estações Disponíveis</h2>
+        <p class="section-sub">Selecione sua rádio preferida para acompanhar sua jornada</p>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;" id="lista-estacoes-radio">
+          <!-- Renderizado dinamicamente por renderEstacoesRadio() -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ==========================================================================
+         ABA 2: HOJE (SEÇÃO DE ENTRADAS, SAÍDAS, RESUMO & HISTÓRICO DO DIA)
+         ========================================================================== -->
+    <!-- ==========================================================================
+         ABA: METAS
+         ========================================================================== -->
+    <div id="tab-metas" class="tab-content">
+
+      <section class="card-standard">
+        <h2 class="section-title">Metas</h2>
+        <p class="section-sub">Defina suas metas e acompanhe o progresso</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Meta Diária (R$)</label>
+            <input type="text" inputmode="numeric" id="input-meta-diaria" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this); salvarMetas()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Meta Semanal (R$)</label>
+            <input type="text" inputmode="numeric" id="input-meta-semanal" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this); salvarMetas()">
+          </div>
+        </div>
+
+        <div style="margin-top: 6px;">
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--texto-secundario); margin-bottom: 4px;">
+            <span>Meta de hoje</span>
+            <span id="texto-progresso-diario">R$ 0,00 / R$ 0,00</span>
+          </div>
+          <div style="background: #E4E7EC; border-radius: var(--radius-pill); height: 10px; overflow: hidden;">
+            <div id="barra-progresso-diario" style="background: var(--grad-principal); height: 100%; width: 0%; transition: width 0.4s ease;"></div>
+          </div>
+        </div>
+
+        <div style="margin-top: 10px;">
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--texto-secundario); margin-bottom: 4px;">
+            <span>Meta da semana</span>
+            <span id="texto-progresso-semanal">R$ 0,00 / R$ 0,00</span>
+          </div>
+          <div style="background: #E4E7EC; border-radius: var(--radius-pill); height: 10px; overflow: hidden;">
+            <div id="barra-progresso-semanal" style="background: var(--grad-blue); height: 100%; width: 0%; transition: width 0.4s ease;"></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <div id="tab-hoje" class="tab-content">
+
+      <!-- SELETOR DE DATA -->
+      <section class="card-standard" style="padding: 14px 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+          <div>
+            <h2 class="section-title" style="font-size: 15px;">Data do Lançamento</h2>
+            <p class="section-sub" style="margin-top: 0;">Esqueceu de lançar ontem? Selecione a data aqui</p>
+          </div>
+          <input type="date" id="input-data-selecionada" class="input-field" style="width: 155px; height: 40px; font-size: 13px;" onchange="aoMudarDataSelecionada()">
+        </div>
+        <button id="btn-voltar-hoje" class="btn" style="background: #E2E8F0; color: var(--texto-secundario); height: 38px; margin-top: 8px; display: none;" onclick="voltarParaHoje()">
+          <i data-lucide="rotate-ccw" size="14"></i> Voltar para hoje
+        </button>
+      </section>
+
+      <!-- 0. HORAS TRABALHADAS NO DIA -->
+      <section class="card-standard" id="secao-horas">
+        <h2 class="section-title" id="titulo-horas">Horas Trabalhadas</h2>
+        <p class="section-sub">Registre quanto tempo você ficou rodando/online</p>
+        <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: end;">
+          <div class="form-group">
+            <label class="form-label">Horas (ex: 8, 6.5)</label>
+            <input type="number" id="input-horas-hoje" class="input-field" placeholder="Ex: 8" step="0.1" min="0">
+          </div>
+          <button class="btn btn-primary" style="width: auto; padding: 0 18px;" onclick="salvarHorasHoje()">
+            <i data-lucide="clock" size="16"></i> Salvar
+          </button>
+        </div>
+        <p style="font-size: 12px; color: var(--texto-secundario);">Horas registradas: <strong id="display-horas-hoje">0h</strong></p>
+      </section>
+
+      <!-- 1. SEÇÃO DE ENTRADAS (RECEITAS DO DIA) -->
+      <section class="card-standard" id="secao-entradas">
+        <h2 class="section-title">Entradas (Receitas)</h2>
+        <p class="section-sub">Digite o valor, o número de corridas e clique no canal para registrar</p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Valor (R$)</label>
+            <input type="text" inputmode="numeric" id="input-entrada-valor" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nº de Corridas</label>
+            <input type="number" id="input-entrada-corridas" class="input-field" placeholder="1" min="1" value="1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Canal / Origem</label>
+          <div class="chips-grid">
+            <button class="btn-custom btn-uber" onclick="registrarEntrada('Uber')">Uber</button>
+            <button class="btn-custom btn-99" onclick="registrarEntrada('99')">99</button>
+            <button class="btn-custom btn-indrive" onclick="registrarEntrada('inDriver')">inDriver</button>
+            <button class="btn-custom btn-particular" onclick="registrarEntrada('Particular')">Particular</button>
+            <button class="btn-custom btn-loja" onclick="registrarEntrada('Loja')">Loja</button>
+            <button class="btn-custom btn-doacao" onclick="registrarEntrada('Doação')">Doação</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 1.5 SEÇÃO DE PASSES DIÁRIOS (LANÇADOS COMO DESPESA) -->
+      <section class="card-standard" id="secao-passes">
+        <h2 class="section-title">Passes Diários</h2>
+        <p class="section-sub">Valor pago para poder trabalhar no dia — é lançado como despesa</p>
+
+        <div class="form-group">
+          <label class="form-label">Valor (R$)</label>
+          <input type="text" inputmode="numeric" id="input-passe-valor" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this)">
+        </div>
+
+        <div class="chips-grid">
+          <button class="btn-custom btn-99" onclick="registrarPasse('Passe 99')">Passe 99</button>
+          <button class="btn-custom btn-uber" onclick="registrarPasse('Passe Uber')">Passe Uber</button>
+          <button class="btn-custom btn-indrive" onclick="registrarPasse('Passe inDriver')">Passe inDriver</button>
+          <button class="btn-custom btn-outros" onclick="registrarPasse('Passe Outros')">Passe Outros</button>
+        </div>
+      </section>
+
+      <!-- 2. SEÇÃO DE SAÍDAS (DESPESAS DO DIA) -->
+      <section class="card-standard" id="secao-saidas">
+        <h2 class="section-title">Saídas (Despesas)</h2>
+        <p class="section-sub">Digite o valor gasto e clique na categoria correspondente</p>
+
+        <div class="form-group">
+          <label class="form-label">Valor (R$)</label>
+          <input type="text" inputmode="numeric" id="input-saida-valor" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this)">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Categoria de Saída</label>
+          <div class="chips-grid">
+            <button class="btn-custom btn-combustivel" onclick="registrarSaida('Combustível')">Combustível</button>
+            <button class="btn-custom btn-alimentacao" onclick="registrarSaida('Alimentação')">Alimentação</button>
+            <button class="btn-custom btn-manutencao" onclick="registrarSaida('Manutenção')">Manutenção</button>
+            <button class="btn-custom btn-lavacar" onclick="registrarSaida('Lavacar')">Lavacar</button>
+            <button class="btn-custom btn-outros" onclick="registrarSaida('Outros')">Outros</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. RESUMO DIÁRIO (PAINEL DA ABA "HOJE") -->
+      <section class="card-hero">
+        <h2 class="section-title" style="margin-bottom: 12px;" id="titulo-resumo">Resumo do Dia</h2>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Total Entradas -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 13px; font-weight: 700; color: var(--texto-secundario);">Total de Entradas:</span>
+              <span style="font-size: 18px; font-weight: 800; color: var(--max-green);" id="resumo-total-entradas">R$ 0,00</span>
+            </div>
+            <div style="font-size: 11px; color: var(--texto-secundario); margin-top: 2px;" id="resumo-detalhe-entradas">
+              Detalhamento: Nenhum lançamento
+            </div>
+          </div>
+
+          <hr style="border: none; border-top: 1px dashed var(--linha);">
+
+          <!-- Total Saídas -->
+          <div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 13px; font-weight: 700; color: var(--texto-secundario);">Total de Saídas:</span>
+              <span style="font-size: 18px; font-weight: 800; color: var(--max-red);" id="resumo-total-saidas">R$ 0,00</span>
+            </div>
+            <div style="font-size: 11px; color: var(--texto-secundario); margin-top: 2px;" id="resumo-detalhe-saidas">
+              Detalhamento: Nenhum lançamento
+            </div>
+          </div>
+
+          <hr style="border: none; border-top: 1px dashed var(--linha);">
+
+          <!-- Saldo Líquido -->
+          <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px;">
+            <span style="font-size: 14px; font-weight: 800; color: var(--texto-principal);">Saldo Líquido:</span>
+            <span style="font-size: 22px; font-weight: 800; color: var(--max-blue);" id="resumo-saldo-liquido">R$ 0,00</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 12px; color: var(--texto-secundario);">R$ por hora:</span>
+            <span style="font-size: 13px; font-weight: 700; color: var(--max-purple);" id="resumo-rs-hora">R$ 0,00/h</span>
+          </div>
+        </div>
+
+        <button id="btn-finalizar-dia" class="btn btn-primary" style="margin-top: 14px;" onclick="alternarFinalizarDia()">
+          <i data-lucide="lock" size="16"></i> Finalizar o Dia
+        </button>
+      </section>
+
+      <!-- 4. LISTA / HISTÓRICO DOS LANÇAMENTOS DO DIA -->
+      <section class="card-standard">
+        <h2 class="section-title" id="titulo-lancamentos">Lançamentos do Dia</h2>
+        <p class="section-sub">Consulte, edite ou exclua valores lançados incorretamente</p>
+
+        <div style="overflow-x: auto;">
+          <table class="tabela-hoje">
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Origem / Categoria</th>
+                <th>Valor</th>
+                <th style="text-align: center;">Ação</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-lancamentos-hoje">
+              <!-- Inserido dinamicamente pelo JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ==========================================================================
+         ABA 3: ANÁLISE (GRÁFICOS E DESEMPENHO)
+         ========================================================================== -->
+    <div id="tab-analise" class="tab-content">
+
+      <div id="aviso-graficos-indisponiveis" class="alerta-despesa" style="display: none;">
+        <i data-lucide="wifi-off" size="20" style="color: #D97706;"></i>
+        <div>
+          <h4 style="font-size: 13px; font-weight: 700; color: #92400E;">Gráficos indisponíveis no momento</h4>
+          <p style="font-size: 12px; color: #B45309;">Verifique sua conexão com a internet e reabra esta aba.</p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="card-small">
+          <div class="icon-box blue"><i data-lucide="banknote" size="18"></i></div>
+          <span style="font-size: 11px; color: var(--texto-secundario); font-weight: 600;">R$ / corrida (mês)</span>
+          <span style="font-size: 18px; font-weight: 800;" id="stat-rs-corrida">R$ 0,00</span>
+        </div>
+        <div class="card-small">
+          <div class="icon-box purple"><i data-lucide="clock" size="18"></i></div>
+          <span style="font-size: 11px; color: var(--texto-secundario); font-weight: 600;">R$ / hora (mês)</span>
+          <span style="font-size: 18px; font-weight: 800;" id="stat-rs-hora-mes">R$ 0,00</span>
+        </div>
+      </div>
+
+      <section class="card-standard">
+        <h2 class="section-title">Faturamento — Últimos 7 dias</h2>
+        <p class="section-sub">Evolução do faturamento bruto nos últimos dias</p>
+        <div class="chart-box">
+          <canvas id="chartEvolucao"></canvas>
+        </div>
+      </section>
+
+      <section class="card-standard">
+        <h2 class="section-title">Ganhos por Aplicativo (mês atual)</h2>
+        <p class="section-sub">Distribuição dos ganhos por plataforma</p>
+        <div class="chart-box" style="height: 180px;">
+          <canvas id="chartPlataformas"></canvas>
+        </div>
+      </section>
+
+      <section class="card-standard">
+        <h2 class="section-title">Corridas por Aplicativo (mês atual)</h2>
+        <p class="section-sub">Quantas corridas você fez em cada canal</p>
+        <div class="chart-box" style="height: 180px;">
+          <canvas id="chartCorridasApp"></canvas>
+        </div>
+      </section>
+
+      <section class="card-standard">
+        <h2 class="section-title">Faturamento por Mês (últimos 6 meses)</h2>
+        <p class="section-sub">Compare qual mês rendeu mais</p>
+        <div class="chart-box">
+          <canvas id="chartFaturamentoMensal"></canvas>
+        </div>
+      </section>
+
+      <section class="card-standard">
+        <h2 class="section-title">Horas Trabalhadas por Mês</h2>
+        <p class="section-sub">Total de horas registradas em cada mês</p>
+        <div class="chart-box">
+          <canvas id="chartHorasMensal"></canvas>
+        </div>
+      </section>
+
+      <section class="card-standard">
+        <h2 class="section-title">Faturamento por App — Mês a Mês</h2>
+        <p class="section-sub">Compare Uber x 99 x demais canais ao longo dos meses</p>
+        <div class="chart-box">
+          <canvas id="chartAppMensal"></canvas>
+        </div>
+      </section>
+
+      <section class="card-standard">
+        <h2 class="section-title">Faturamento por Dia da Semana</h2>
+        <p class="section-sub">Qual dia da semana costuma render mais (média histórica)</p>
+        <div class="chart-box">
+          <canvas id="chartDiaSemana"></canvas>
+        </div>
+      </section>
+
+      <section class="card-standard">
+        <h2 class="section-title">Esta Semana x Semana Passada</h2>
+        <p class="section-sub">Comparativo dia a dia (segunda a domingo)</p>
+        <div class="chart-box">
+          <canvas id="chartSemanaComparativo"></canvas>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ==========================================================================
+         ABA 4: HISTÓRICO (FECHAMENTO E COMPARATIVO MENSAL)
+         ========================================================================== -->
+    <div id="tab-historico" class="tab-content">
+
+      <section class="card-standard" style="padding: 14px 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h2 class="section-title" style="font-size: 15px;">Mês de Referência</h2>
+            <p class="section-sub" style="margin-top: 0;">Navegue pelo fechamento de cada mês</p>
+          </div>
+          <input type="month" id="historico-filtro-mes" class="input-field" style="width: 150px; height: 40px; font-size: 13px;" onchange="renderHistorico()">
+        </div>
+      </section>
+
+      <section class="card-hero">
+        <h2 class="section-title" style="margin-bottom: 12px;">Fechamento do Mês</h2>
+        <div class="stats-grid">
+          <div class="card-small">
+            <span style="font-size: 11px; color: var(--texto-secundario); font-weight: 600;">Faturamento</span>
+            <span style="font-size: 17px; font-weight: 800; color: var(--max-green);" id="hist-faturamento">R$ 0,00</span>
+          </div>
+          <div class="card-small">
+            <span style="font-size: 11px; color: var(--texto-secundario); font-weight: 600;">Lucro Líquido</span>
+            <span style="font-size: 17px; font-weight: 800; color: var(--max-blue);" id="hist-lucro">R$ 0,00</span>
+          </div>
+          <div class="card-small">
+            <span style="font-size: 11px; color: var(--texto-secundario); font-weight: 600;">Total de Corridas</span>
+            <span style="font-size: 17px; font-weight: 800;" id="hist-corridas">0</span>
+          </div>
+          <div class="card-small">
+            <span style="font-size: 11px; color: var(--texto-secundario); font-weight: 600;">Horas Trabalhadas</span>
+            <span style="font-size: 17px; font-weight: 800;" id="hist-horas">0h</span>
+          </div>
+          <div class="card-small">
+            <span style="font-size: 11px; color: var(--texto-secundario); font-weight: 600;">R$ / Hora</span>
+            <span style="font-size: 17px; font-weight: 800; color: var(--max-purple);" id="hist-rs-hora">R$ 0,00</span>
+          </div>
+          <div class="card-small">
+            <span style="font-size: 11px; color: var(--texto-secundario); font-weight: 600;">R$ / Corrida</span>
+            <span style="font-size: 17px; font-weight: 800; color: var(--max-orange);" id="hist-rs-corrida">R$ 0,00</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-standard">
+        <h2 class="section-title">Comparativo com o Mês Anterior</h2>
+        <div id="hist-comparativo">
+          <!-- Renderizado dinamicamente -->
+        </div>
+      </section>
+
+      <section class="card-standard">
+        <h2 class="section-title">Distribuição por App no Mês</h2>
+        <div id="hist-apps">
+          <!-- Renderizado dinamicamente -->
+        </div>
+      </section>
+
+      <section class="card-standard">
+        <h2 class="section-title">Melhores e Piores Dias do Mês</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <h4 style="font-size: 13px; font-weight: 700; color: var(--max-green); margin-bottom: 8px;">🏆 Melhores</h4>
+            <div id="hist-melhores-dias"></div>
+          </div>
+          <div>
+            <h4 style="font-size: 13px; font-weight: 700; color: var(--max-red); margin-bottom: 8px;">📉 Mais Fracos</h4>
+            <div id="hist-piores-dias"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-standard">
+        <h2 class="section-title">Maiores Gastos do Mês</h2>
+        <p class="section-sub">Categorias de despesa lançadas na aba Hoje, do maior pro menor — incluindo a soma diária dos passes (99, Uber, inDriver, Outros)</p>
+        <div id="hist-maiores-gastos">
+          <!-- Renderizado dinamicamente -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ==========================================================================
+         ABA 5: DESPESAS PESSOAIS & PARTICULARES
+         ========================================================================== -->
+    <div id="tab-despesas" class="tab-content">
+
+      <!-- ALERTA DE CONTAS VENCENDO -->
+      <div id="alertas-despesas"></div>
+
+      <!-- SELETOR DE MÊS/ANO PARA HISTÓRICO -->
+      <section class="card-standard" style="padding: 14px 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <h2 class="section-title" style="font-size: 15px;">Mês de Referência</h2>
+            <p class="section-sub" style="margin-top: 0;">Navegue pelo histórico de contas</p>
+          </div>
+          <input type="month" id="despesas-filtro-mes" class="input-field" style="width: 150px; height: 40px; font-size: 13px;" onchange="aoMudarMesDespesas()">
+        </div>
+      </section>
+
+      <!-- RESUMO DAS MÉTRICAS DO MÊS SELECIONADO -->
+      <section class="card-standard" style="padding: 0; overflow: hidden;" id="card-metricas-despesas">
+        <!-- Inserido dinamicamente via renderDespesas() -->
+      </section>
+
+      <!-- LISTA DE CONTAS PARTICULARES DO MÊS SELECIONADO -->
+      <section class="card-standard">
+        <h2 class="section-title">Contas Pessoais do Mês</h2>
+        <p class="section-sub">Clique no status para alternar entre Pago e Pendente</p>
+
+        <div id="lista-contas-mes">
+          <!-- Inserido dinamicamente -->
+        </div>
+      </section>
+
+      <!-- FORMULÁRIO COMPLETO PARA LANÇAMENTO DE NOVAS CONTAS / PARCELAS -->
+      <section class="card-standard">
+        <h2 class="section-title">Lançar Nova Conta / Parcela</h2>
+        <p class="section-sub">Cadastre contas únicas, mensais ou financiamentos parcelados</p>
+        
+        <div class="form-group">
+          <label class="form-label">Nome da Conta / Descrição</label>
+          <input type="text" id="input-conta-nome" class="input-field" placeholder="Ex: Conta de Luz, Parcela do Carro, Cartão...">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label class="form-label">Valor da Parcela (R$)</label>
+            <input type="text" inputmode="numeric" id="input-conta-valor" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this)">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Dia de Vencimento</label>
+            <input type="number" id="input-conta-vencimento" class="input-field" placeholder="Ex: 5, 10, 20" min="1" max="31">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Quantidade de Parcelas</label>
+          <input type="number" id="input-conta-qtd-parcelas" class="input-field" placeholder="1 para única/recorrente, ou 30, 48..." min="1" value="1">
+          <span style="font-size: 11px; color: var(--texto-secundario); margin-top: 2px;">Se maior que 1, criará automaticamente os meses futuros.</span>
+        </div>
+
+        <button class="btn btn-primary" style="background: var(--grad-sunset);" onclick="cadastrarNovaConta()">
+          <i data-lucide="plus-circle" size="18"></i> Lançar Conta
+        </button>
+      </section>
+
+    </div>
+
+    <!-- ==========================================================================
+         ABA: RESERVA (GUARDE 10% — INSPIRADO NO "HOMEM MAIS RICO DA BABILÔNIA")
+         ========================================================================== -->
+    <div id="tab-reserva" class="tab-content">
+
+      <section class="card-standard" style="background: var(--grad-dark); color: white;">
+        <div style="display: flex; gap: 12px; align-items: flex-start;">
+          <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <i data-lucide="piggy-bank" size="20" style="color: var(--max-green);"></i>
+          </div>
+          <div>
+            <h2 style="font-size: 15px; font-weight: 800;">Guarde 10% do que você ganha</h2>
+            <p style="font-size: 12.5px; color: #9CA3AF; margin-top: 4px; line-height: 1.5;">
+              Inspirado no livro "O Homem Mais Rico da Babilônia": separar uma parte do que entra, todo dia, é o primeiro passo pra construir uma reserva de verdade — mesmo rodando de app.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- RESERVA DE HOJE -->
+      <section class="card-hero">
+        <h2 class="section-title" style="margin-bottom: 4px;" id="titulo-reserva-hoje">Reserva de Hoje</h2>
+        <p class="section-sub">10% calculado em cima do que você já lançou como entrada hoje</p>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+          <span style="font-size: 13px; font-weight: 700; color: var(--texto-secundario);">Ideal guardar hoje:</span>
+          <span style="font-size: 22px; font-weight: 800; color: var(--max-green);" id="reserva-ideal-hoje">R$ 0,00</span>
+        </div>
+        <p style="font-size: 11px; color: var(--texto-secundario); margin-top: 2px;" id="reserva-base-calculo">Baseado em R$ 0,00 de entradas hoje</p>
+
+        <hr style="border: none; border-top: 1px dashed var(--linha); margin: 14px 0;">
+
+        <div class="form-group">
+          <label class="form-label">Quanto você guardou de fato hoje? (R$)</label>
+          <input type="text" inputmode="numeric" id="input-reserva-guardado" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this)">
+        </div>
+        <button class="btn btn-primary" onclick="registrarReservaHoje()">
+          <i data-lucide="piggy-bank" size="16"></i> Salvar o que guardei hoje
+        </button>
+        <p style="font-size: 12px; color: var(--max-green); text-align: center; height: 16px; margin-top: 8px; font-weight: 700;" id="texto-reserva-salva"></p>
+      </section>
+
+      <!-- ACUMULADO: IDEAL x REALIZADO -->
+      <section class="card-standard">
+        <h2 class="section-title">Acumulado (desde que você começou a usar)</h2>
+        <div class="stats-grid">
+          <div class="card-small">
+            <span style="font-size: 11px; color: var(--texto-secundario); font-weight: 600;">Ideal acumulado (10%)</span>
+            <span style="font-size: 17px; font-weight: 800; color: var(--max-blue);" id="reserva-ideal-acumulado">R$ 0,00</span>
+          </div>
+          <div class="card-small">
+            <span style="font-size: 11px; color: var(--texto-secundario); font-weight: 600;">Guardado de verdade</span>
+            <span style="font-size: 17px; font-weight: 800; color: var(--max-green);" id="reserva-guardado-acumulado">R$ 0,00</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--texto-secundario); margin-bottom: 4px;">
+            <span>Quanto do ideal você já guardou</span>
+            <span id="reserva-percentual-atingido">0%</span>
+          </div>
+          <div style="background: #E4E7EC; border-radius: var(--radius-pill); height: 10px; overflow: hidden;">
+            <div id="reserva-barra-progresso" style="background: var(--grad-principal); height: 100%; width: 0%; transition: width 0.4s ease;"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SIMULAÇÃO DE RENDIMENTO -->
+      <section class="card-standard">
+        <h2 class="section-title">Simulação: e se isso tivesse rendido?</h2>
+        <p class="section-sub">Veja quanto seria hoje se esse dinheiro tivesse sido investido todo mês a uma taxa</p>
+
+        <div class="form-group">
+          <label class="form-label">Taxa de rendimento estimada (% ao mês)</label>
+          <input type="text" inputmode="decimal" id="input-reserva-taxa" class="input-field" placeholder="Ex: 1">
+        </div>
+
+        <button class="btn btn-primary" onclick="simularRendimentoReserva()">
+          <i data-lucide="calculator" size="16"></i> Simular
+        </button>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px;">
+          <div style="background: var(--grad-dark); border-radius: var(--radius-md); padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 12px; color: #9CA3AF; font-weight: 700;">Se guardasse o ideal (10%) todo dia:</span>
+              <span style="font-size: 19px; font-weight: 800; color: var(--max-blue);" id="reserva-valor-simulado-ideal">R$ 0,00</span>
+            </div>
+          </div>
+          <div style="background: var(--grad-dark); border-radius: var(--radius-md); padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 12px; color: #9CA3AF; font-weight: 700;">Com o que você guardou de verdade:</span>
+              <span style="font-size: 19px; font-weight: 800; color: var(--max-green);" id="reserva-valor-simulado-real">R$ 0,00</span>
+            </div>
+          </div>
+        </div>
+        <p style="font-size: 10.5px; color: var(--texto-secundario); margin-top: 8px;">Estimativa simples mês a mês, não é garantia de rendimento real.</p>
+        <p id="reserva-aviso-sem-dados" style="display:none; font-size: 11.5px; color: var(--max-orange); margin-top: 6px; font-weight: 600;">⚠ Ainda não há entradas lançadas nem valores guardados — por isso os dois ficam em R$ 0,00. Lance suas corridas na aba Hoje e registre o que guardou aqui em cima.</p>
+      </section>
+
+      <!-- HISTÓRICO DOS ÚLTIMOS DIAS -->
+      <section class="card-standard">
+        <h2 class="section-title">Últimos Dias</h2>
+        <div id="reserva-historico-dias">
+          <!-- Renderizado dinamicamente -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ==========================================================================
+         ABA 6: HISTÓRICO DE SERVIÇO (MANUTENÇÕES E REVISÕES)
+         ========================================================================== -->
+    <div id="tab-servicos" class="tab-content">
+      
+      <section class="card-standard">
+        <h2 class="section-title">Próximas Manutenções Preventivas</h2>
+        <div id="alertas-manutencao-container" style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="alerta-despesa">
+            <i data-lucide="alert-triangle" size="20" style="color: #D97706;"></i>
+            <div>
+              <h4 style="font-size: 13px; font-weight: 700; color: #92400E;">Sem manutenções registradas</h4>
+              <p style="font-size: 12px; color: #B45309;">Registre óleo, pneu, etc. abaixo para acompanhar aqui.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card-standard">
+        <h2 class="section-title">Registrar Manutenção / Serviço</h2>
+
+        <div class="form-group">
+          <label class="form-label">Data do Serviço</label>
+          <input type="date" id="input-servico-data" class="input-field">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Serviço Realizado</label>
+          <input type="text" id="input-servico-nome" class="input-field" placeholder="Ex: Troca de Óleo, Pastilha de Freio, Alinhamento...">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Local / Oficina</label>
+          <input type="text" id="input-servico-local" class="input-field" placeholder="Ex: Oficina do Zé, Auto Center Silva...">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">KM Atual no Momento da Troca</label>
+          <input type="number" id="input-servico-km" class="input-field" placeholder="Ex: 85000">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Valor Total Pago (R$)</label>
+          <input type="text" inputmode="numeric" id="input-servico-valor" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this)">
+        </div>
+
+        <button class="btn btn-primary" onclick="registrarServico()">
+          <i data-lucide="wrench" size="18"></i> Salvar Registro de Serviço
+        </button>
+      </section>
+
+      <section class="card-standard">
+        <h2 class="section-title">Histórico de Manutenções</h2>
+        <div id="lista-servicos">
+          <!-- Renderizado dinamicamente por renderServicos() -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ==========================================================================
+         ABA 7: CONFIGURAÇÃO DO VEÍCULO (CÁLCULO AUTOMÁTICO DO CUSTO/KM)
+         ========================================================================== -->
+    <div id="tab-config-veiculo" class="tab-content">
+      
+      <section class="card-hero" style="background: var(--grad-dark); color: white;">
+        <span style="font-size: 12px; text-transform: uppercase; font-weight: 700; color: #98A2B3;">Custo Real do Seu Veículo Por KM</span>
+        <div id="display-custo-total-km" style="font-size: 38px; font-weight: 800; color: #12B981; margin: 4px 0;">R$ 0,00 /km</div>
+        <p style="font-size: 12px; color: #98A2B3;">Calculado automaticamente com base nos seus dados abaixo.</p>
+      </section>
+
+      <section class="card-standard">
+        <h2 class="section-title">Parâmetros de Cálculo de Custo</h2>
+        <p class="section-sub">Altere os dados abaixo para recalcular sua média real</p>
+
+        <!-- 0. USO DO VEÍCULO -->
+        <div style="background: #F8FAFC; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--linha);">
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--texto-principal);">📊 Uso do Veículo</h4>
+          <div class="form-group">
+            <label class="form-label">KM Rodados Estimados por Mês</label>
+            <input type="number" id="input-km-mes" class="input-field" placeholder="Ex: 3300" oninput="calcularCustoPorKM()">
+          </div>
+        </div>
+
+        <!-- 1. PNEUS -->
+        <div style="background: #F8FAFC; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--linha);">
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--max-blue);">🛞 Pneus</h4>
+          <div class="form-group">
+            <label class="form-label">Custo Total do Jogo de Pneus (R$)</label>
+            <input type="text" inputmode="numeric" id="input-pneu-valor" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularCustoPorKM()">
+          </div>
+          <div class="form-group" style="margin-top: 8px;">
+            <label class="form-label">Durabilidade Estimada dos Pneus (KM)</label>
+            <input type="number" id="input-pneu-km" class="input-field" placeholder="Ex: 50000" oninput="calcularCustoPorKM()">
+          </div>
+        </div>
+
+        <!-- 2. COMBUSTÍVEL -->
+        <div style="background: #F8FAFC; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--linha);">
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--max-orange);">⛽ Combustível</h4>
+          <div class="form-group">
+            <label class="form-label">Preço do Litro / M³ (R$)</label>
+            <input type="text" inputmode="numeric" id="input-comb-preco" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularCustoPorKM()">
+          </div>
+          <div class="form-group" style="margin-top: 8px;">
+            <label class="form-label">Média de Consumo do Veículo (KM/L)</label>
+            <input type="number" id="input-comb-media" class="input-field" placeholder="Ex: 11.5" step="0.1" oninput="calcularCustoPorKM()">
+          </div>
+        </div>
+
+        <!-- 3. ÓLEO E MANUTENÇÃO PREVENTIVA -->
+        <div style="background: #F8FAFC; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--linha);">
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--max-purple);">🛢️ Troca de Óleo & Filtros</h4>
+          <div class="form-group">
+            <label class="form-label">Custo Completo da Troca de Óleo (R$)</label>
+            <input type="text" inputmode="numeric" id="input-oleo-valor" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularCustoPorKM()">
+          </div>
+          <div class="form-group" style="margin-top: 8px;">
+            <label class="form-label">Intervalo da Troca (KM)</label>
+            <input type="number" id="input-oleo-km" class="input-field" placeholder="Ex: 10000" oninput="calcularCustoPorKM()">
+          </div>
+        </div>
+
+        <!-- 4. DEPRECIAÇÃO -->
+        <div style="background: #F8FAFC; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--linha);">
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--max-navy);">📉 Depreciação do Veículo</h4>
+          <div class="form-group">
+            <label class="form-label">Valor do Carro (Tabela) — R$</label>
+            <input type="text" inputmode="numeric" id="input-depre-valor-carro" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularCustoPorKM()">
+          </div>
+          <div class="form-group" style="margin-top: 8px;">
+            <label class="form-label">Depreciação Estimada ao Ano (%)</label>
+            <input type="number" id="input-depre-percentual" class="input-field" placeholder="Ex: 10" step="0.1" oninput="calcularCustoPorKM()">
+          </div>
+        </div>
+
+        <!-- 5. PARCELA OU ALUGUEL -->
+        <div style="background: #F8FAFC; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--linha);">
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--max-green);">🚗 Parcela do Carro ou Aluguel</h4>
+          <div class="form-group">
+            <label class="form-label">Valor Mensal (R$)</label>
+            <input type="text" inputmode="numeric" id="input-parcela-mensal" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularCustoPorKM()">
+          </div>
+        </div>
+
+        <!-- 6. SEGURO -->
+        <div style="background: #F8FAFC; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--linha);">
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--max-red);">🛡️ Seguro</h4>
+          <div class="form-group">
+            <label class="form-label">Valor Anual do Seguro (R$)</label>
+            <input type="text" inputmode="numeric" id="input-seguro-anual" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularCustoPorKM()">
+          </div>
+        </div>
+
+        <!-- 7. DOCUMENTAÇÃO -->
+        <div style="background: #F8FAFC; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--linha);">
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--max-cyan);">📄 Documentação Anual (IPVA/Licenciamento)</h4>
+          <div class="form-group">
+            <label class="form-label">Valor Anual (R$)</label>
+            <input type="text" inputmode="numeric" id="input-documentacao-anual" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularCustoPorKM()">
+          </div>
+        </div>
+
+        <!-- 8. INTERNET -->
+        <div style="background: #F8FAFC; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--linha);">
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--max-blue);">📶 Internet (Modem/Dados no Carro)</h4>
+          <div class="form-group">
+            <label class="form-label">Valor Mensal (R$)</label>
+            <input type="text" inputmode="numeric" id="input-internet-mensal" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularCustoPorKM()">
+          </div>
+        </div>
+
+        <!-- 9. HIGIENIZAÇÃO -->
+        <div style="background: #F8FAFC; padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--linha);">
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 10px; color: var(--max-orange);">🧽 Higienização do Carro</h4>
+          <div class="form-group">
+            <label class="form-label">Valor Total Gasto por Mês (R$)</label>
+            <input type="text" inputmode="numeric" id="input-higien-mensal" class="input-field" placeholder="0,00" oninput="aplicarMascaraMoeda(this); calcularCustoPorKM()">
+            <span style="font-size: 11px; color: var(--texto-secundario); margin-top: 2px;">Some tudo que você gasta com higienização no mês (ex: 4 lavagens de R$ 50 = R$ 200)</span>
+          </div>
+        </div>
+
+        <!-- BOTÃO DE SALVAR EXPLÍCITO -->
+        <button class="btn btn-primary" style="margin-top: 6px;" onclick="salvarConfigVeiculoManual()">
+          <i data-lucide="save" size="16"></i> Salvar Configuração
+        </button>
+        <p id="texto-config-salva" style="font-size: 12px; color: var(--max-green); text-align: center; height: 16px; font-weight: 700;"></p>
+
+        <!-- RESUMO DETALHADO DO CUSTO POR KM -->
+        <div style="margin-top: 10px;">
+          <h4 style="font-size: 14px; font-weight: 700; margin-bottom: 8px;">Divisão do Custo Por KM:</h4>
+          <div class="item-row">
+            <span style="font-size: 13px; color: var(--texto-secundario);">Combustível:</span>
+            <strong id="detalhe-comb" style="font-size: 14px; color: var(--texto-principal);">R$ 0,00 /km</strong>
+          </div>
+          <div class="item-row">
+            <span style="font-size: 13px; color: var(--texto-secundario);">Pneus:</span>
+            <strong id="detalhe-pneu" style="font-size: 14px; color: var(--texto-principal);">R$ 0,00 /km</strong>
+          </div>
+          <div class="item-row">
+            <span style="font-size: 13px; color: var(--texto-secundario);">Óleo e Filtros:</span>
+            <strong id="detalhe-oleo" style="font-size: 14px; color: var(--texto-principal);">R$ 0,00 /km</strong>
+          </div>
+          <div class="item-row">
+            <span style="font-size: 13px; color: var(--texto-secundario);">Depreciação:</span>
+            <strong id="detalhe-depre" style="font-size: 14px; color: var(--texto-principal);">R$ 0,00 /km</strong>
+          </div>
+          <div class="item-row">
+            <span style="font-size: 13px; color: var(--texto-secundario);">Parcela / Aluguel:</span>
+            <strong id="detalhe-parcela" style="font-size: 14px; color: var(--texto-principal);">R$ 0,00 /km</strong>
+          </div>
+          <div class="item-row">
+            <span style="font-size: 13px; color: var(--texto-secundario);">Seguro:</span>
+            <strong id="detalhe-seguro" style="font-size: 14px; color: var(--texto-principal);">R$ 0,00 /km</strong>
+          </div>
+          <div class="item-row">
+            <span style="font-size: 13px; color: var(--texto-secundario);">Documentação:</span>
+            <strong id="detalhe-doc" style="font-size: 14px; color: var(--texto-principal);">R$ 0,00 /km</strong>
+          </div>
+          <div class="item-row">
+            <span style="font-size: 13px; color: var(--texto-secundario);">Internet:</span>
+            <strong id="detalhe-internet" style="font-size: 14px; color: var(--texto-principal);">R$ 0,00 /km</strong>
+          </div>
+          <div class="item-row">
+            <span style="font-size: 13px; color: var(--texto-secundario);">Higienização:</span>
+            <strong id="detalhe-higien" style="font-size: 14px; color: var(--texto-principal);">R$ 0,00 /km</strong>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- BOTÃO FLUTUANTE DE AÇÃO (FAB) COM MENU DE ATALHOS -->
+  <div class="fab-menu-overlay" id="fab-overlay" onclick="fecharMenuFab()"></div>
+  <div class="fab-menu" id="fab-menu">
+    <button class="fab-menu-item" onclick="irParaAtalho('hoje', 'input-entrada-valor')">
+      <span class="icone-fab" style="background: var(--grad-verde, var(--max-green));"><i data-lucide="plus-circle" size="16"></i></span> Lançar Entrada
+    </button>
+    <button class="fab-menu-item" onclick="irParaAtalho('hoje', 'input-saida-valor')">
+      <span class="icone-fab" style="background: var(--max-red);"><i data-lucide="minus-circle" size="16"></i></span> Lançar Saída
+    </button>
+    <button class="fab-menu-item" onclick="irParaAtalho('despesas', 'input-conta-nome')">
+      <span class="icone-fab" style="background: var(--max-orange);"><i data-lucide="wallet" size="16"></i></span> Contas Pessoais
+    </button>
+    <button class="fab-menu-item" onclick="irParaAtalho('analise')">
+      <span class="icone-fab" style="background: var(--max-purple);"><i data-lucide="line-chart" size="16"></i></span> Gráficos
+    </button>
+    <button class="fab-menu-item" onclick="irParaAtalho('config-veiculo')">
+      <span class="icone-fab" style="background: var(--max-blue);"><i data-lucide="calculator" size="16"></i></span> Config. Veículo
+    </button>
+  </div>
+  <button class="fab-button" id="fab-button" onclick="alternarMenuFab()">+</button>
+
+  <script>
+    // ==========================================================================
+    // HELPERS DE STORAGE — usa localStorage do navegador (funciona no celular,
+    // no GitHub Pages e em qualquer lugar, sem depender de recursos do Claude)
+    // ==========================================================================
+    const PREFIXO_LOCAL = 'maxrota-';
+
+    async function storageGet(key, fallback) {
+      try {
+        const raw = localStorage.getItem(PREFIXO_LOCAL + key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (e) {
+        console.error('Erro ao ler', key, e);
+        return fallback;
+      }
+    }
+    async function storageSet(key, value) {
+      try {
+        localStorage.setItem(PREFIXO_LOCAL + key, JSON.stringify(value));
+      } catch (e) {
+        console.error('Erro ao salvar', key, e);
+      }
+    }
+
+    // Auxiliar de formatação de moeda BRL (R$)
+    // Wrapper seguro: se a biblioteca de ícones não carregar (sem internet, CDN
+    // bloqueado), isso não pode travar o resto do app.
+    function criarIconesSeguro() {
+      try {
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+      } catch (e) {
+        console.error('Erro ao criar ícones:', e);
+      }
+    }
+
+    function formatarMoeda(valor) {
+      return (valor || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    // ==========================================================================
+    // MÁSCARA DE MOEDA — campos "R$" começam vazios (placeholder "0,00") e o
+    // usuário só digita números; a formatação com vírgula é automática.
+    // ==========================================================================
+    function aplicarMascaraMoeda(input) {
+      let digitos = input.value.replace(/\D/g, '');
+      if (digitos === '') { input.value = ''; return; }
+      digitos = digitos.replace(/^0+(?=\d)/, '');
+      while (digitos.length < 3) digitos = '0' + digitos;
+      const centavos = digitos.slice(-2);
+      let inteiros = digitos.slice(0, -2).replace(/^0+(?=\d)/, '');
+      inteiros = inteiros.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+      input.value = `${inteiros},${centavos}`;
+    }
+
+    function moedaParaNumero(valorFormatado) {
+      if (!valorFormatado) return 0;
+      const limpo = String(valorFormatado).replace(/\./g, '').replace(',', '.');
+      return parseFloat(limpo) || 0;
+    }
+
+    function getDataHojeISO() {
+      const d = new Date();
+      return d.toISOString().split('T')[0];
+    }
+
+    function getMesAnoAtual() {
+      const d = new Date();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      return `${d.getFullYear()}-${m}`;
+    }
+
+    function mesAnoDeData(dataISO) {
+      return dataISO.slice(0, 7);
+    }
+
+    // ==========================================================================
+    // ESTADO GLOBAL EM MEMÓRIA (carregado do storage no window.onload)
+    // ==========================================================================
+    let todosLancamentos = [];   // {id, tipo, categoria, valor, corridas, data}
+    let bancoContas = [];
+    let servicos = [];           // {id, nome, km, valor, data}
+    let horasPorDia = {};        // { 'YYYY-MM-DD': horasNumero }
+    let diasFinalizados = {};    // { 'YYYY-MM-DD': true }
+    let metas = { diaria: 0, semanal: 0 };
+    let dataSelecionada = getDataHojeISO();
+    let graficosDesatualizados = true; // controla se os gráficos da aba Análise precisam ser recalculados
+    let reservaPorDia = {}; // { 'YYYY-MM-DD': valorGuardadoNumero }
+    let reservaTaxaMensal = 0; // % ao mês, pra simulação de rendimento
+
+    const CANAIS_CORRIDA = ['Uber', '99', 'inDriver'];
+
+    // ==========================================================================
+    // SELETOR DE DATA (ABA HOJE)
+    // ==========================================================================
+    function aoMudarDataSelecionada() {
+      const input = document.getElementById('input-data-selecionada');
+      dataSelecionada = input.value || getDataHojeISO();
+      document.getElementById('btn-voltar-hoje').style.display = dataSelecionada === getDataHojeISO() ? 'none' : 'flex';
+      atualizarPainelHoje();
+    }
+
+    function voltarParaHoje() {
+      dataSelecionada = getDataHojeISO();
+      document.getElementById('input-data-selecionada').value = dataSelecionada;
+      document.getElementById('btn-voltar-hoje').style.display = 'none';
+      atualizarPainelHoje();
+    }
+
+    // ==========================================================================
+    // ABA "HOJE" — ENTRADAS / SAÍDAS / RESUMO
+    // ==========================================================================
+    async function registrarEntrada(origem) {
+      const inputValor = document.getElementById('input-entrada-valor');
+      const inputCorridas = document.getElementById('input-entrada-corridas');
+      const valor = moedaParaNumero(inputValor.value);
+      let corridas = parseInt(inputCorridas.value) || 1;
+
+      if (isNaN(valor) || valor <= 0) {
+        alert("Por favor, digite um valor válido para a receita.");
+        return;
+      }
+
+      const novoLancamento = {
+        id: Date.now().toString(),
+        tipo: 'entrada',
+        categoria: origem,
+        valor: valor,
+        corridas: CANAIS_CORRIDA.includes(origem) ? corridas : 0,
+        data: dataSelecionada
+      };
+
+      // Limpa os campos IMEDIATAMENTE, antes de qualquer salvamento/render
+      inputValor.value = '';
+      inputCorridas.value = '1';
+
+      todosLancamentos.push(novoLancamento);
+      atualizarPainelHoje();
+      graficosDesatualizados = true;
+      storageSet('lancamentos', todosLancamentos);
+    }
+
+    async function registrarSaida(categoria) {
+      const inputValor = document.getElementById('input-saida-valor');
+      const valor = moedaParaNumero(inputValor.value);
+
+      if (isNaN(valor) || valor <= 0) {
+        alert("Por favor, digite um valor válido para a despesa.");
+        return;
+      }
+
+      const novoLancamento = {
+        id: Date.now().toString(),
+        tipo: 'saida',
+        categoria: categoria,
+        valor: valor,
+        corridas: 0,
+        data: dataSelecionada
+      };
+
+      inputValor.value = '';
+
+      todosLancamentos.push(novoLancamento);
+      atualizarPainelHoje();
+      graficosDesatualizados = true;
+      storageSet('lancamentos', todosLancamentos);
+    }
+
+    async function registrarPasse(categoria) {
+      const inputValor = document.getElementById('input-passe-valor');
+      const valor = moedaParaNumero(inputValor.value);
+
+      if (isNaN(valor) || valor <= 0) {
+        alert("Por favor, digite um valor válido para o passe.");
+        return;
+      }
+
+      const novoLancamento = {
+        id: Date.now().toString(),
+        tipo: 'saida',
+        categoria: categoria,
+        valor: valor,
+        corridas: 0,
+        data: dataSelecionada
+      };
+
+      inputValor.value = '';
+
+      todosLancamentos.push(novoLancamento);
+      atualizarPainelHoje();
+      graficosDesatualizados = true;
+      storageSet('lancamentos', todosLancamentos);
+    }
+
+    async function excluirLancamentoHoje(id) {
+      todosLancamentos = todosLancamentos.filter(item => item.id !== id);
+      atualizarPainelHoje();
+      graficosDesatualizados = true;
+      storageSet('lancamentos', todosLancamentos);
+    }
+
+    async function salvarHorasHoje() {
+      const input = document.getElementById('input-horas-hoje');
+      const horas = parseFloat(input.value);
+      if (isNaN(horas) || horas < 0) {
+        alert('Digite um número de horas válido.');
+        return;
+      }
+      input.value = '';
+      horasPorDia[dataSelecionada] = horas;
+      atualizarPainelHoje();
+      graficosDesatualizados = true;
+      storageSet('horas', horasPorDia);
+    }
+
+    async function alternarFinalizarDia() {
+      diasFinalizados[dataSelecionada] = !diasFinalizados[dataSelecionada];
+      await storageSet('dias-finalizados', diasFinalizados);
+      atualizarPainelHoje();
+    }
+
+    function aplicarBloqueioDia(finalizado) {
+      const secoes = ['secao-horas', 'secao-entradas', 'secao-passes', 'secao-saidas'];
+      secoes.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.classList.toggle('dia-bloqueado', finalizado);
+      });
+      const btn = document.getElementById('btn-finalizar-dia');
+      if (finalizado) {
+        btn.innerHTML = '<i data-lucide="unlock" size="16"></i> Reabrir o Dia';
+        btn.style.background = '#E2E8F0';
+        btn.style.color = 'var(--texto-secundario)';
+        btn.style.boxShadow = 'none';
+      } else {
+        btn.innerHTML = '<i data-lucide="lock" size="16"></i> Finalizar o Dia';
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.boxShadow = '';
+      }
+      criarIconesSeguro();
+    }
+
+    function atualizarPainelHoje() {
+      const hoje = dataSelecionada;
+      const ehHoje = hoje === getDataHojeISO();
+      const lancamentosHoje = todosLancamentos.filter(l => l.data === hoje);
+      const dataFormatadaTitulo = ehHoje ? 'Hoje' : new Date(hoje + 'T00:00:00').toLocaleDateString('pt-BR');
+
+      document.getElementById('titulo-horas').innerText = ehHoje ? 'Horas Trabalhadas Hoje' : `Horas Trabalhadas — ${dataFormatadaTitulo}`;
+      document.getElementById('titulo-resumo').innerText = ehHoje ? 'Resumo do Dia (Hoje)' : `Resumo do Dia — ${dataFormatadaTitulo}`;
+      document.getElementById('titulo-lancamentos').innerText = ehHoje ? 'Lançamentos do Dia' : `Lançamentos — ${dataFormatadaTitulo}`;
+
+      let totalEntradas = 0;
+      let totalSaidas = 0;
+      const entradasMap = {};
+      const saidasMap = {};
+
+      lancamentosHoje.forEach(item => {
+        if (item.tipo === 'entrada') {
+          totalEntradas += item.valor;
+          entradasMap[item.categoria] = (entradasMap[item.categoria] || 0) + item.valor;
+        } else if (item.tipo === 'saida') {
+          totalSaidas += item.valor;
+          saidasMap[item.categoria] = (saidasMap[item.categoria] || 0) + item.valor;
+        }
+      });
+
+      const saldoLiquido = totalEntradas - totalSaidas;
+
+      document.getElementById('resumo-total-entradas').innerText = formatarMoeda(totalEntradas);
+      document.getElementById('resumo-total-saidas').innerText = formatarMoeda(totalSaidas);
+
+      const elSaldo = document.getElementById('resumo-saldo-liquido');
+      elSaldo.innerText = formatarMoeda(saldoLiquido);
+      elSaldo.style.color = saldoLiquido >= 0 ? 'var(--max-blue)' : 'var(--max-red)';
+
+      const detalheEntradasArr = Object.keys(entradasMap).map(cat => `${cat} (${formatarMoeda(entradasMap[cat])})`);
+      document.getElementById('resumo-detalhe-entradas').innerText = detalheEntradasArr.length > 0
+        ? `Detalhamento: ${detalheEntradasArr.join(' | ')}`
+        : 'Detalhamento: Nenhum lançamento';
+
+      const detalheSaidasArr = Object.keys(saidasMap).map(cat => `${cat} (${formatarMoeda(saidasMap[cat])})`);
+      document.getElementById('resumo-detalhe-saidas').innerText = detalheSaidasArr.length > 0
+        ? `Detalhamento: ${detalheSaidasArr.join(' | ')}`
+        : 'Detalhamento: Nenhum lançamento';
+
+      // Horas do dia selecionado e R$/hora (campo sempre limpo após salvar)
+      const horasHoje = horasPorDia[hoje] || 0;
+      document.getElementById('display-horas-hoje').innerText = `${horasHoje}h`;
+      const inputHoras = document.getElementById('input-horas-hoje');
+      inputHoras.value = '';
+      inputHoras.placeholder = horasHoje > 0 ? `Atual: ${horasHoje}h — digite p/ atualizar` : 'Ex: 8';
+      const rsHora = horasHoje > 0 ? saldoLiquido / horasHoje : 0;
+      document.getElementById('resumo-rs-hora').innerText = `${formatarMoeda(rsHora)}/h`;
+
+      // Tabela de lançamentos
+      const tabelaBody = document.getElementById('tabela-lancamentos-hoje');
+      if (lancamentosHoje.length === 0) {
+        tabelaBody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--texto-secundario); padding: 12px;">Nenhum lançamento registrado nesta data.</td></tr>`;
+      } else {
+        tabelaBody.innerHTML = lancamentosHoje.map(item => `
+          <tr>
+            <td>
+              <span class="badge ${item.tipo === 'entrada' ? 'badge-green' : 'badge-orange'}">
+                ${item.tipo === 'entrada' ? 'Entrada' : 'Saída'}
+              </span>
+            </td>
+            <td style="font-weight: 600;">${item.categoria}${item.corridas ? ` <span style="color:var(--texto-secundario); font-weight:500;">(${item.corridas} corrida${item.corridas > 1 ? 's' : ''})</span>` : ''}</td>
+            <td style="font-weight: 700; color: ${item.tipo === 'entrada' ? 'var(--max-green)' : 'var(--max-red)'};">
+              ${formatarMoeda(item.valor)}
+            </td>
+            <td style="text-align: center;">
+              <button class="btn-delete-row" onclick="excluirLancamentoHoje('${item.id}')" title="Excluir">
+                <i data-lucide="trash-2" size="14"></i>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      aplicarBloqueioDia(!!diasFinalizados[hoje]);
+      criarIconesSeguro();
+    }
+
+    // ==========================================================================
+    // ABA HISTÓRICO — FECHAMENTO E COMPARATIVO MENSAL
+    // ==========================================================================
+    function calcularFechamentoMes(mesAno) {
+      const entradasMes = todosLancamentos.filter(l => l.tipo === 'entrada' && mesAnoDeData(l.data) === mesAno);
+      const saidasMes = todosLancamentos.filter(l => l.tipo === 'saida' && mesAnoDeData(l.data) === mesAno);
+      const faturamento = entradasMes.reduce((a, l) => a + l.valor, 0);
+      const custos = saidasMes.reduce((a, l) => a + l.valor, 0);
+      const lucro = faturamento - custos;
+      const corridas = entradasMes.reduce((a, l) => a + (l.corridas || 0), 0);
+      const horas = Object.keys(horasPorDia).filter(d => mesAnoDeData(d) === mesAno).reduce((a, d) => a + horasPorDia[d], 0);
+
+      const porDia = {};
+      entradasMes.forEach(l => { porDia[l.data] = (porDia[l.data] || 0) + l.valor; });
+      const diasArr = Object.keys(porDia).map(data => ({ data, valor: porDia[data] })).sort((a, b) => b.valor - a.valor);
+
+      const porApp = {};
+      entradasMes.forEach(l => {
+        porApp[l.categoria] = porApp[l.categoria] || { total: 0, qtd: 0 };
+        porApp[l.categoria].total += l.valor;
+        porApp[l.categoria].qtd += (l.corridas || 0);
+      });
+
+      // Maiores gastos do mês — passes de todos os apps somados numa única categoria
+      const porCategoriaGasto = {};
+      saidasMes.forEach(l => {
+        const chave = l.categoria.startsWith('Passe') ? 'Passes Diários (99, Uber, inDriver, Outros)' : l.categoria;
+        porCategoriaGasto[chave] = (porCategoriaGasto[chave] || 0) + l.valor;
+      });
+      const maioresGastos = Object.keys(porCategoriaGasto)
+        .map(categoria => ({ categoria, total: porCategoriaGasto[categoria] }))
+        .sort((a, b) => b.total - a.total);
+
+      return { faturamento, custos, lucro, corridas, horas, diasArr, porApp, maioresGastos };
+    }
+
+    let mesHistoricoSelecionado = getMesAnoAtual(); // fonte confiável — não depende só do <input type="month">
+
+    function renderHistorico() {
+      const inputMes = document.getElementById('historico-filtro-mes');
+      const valorInput = inputMes.value;
+      if (valorInput) mesHistoricoSelecionado = valorInput;
+      inputMes.value = mesHistoricoSelecionado;
+      const mesAno = mesHistoricoSelecionado;
+
+      const fechamento = calcularFechamentoMes(mesAno);
+      document.getElementById('hist-faturamento').innerText = formatarMoeda(fechamento.faturamento);
+      document.getElementById('hist-lucro').innerText = formatarMoeda(fechamento.lucro);
+      document.getElementById('hist-corridas').innerText = fechamento.corridas;
+      document.getElementById('hist-horas').innerText = `${fechamento.horas}h`;
+      document.getElementById('hist-rs-hora').innerText = fechamento.horas > 0 ? formatarMoeda(fechamento.faturamento / fechamento.horas) : 'R$ 0,00';
+      document.getElementById('hist-rs-corrida').innerText = fechamento.corridas > 0 ? formatarMoeda(fechamento.faturamento / fechamento.corridas) : 'R$ 0,00';
+
+      // Comparativo com mês anterior
+      const [ano, mes] = mesAno.split('-').map(Number);
+      const dataAnterior = new Date(ano, mes - 2, 1);
+      const mesAnteriorKey = `${dataAnterior.getFullYear()}-${String(dataAnterior.getMonth() + 1).padStart(2, '0')}`;
+      const fechamentoAnterior = calcularFechamentoMes(mesAnteriorKey);
+
+      const linhasComparativo = [
+        { label: 'Faturamento', atual: fechamento.faturamento, anterior: fechamentoAnterior.faturamento },
+        { label: 'Lucro Líquido', atual: fechamento.lucro, anterior: fechamentoAnterior.lucro },
+        { label: 'Corridas', atual: fechamento.corridas, anterior: fechamentoAnterior.corridas, moeda: false },
+        { label: 'Horas', atual: fechamento.horas, anterior: fechamentoAnterior.horas, moeda: false }
+      ];
+
+      document.getElementById('hist-comparativo').innerHTML = linhasComparativo.map(l => {
+        const variacao = l.anterior !== 0 ? ((l.atual - l.anterior) / Math.abs(l.anterior)) * 100 : (l.atual > 0 ? 100 : 0);
+        const corVariacao = variacao >= 0 ? 'var(--max-green)' : 'var(--max-red)';
+        const valorAtualFmt = l.moeda === false ? l.atual : formatarMoeda(l.atual);
+        const valorAnteriorFmt = l.moeda === false ? l.anterior : formatarMoeda(l.anterior);
+        return `
+          <div class="item-row">
+            <div>
+              <span style="font-size: 13px; font-weight: 600;">${l.label}</span>
+              <p style="font-size: 11px; color: var(--texto-secundario);">Mês anterior: ${valorAnteriorFmt}</p>
+            </div>
+            <div style="text-align: right;">
+              <span style="font-size: 14px; font-weight: 800;">${valorAtualFmt}</span>
+              <p style="font-size: 11px; font-weight: 700; color: ${corVariacao};">${variacao >= 0 ? '+' : ''}${variacao.toFixed(0)}%</p>
+            </div>
+          </div>`;
+      }).join('');
+
+      // Distribuição por app
+      const appsArr = Object.keys(fechamento.porApp).map(cat => ({ categoria: cat, ...fechamento.porApp[cat] }))
+        .sort((a, b) => b.total - a.total);
+      document.getElementById('hist-apps').innerHTML = appsArr.length === 0
+        ? `<p style="font-size: 13px; color: var(--texto-secundario); text-align: center; padding: 8px 0;">Sem corridas lançadas neste mês.</p>`
+        : appsArr.map(a => `
+          <div class="item-row">
+            <span style="font-size: 13px; font-weight: 600;">${a.categoria}${a.qtd ? ` (${a.qtd} corridas)` : ''}</span>
+            <span style="font-size: 14px; font-weight: 800; color: var(--max-green);">${formatarMoeda(a.total)}</span>
+          </div>
+        `).join('');
+
+      // Melhores e piores dias
+      const melhores = fechamento.diasArr.slice(0, 3);
+      const piores = [...fechamento.diasArr].reverse().slice(0, 3);
+      const renderDiaItem = (d) => `
+        <div class="item-row" style="padding: 8px 0;">
+          <span style="font-size: 12px; color: var(--texto-secundario);">${new Date(d.data + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
+          <span style="font-size: 13px; font-weight: 700;">${formatarMoeda(d.valor)}</span>
+        </div>`;
+      document.getElementById('hist-melhores-dias').innerHTML = melhores.length
+        ? melhores.map(renderDiaItem).join('') : `<p style="font-size: 12px; color: var(--texto-secundario);">Sem dados</p>`;
+      document.getElementById('hist-piores-dias').innerHTML = piores.length
+        ? piores.map(renderDiaItem).join('') : `<p style="font-size: 12px; color: var(--texto-secundario);">Sem dados</p>`;
+
+      // Maiores gastos do mês (com passes de todos os apps somados numa categoria só)
+      document.getElementById('hist-maiores-gastos').innerHTML = fechamento.maioresGastos.length
+        ? fechamento.maioresGastos.map((g, i) => `
+          <div class="item-row">
+            <span style="font-size: 13px; font-weight: 600;">${i + 1}º — ${g.categoria}</span>
+            <span style="font-size: 14px; font-weight: 800; color: var(--max-red);">${formatarMoeda(g.total)}</span>
+          </div>`).join('')
+        : `<p style="font-size: 13px; color: var(--texto-secundario); text-align: center; padding: 8px 0;">Nenhum gasto lançado neste mês.</p>`;
+    }
+
+    // ==========================================================================
+    // METAS (DIÁRIA E SEMANAL)
+    // ==========================================================================
+    async function salvarMetas() {
+      metas.diaria = moedaParaNumero(document.getElementById('input-meta-diaria').value);
+      metas.semanal = moedaParaNumero(document.getElementById('input-meta-semanal').value);
+      await storageSet('metas', metas);
+      renderProgressoMetas();
+    }
+
+    function renderProgressoMetas() {
+      const hoje = getDataHojeISO();
+      const entradas = todosLancamentos.filter(l => l.tipo === 'entrada');
+      const faturamentoHoje = entradas.filter(l => l.data === hoje).reduce((a, l) => a + l.valor, 0);
+
+      const d = new Date();
+      const dow = d.getDay();
+      const mondayOffset = dow === 0 ? 6 : dow - 1;
+      const segunda = new Date(d);
+      segunda.setDate(d.getDate() - mondayOffset);
+      const segundaISO = segunda.toISOString().split('T')[0];
+      const faturamentoSemana = entradas.filter(l => l.data >= segundaISO && l.data <= hoje).reduce((a, l) => a + l.valor, 0);
+
+      const pctDiario = metas.diaria > 0 ? Math.min(100, (faturamentoHoje / metas.diaria) * 100) : 0;
+      const pctSemanal = metas.semanal > 0 ? Math.min(100, (faturamentoSemana / metas.semanal) * 100) : 0;
+
+      document.getElementById('texto-progresso-diario').innerText = `${formatarMoeda(faturamentoHoje)} / ${formatarMoeda(metas.diaria)}`;
+      document.getElementById('barra-progresso-diario').style.width = `${pctDiario}%`;
+      document.getElementById('texto-progresso-semanal').innerText = `${formatarMoeda(faturamentoSemana)} / ${formatarMoeda(metas.semanal)}`;
+      document.getElementById('barra-progresso-semanal').style.width = `${pctSemanal}%`;
+    }
+
+    // ==========================================================================
+    // ABA ANÁLISE — GRÁFICOS DINÂMICOS
+    // ==========================================================================
+    let chartEvolucaoInstance, chartPlataformasInstance, chartCorridasAppInstance,
+        chartFaturamentoMensalInstance, chartHorasMensalInstance, chartAppMensalInstance,
+        chartDiaSemanaInstance, chartSemanaComparativoInstance;
+
+    function ultimosNDias(n) {
+      const dias = [];
+      for (let i = n - 1; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        dias.push(d.toISOString().split('T')[0]);
+      }
+      return dias;
+    }
+
+    function ultimosNMeses(n) {
+      const meses = [];
+      const d = new Date();
+      d.setDate(1);
+      for (let i = n - 1; i >= 0; i--) {
+        const dm = new Date(d.getFullYear(), d.getMonth() - i, 1);
+        const m = String(dm.getMonth() + 1).padStart(2, '0');
+        meses.push(`${dm.getFullYear()}-${m}`);
+      }
+      return meses;
+    }
+
+    function nomeMesCurto(mesAno) {
+      const [ano, mes] = mesAno.split('-');
+      const nomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      return `${nomes[parseInt(mes) - 1]}/${ano.slice(2)}`;
+    }
+
+    function renderGraficosAnalise() {
+      // Se a biblioteca de gráficos não carregou (ex: sem internet, CDN bloqueado
+      // no navegador/preview), avisa em vez de travar silenciosamente.
+      if (typeof Chart === 'undefined') {
+        console.error('Chart.js não carregou — verifique a conexão com a internet.');
+        const aviso = document.getElementById('aviso-graficos-indisponiveis');
+        if (aviso) aviso.style.display = 'block';
+        try { renderProgressoMetas(); } catch (e) { console.error(e); }
+        return;
+      }
+      const avisoEl = document.getElementById('aviso-graficos-indisponiveis');
+      if (avisoEl) avisoEl.style.display = 'none';
+
+      try {
+      const entradas = todosLancamentos.filter(l => l.tipo === 'entrada');
+      const mesAtual = getMesAnoAtual();
+      const entradasMesAtual = entradas.filter(l => mesAnoDeData(l.data) === mesAtual);
+
+      // --- Stats rápidas ---
+      const totalValorMes = entradasMesAtual.reduce((a, l) => a + l.valor, 0);
+      const totalCorridasMes = entradasMesAtual.reduce((a, l) => a + (l.corridas || 0), 0);
+      const totalHorasMes = Object.keys(horasPorDia)
+        .filter(d => mesAnoDeData(d) === mesAtual)
+        .reduce((a, d) => a + horasPorDia[d], 0);
+
+      document.getElementById('stat-rs-corrida').innerText = totalCorridasMes > 0
+        ? formatarMoeda(totalValorMes / totalCorridasMes) : 'R$ 0,00';
+      document.getElementById('stat-rs-hora-mes').innerText = totalHorasMes > 0
+        ? formatarMoeda(totalValorMes / totalHorasMes) : 'R$ 0,00';
+
+      // --- Gráfico 1: Faturamento últimos 7 dias ---
+      const dias7 = ultimosNDias(7);
+      const valoresPorDia = dias7.map(d => entradas.filter(l => l.data === d).reduce((a, l) => a + l.valor, 0));
+      const labelsDias7 = dias7.map(d => new Date(d + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'short' }));
+
+      if (chartEvolucaoInstance) chartEvolucaoInstance.destroy();
+      chartEvolucaoInstance = new Chart(document.getElementById('chartEvolucao').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: labelsDias7,
+          datasets: [{
+            data: valoresPorDia,
+            borderColor: '#2878E8',
+            backgroundColor: 'rgba(40, 120, 232, 0.1)',
+            fill: true, tension: 0.4, borderWidth: 3
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
+
+      // --- Gráfico 2: Ganhos por plataforma (mês atual) ---
+      const porPlataforma = {};
+      entradasMesAtual.forEach(l => { porPlataforma[l.categoria] = (porPlataforma[l.categoria] || 0) + l.valor; });
+      const labelsPlataforma = Object.keys(porPlataforma);
+      const valoresPlataforma = labelsPlataforma.map(k => porPlataforma[k]);
+      const paletaCores = ['#111827', '#FF7412', '#7C4DFF', '#18B8D0', '#12B981', '#F04444'];
+
+      if (chartPlataformasInstance) chartPlataformasInstance.destroy();
+      chartPlataformasInstance = new Chart(document.getElementById('chartPlataformas').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: labelsPlataforma.length ? labelsPlataforma : ['Sem dados'],
+          datasets: [{
+            data: valoresPlataforma.length ? valoresPlataforma : [1],
+            backgroundColor: labelsPlataforma.length ? paletaCores : ['#E4E7EC']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } }, cutout: '70%' }
+      });
+
+      // --- Gráfico 3: Corridas por app (mês atual) ---
+      const corridasPorApp = {};
+      entradasMesAtual.forEach(l => {
+        if (CANAIS_CORRIDA.includes(l.categoria)) {
+          corridasPorApp[l.categoria] = (corridasPorApp[l.categoria] || 0) + (l.corridas || 0);
+        }
+      });
+      const labelsCorridasApp = Object.keys(corridasPorApp);
+      const valoresCorridasApp = labelsCorridasApp.map(k => corridasPorApp[k]);
+
+      if (chartCorridasAppInstance) chartCorridasAppInstance.destroy();
+      chartCorridasAppInstance = new Chart(document.getElementById('chartCorridasApp').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: labelsCorridasApp.length ? labelsCorridasApp : ['Sem dados'],
+          datasets: [{
+            data: valoresCorridasApp.length ? valoresCorridasApp : [1],
+            backgroundColor: labelsCorridasApp.length ? paletaCores : ['#E4E7EC']
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } }, cutout: '70%' }
+      });
+
+      // --- Gráfico 4: Faturamento por mês (últimos 6 meses) ---
+      const meses6 = ultimosNMeses(6);
+      const valoresPorMes = meses6.map(m => entradas.filter(l => mesAnoDeData(l.data) === m).reduce((a, l) => a + l.valor, 0));
+
+      if (chartFaturamentoMensalInstance) chartFaturamentoMensalInstance.destroy();
+      chartFaturamentoMensalInstance = new Chart(document.getElementById('chartFaturamentoMensal').getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: meses6.map(nomeMesCurto),
+          datasets: [{
+            data: valoresPorMes,
+            backgroundColor: '#12B981',
+            borderRadius: 6
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
+
+      // --- Gráfico 5: Horas trabalhadas por mês ---
+      const horasPorMes = meses6.map(m =>
+        Object.keys(horasPorDia).filter(d => mesAnoDeData(d) === m).reduce((a, d) => a + horasPorDia[d], 0)
+      );
+
+      if (chartHorasMensalInstance) chartHorasMensalInstance.destroy();
+      chartHorasMensalInstance = new Chart(document.getElementById('chartHorasMensal').getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: meses6.map(nomeMesCurto),
+          datasets: [{
+            data: horasPorMes,
+            backgroundColor: '#7C4DFF',
+            borderRadius: 6
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
+
+      // --- Gráfico 6: Faturamento por app, mês a mês (linhas comparativas) ---
+      const canaisPrincipais = ['Uber', '99', 'inDriver', 'Particular'];
+      const coresCanais = { 'Uber': '#111827', '99': '#FF7412', 'inDriver': '#00B175', 'Particular': '#2878E8' };
+      const datasetsAppMensal = canaisPrincipais.map(canal => ({
+        label: canal,
+        data: meses6.map(m => entradas.filter(l => mesAnoDeData(l.data) === m && l.categoria === canal).reduce((a, l) => a + l.valor, 0)),
+        borderColor: coresCanais[canal],
+        backgroundColor: coresCanais[canal],
+        tension: 0.4,
+        borderWidth: 3,
+        fill: false
+      }));
+
+      if (chartAppMensalInstance) chartAppMensalInstance.destroy();
+      chartAppMensalInstance = new Chart(document.getElementById('chartAppMensal').getContext('2d'), {
+        type: 'line',
+        data: {
+          labels: meses6.map(nomeMesCurto),
+          datasets: datasetsAppMensal
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+      });
+
+      // --- Gráfico 7: Faturamento médio por dia da semana (histórico completo) ---
+      const nomesDiasSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+      const somaPorDiaSemana = [0, 0, 0, 0, 0, 0, 0];
+      const contagemPorDiaSemana = [0, 0, 0, 0, 0, 0, 0];
+      entradas.forEach(l => {
+        const diaSemana = new Date(l.data + 'T00:00:00').getDay();
+        somaPorDiaSemana[diaSemana] += l.valor;
+      });
+      // conta quantas vezes cada dia da semana teve pelo menos um lançamento (pra tirar média por dia, não por lançamento)
+      const diasComLancamento = {};
+      entradas.forEach(l => { diasComLancamento[l.data] = new Date(l.data + 'T00:00:00').getDay(); });
+      Object.values(diasComLancamento).forEach(dow => { contagemPorDiaSemana[dow]++; });
+      const mediaPorDiaSemana = somaPorDiaSemana.map((soma, i) => contagemPorDiaSemana[i] > 0 ? soma / contagemPorDiaSemana[i] : 0);
+
+      if (chartDiaSemanaInstance) chartDiaSemanaInstance.destroy();
+      chartDiaSemanaInstance = new Chart(document.getElementById('chartDiaSemana').getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: nomesDiasSemana,
+          datasets: [{
+            data: mediaPorDiaSemana,
+            backgroundColor: '#18B8D0',
+            borderRadius: 6
+          }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
+
+      // --- Gráfico 8: Esta semana x semana passada (dia a dia) ---
+      const hojeD = new Date();
+      const dow = hojeD.getDay();
